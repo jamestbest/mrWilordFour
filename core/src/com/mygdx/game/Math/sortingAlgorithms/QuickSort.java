@@ -1,27 +1,26 @@
 package com.mygdx.game.Math.sortingAlgorithms;
 
-import com.mygdx.game.Math.AStar.Node;
-import com.mygdx.game.Math.CStar.NodeC;
-import com.mygdx.game.Math.DStar.NodeD;
+import com.mygdx.game.AStar.Node;
+
 
 import java.util.ArrayList;
 
 public class QuickSort {
-    public static ArrayList<NodeD> sortNodes(ArrayList<NodeD> list){
+    public static ArrayList<Node> sortNodes(ArrayList<Node> list){
         int pointerLoc = list.size() - 1;
-        ArrayList<NodeD> left = new ArrayList<>();
-        ArrayList<NodeD> right = new ArrayList<>();
-        ArrayList<NodeD> middle = new ArrayList<>();
+        ArrayList<Node> left = new ArrayList<>();
+        ArrayList<Node> right = new ArrayList<>();
+        ArrayList<Node> middle = new ArrayList<>();
         float PointerOverall = list.get(pointerLoc).global;
         for (int i = 0; i < list.size() - 1; i++) {
-            NodeD NodeD = list.get(i);
-            float overall = NodeD.global;
+            Node Node = list.get(i);
+            float overall = Node.global;
             if (overall < PointerOverall) {
-                left.add(NodeD);
+                left.add(Node);
             } else if (overall > PointerOverall) {
-                right.add(NodeD);
+                right.add(Node);
             } else {
-                middle.add(NodeD);
+                middle.add(Node);
             }
         }
         if (left.size() > 1) {
@@ -30,7 +29,7 @@ public class QuickSort {
         if (right.size() > 1) {
             right = sortNodes(right);
         }
-        ArrayList<NodeD> sorted = new ArrayList<NodeD>(left);
+        ArrayList<Node> sorted = new ArrayList<Node>(left);
         sorted.add(list.get(pointerLoc));
         sorted.addAll(middle);
         sorted.addAll(right);

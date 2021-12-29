@@ -1,4 +1,4 @@
-package com.mygdx.game.Terrain;
+package com.mygdx.game.Generation;
 
 public class Tile {
 
