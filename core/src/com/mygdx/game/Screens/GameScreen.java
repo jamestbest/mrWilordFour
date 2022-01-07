@@ -4,11 +4,25 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Json;
 import com.mygdx.game.Game.CameraTwo;
+import com.mygdx.game.Game.Colonist;
+import com.mygdx.game.Game.MyGdxGame;
 import com.mygdx.game.Generation.Map;
+import com.mygdx.game.Generation.MapSettings;
+import io.socket.client.IO;
+import io.socket.client.Socket;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.File;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class GameScreen implements Screen {
     public static final int TILES_ON_X = 250;
@@ -19,15 +33,21 @@ public class GameScreen implements Screen {
     ShapeRenderer shapeRenderer;
 
     CameraTwo camera;
-
     Vector2 moveOrigin = new Vector2(0, 0);
 
     String seed = "testSeed1"; //testSeed1
     int addition;
 
-
-
     Map map;
+    ArrayList<Colonist> colonists;
+
+    MyGdxGame game;
+
+    boolean joiningMultiplayer;
+    private Socket socket;
+    String socketID;
+
+    HashMap<String, Texture> textures = new HashMap<>();
 
     InputProcessor gameInputProcessor = new InputProcessor() {
         @Override
@@ -58,8 +78,10 @@ public class GameScreen implements Screen {
 
         @Override
         public boolean touchDragged(int screenX, int screenY, int pointer) {
-            Vector2 temp = camera.unproject(new Vector2(screenX, screenY));
-            camera.move(moveOrigin.x - temp.x, moveOrigin.y - temp.y);
+            if (Gdx.input.isButtonPressed(1)){
+                Vector2 temp = camera.unproject(new Vector2(screenX, screenY));
+                camera.move(moveOrigin.x - temp.x, moveOrigin.y - temp.y);
+            }
             return false;
         }
 
@@ -80,19 +102,40 @@ public class GameScreen implements Screen {
         }
     };
 
+    public GameScreen(MyGdxGame game, boolean joiningMultiplayer) {
+        this.game = game;
+        this.joiningMultiplayer = joiningMultiplayer;
+
+        connectSocket();
+        createSocketListeners();
+
+        Gdx.graphics.setVSync(false);
+        Gdx.graphics.setForegroundFPS(Integer.MAX_VALUE);
+    }
+
     @Override
     public void show() {
-        map = new Map(TILES_ON_X, TILES_ON_Y, TILE_DIMS);
-        addition = map.getAdditionFromSeed(seed);
-        map.generateMap(addition);
-        map.generateRiver(addition);
+        initialiseTextures();
+        MapSettings mapSettings = new MapSettings(seed);
+        map = new Map(mapSettings);
+        if (!joiningMultiplayer) {
+            addition = map.getAdditionFromSeed(seed);
+            map.generateMap();
+        }
+        else {
+            map.generateBlank();
+            System.out.println("Generating blank map");
+        }
 
         batch = new SpriteBatch();
         shapeRenderer = new ShapeRenderer();
         camera = new CameraTwo();
-        camera.setMinMax(new Vector2(0,0), new Vector2(map.width * TILE_DIMS, map.height * TILE_DIMS));
+        camera.setMinMax(new Vector2(0,0), new Vector2(map.settings.width * TILE_DIMS, map.settings.height * TILE_DIMS));
 
         Gdx.input.setInputProcessor(gameInputProcessor);
+
+        Json json = new Json();
+        colonists = json.fromJson(ArrayList.class, Gdx.files.internal("ColonistInformation/Backstories"));
     }
 
     @Override
@@ -104,8 +147,10 @@ public class GameScreen implements Screen {
 
         batch.begin();
         batch.setProjectionMatrix(camera.projViewMatrix);
-        map.drawMap(batch);
+        map.drawMap(batch, textures, camera);
         batch.end();
+
+        Gdx.graphics.setTitle("FPS: " + Gdx.graphics.getFramesPerSecond());
     }
 
     @Override
@@ -131,5 +176,56 @@ public class GameScreen implements Screen {
     @Override
     public void dispose() {
 
+    }
+
+    public void initialiseTextures(){
+        //loads every texture in the textures map
+        File directory= new File("core/assets/Textures/TileTextures");
+        String[] files = directory.list();
+        assert files != null;
+        for (String fileName : files) {
+            String[] temp = fileName.split("\\.");
+            textures.put(temp[0], new Texture(Gdx.files.internal("core/assets/Textures/TileTextures/" + fileName)));
+        }
+    }
+
+    public void connectSocket() {
+        try {
+            socket = IO.socket("http://localhost:8080");
+            socket.connect();
+        }
+        catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void createSocketListeners() {
+        Json json = new Json();
+
+        socket.on("connect", args -> System.out.println("Connected to server"));
+        socket.on("newPlayer", args -> {
+            try {
+                socket.emit("loadWorld", json.toJson(map));
+            }
+            catch (Exception e) {
+                System.out.println("Error in creating map json");
+            }
+
+        });
+        socket.on("connect_error", args -> System.out.println("Socket connect_error"));
+        socket.on("socketID", args -> {
+            JSONObject data = (JSONObject) args[0];
+            try {
+                socketID = (String) data.get("id");
+                System.out.println("Socket ID: " + socketID);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        });
+        socket.on("sayID", args -> System.out.println("ID: " + socketID));
+        socket.on("loadWorld", args -> {
+            map = json.fromJson(Map.class, args[0].toString());
+            System.out.println("Loaded world " + map.addition);
+        });
     }
 }

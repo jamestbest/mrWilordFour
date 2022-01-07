@@ -7,9 +7,16 @@ public class Tile {
 
     public String type;
 
+    public boolean canWalkOn = false;
+    public boolean canSpawnOn = false;
+
     public Tile(int x, int y, String type) {
         this.x = x;
         this.y = y;
         this.type = type;
+    }
+
+    public Tile(){
+
     }
 }

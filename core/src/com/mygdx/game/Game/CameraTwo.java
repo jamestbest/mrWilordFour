@@ -22,6 +22,8 @@ public class CameraTwo {
     float maxZoom = 5.4f;
     float minZoom = 0.4f;
 
+    public boolean allowMovement = true;
+
     public CameraTwo(int width, int height, Vector3 position) {
         this.position = position;
 
@@ -30,18 +32,8 @@ public class CameraTwo {
         initialise();
     }
 
-    public CameraTwo(Vector2 temp){
-        this.width = (int)temp.x;
-        this.height = (int)temp.y;
-        this.position = new Vector3(this.width / 2f, this.height / 2f, 0);
-        initialise();
-    }
-
     public CameraTwo(){
-        this.width = (int)MyGdxGame.initialRes.x;
-        this.height = (int)MyGdxGame.initialRes.y;
-        this.position = new Vector3(this.width / 2f, this.height / 2f, 0);
-        initialise();
+        this((int)MyGdxGame.initialRes.x, (int)MyGdxGame.initialRes.y, new Vector3(MyGdxGame.initialRes.x / 2f, MyGdxGame.initialRes.y / 2f, 0));
     }
 
     public void initialise(){
@@ -64,7 +56,9 @@ public class CameraTwo {
         viewMatrix.idt();
         viewMatrix.setToLookAt(position, new Vector3(position).add(new Vector3(0,0,-1)),  new Vector3(0.0f, 1.0f, 0.0f));
         projViewMatrix.set(projectionMatrix).mul(viewMatrix);
-        updatePosition();
+        if (allowMovement) {
+            updatePosition();
+        }
     }
 
     public void translate(Vector3 vector3){
@@ -108,6 +102,9 @@ public class CameraTwo {
         if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
             temp = GameScreen.TILE_DIMS;
         }
+        temp *= zoom;
+        temp /= 10;
+
         if ((Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP)) && position.y < maxPoint.y) {
             position.y += temp;
         }

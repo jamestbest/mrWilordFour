@@ -10,14 +10,14 @@ import static java.util.Comparator.comparing;
 public class AStar {
     public static ArrayList<ArrayList<Node>> grid;
     
-    public static ArrayList<Vector2> pathFind(Vector2 start, Vector2 end, int addition, ArrayList<ArrayList<Boolean>> map) {
+    public static ArrayList<Vector2> pathFind(Vector2 start, Vector2 end, int addition, ArrayList<ArrayList<Boolean>> map, int riverBend, int freq) {
         grid = new ArrayList<>();
         for (int i = 0; i < 250; i++) {
             grid.add(new ArrayList<>());
             for (int j = 0; j < 250; j++) {
                 Node temp = new Node(i, j);
-                temp.HMP = (float) Noise2D.noise((i / 250f) * 3 + addition, (j / 250f) * 3 + addition, 255);
-                temp.HMP *= 10000;
+                temp.HMP = (float) Noise2D.noise((i / 250f) * freq + addition, (j / 250f) * freq + addition, 255);
+                temp.HMP *= riverBend;
                 temp.accessible = map.get(i).get(j);
                 temp.setDistance(end);
                 grid.get(i).add(temp);
@@ -25,12 +25,11 @@ public class AStar {
         }
 
         Node startNode = grid.get((int) start.x).get((int) start.y);
-        Node endNode = grid.get((int) end.x).get((int) end.y);
 
         startNode.local = 0;
         startNode.global = 0;
 
-        ArrayList<Node> nodesToCheck = new ArrayList<Node>();
+        ArrayList<Node> nodesToCheck = new ArrayList<>();
         nodesToCheck.add(startNode);
         Node currentNode;
 

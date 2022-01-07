@@ -1,0 +1,25 @@
+[
+    {class:com.mygdx.game.Game.Colonist,
+        skills:{Construction: 1,
+                Intelligence: 1,
+                Mining: 1,
+                Social: 1,
+                Medical: 1,
+                Shooting: 1,
+                Melee: 1,
+                Art: 1,
+                Animal handling: 1,
+                Planting: 1,
+                Cooking: 1,}
+        profession:Farmer,
+        backstory:A farmer that was born \nin the year of the first rain
+    },
+    {class:com.mygdx.game.Game.Colonist,
+        skills:{strength:5,
+                stealth:4,
+                agility:8,
+                intelligence:4}
+        profession:Miner,
+        backstory:A miner that has been \nworking in the mines for years
+    }
+]
