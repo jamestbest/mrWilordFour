@@ -51,7 +51,7 @@ public class MainMenu implements Screen {
     @Override
     public void render(float delta) {
         batch.begin();
-        batch.draw(background, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        batch.draw(background, 0, 0, MyGdxGame.initialRes.x, MyGdxGame.initialRes.y);
 
         table.draw(batch);
         title.draw(batch);
@@ -126,7 +126,7 @@ public class MainMenu implements Screen {
     }
 
     public void setupTable(){
-        table = new Table(550,175, Gdx.graphics.getWidth() - 1100, Gdx.graphics.getHeight() - 500);
+        table = new Table(Gdx.graphics.getWidth() / 3,Gdx.graphics.getHeight() / 10 * 2, Gdx.graphics.getWidth() / 3, Gdx.graphics.getHeight() / 10 * 4);
         table.add(NewGame);
         table.row();
         table.add(LoadGame);

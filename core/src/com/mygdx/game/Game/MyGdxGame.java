@@ -12,7 +12,7 @@ public class MyGdxGame extends Game {
 	
 	@Override
 	public void create () {
-		Gdx.graphics.setWindowedMode(1600, 900);
+		Gdx.graphics.setWindowedMode(1900, 1080);
 		initialRes = new Vector2(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
 		setScreen(new MainMenu(this));

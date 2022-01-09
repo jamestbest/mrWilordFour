@@ -72,7 +72,7 @@ public class Map {
                 }
             }
         }
-        riverLocs = findRiverLocs();
+        findRiverLocs();
         generateRiver();
     }
 
@@ -173,8 +173,8 @@ public class Map {
         }
     }
 
-    public ArrayList<Vector2> findRiverLocs(){
-        ArrayList<Vector2> riverLocs = new ArrayList<>();
+    public void findRiverLocs(){
+        riverLocs = new ArrayList<>();
         Random rand = new Random();
         int sx = rand.nextInt(settings.width);
         int ex = rand.nextInt(settings.width);
@@ -187,6 +187,5 @@ public class Map {
         }
         riverLocs.add(new Vector2(sx, 0));
         riverLocs.add(new Vector2(ex, settings.height - 1));
-        return riverLocs;
     }
 }
