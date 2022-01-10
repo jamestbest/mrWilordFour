@@ -32,6 +32,7 @@ public class TextButton extends Button {
     public void setup(){
         font = new BitmapFont(Gdx.files.internal("Fonts/" + MyGdxGame.fontName + ".fnt"));
         font.setColor(fontColor);
+        font.getData().setScale(fontScale);
         glyphLayout = new GlyphLayout(font, text);
     }
 
