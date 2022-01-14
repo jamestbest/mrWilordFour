@@ -20,6 +20,6 @@ public class Label extends TextButton {
     }
 
     public void draw(SpriteBatch batch){
-        drawText(batch);
+        font.draw(batch, text, x + (width - glyphLayout.width) / 2, y + (height + glyphLayout.height) / 2);
     }
 }

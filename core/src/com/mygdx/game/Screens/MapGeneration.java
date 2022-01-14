@@ -6,13 +6,12 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.Vector2;
 import com.mygdx.game.Game.CameraTwo;
 import com.mygdx.game.Game.MyGdxGame;
 import com.mygdx.game.Generation.Map;
-import com.mygdx.game.ui.elements.InputButton;
-import com.mygdx.game.ui.elements.Slider;
+import com.mygdx.game.ui.elements.*;
 import com.mygdx.game.ui.extensions.ButtonCollection;
+import com.mygdx.game.ui.extensions.Table;
 
 import java.io.File;
 import java.util.HashMap;
@@ -29,9 +28,22 @@ public class MapGeneration implements Screen {
 
     MyGdxGame game;
 
-    ButtonCollection buttonCollection;
     Slider slider;
-    InputButton inputButton;
+    InputButtonTwo inputButtonTwo;
+    ToggleButton toggle;
+    Button refreshButton;
+
+    Label SeedLabel;
+    Label ToggleRiverLabel;
+    Label WidthLabel;
+    Label HeightLabel;
+    Label FrequencyLabel;
+    Label RiverBendLabel;
+    Label TreeDensityLabel;
+
+    Table optionTable;
+
+    boolean typing = false;
 
     public MapGeneration(MyGdxGame game){
         this.game = game;
@@ -45,10 +57,26 @@ public class MapGeneration implements Screen {
 
         initialiseTextures();
 
-        buttonCollection = new ButtonCollection();
+        float width = (int) (((MyGdxGame.initialRes.x - MyGdxGame.initialRes.y) / 2f) - (int) MyGdxGame.initialRes.y / 10);
+        float height = (int) MyGdxGame.initialRes.y / 5f * 3;
+        optionTable = new Table((int) MyGdxGame.initialRes.y, (int) MyGdxGame.initialRes.y / 5, (int) width, (int) height);
+
+        height /= optionTable.numberOfRows;
         slider = new Slider(900, 100, 100, 10, "test");
-        inputButton = new InputButton(900, 200, 400, 100, "test", "test1");
-        buttonCollection.add(inputButton, slider);
+        inputButtonTwo = new InputButtonTwo(1000, 300, 400, 100, "", "test2");
+        toggle = new ToggleButton(1000, 500, 100, 100, "test3", "");
+        refreshButton = new Button(1000, 700, 50, 50, "RefreshButton", "test4");
+
+        SeedLabel = new Label(0, 0, 0, 0, "seedLabel", "Seed: ");
+        ToggleRiverLabel = new Label(0, 0, 0, 0, "toggleRiverLabel", "Toggle River: ");
+        WidthLabel = new Label(0, 0, 0, 0, "widthLabel", "Width: ");
+        HeightLabel = new Label(0, 0, 0, 0, "heightLabel", "Height: ");
+        FrequencyLabel = new Label(0, 0, 0, 0, "frequencyLabel", "Frequency: ");
+        RiverBendLabel = new Label(0, 0, 0, 0, "riverBendLabel", "River Bend: ");
+        TreeDensityLabel = new Label(0, 0, 0, 0, "treeDensityLabel", "Tree Density: ");
+
+        optionTable.addAllWithRows(SeedLabel, ToggleRiverLabel, WidthLabel, HeightLabel, FrequencyLabel, RiverBendLabel, TreeDensityLabel);
+        optionTable.sort();
     }
 
     @Override
@@ -58,7 +86,7 @@ public class MapGeneration implements Screen {
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(1, 0, 0, 1);
+        Gdx.gl.glClearColor(64/255f,87/255f,132/255f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         camera.update();
@@ -69,17 +97,21 @@ public class MapGeneration implements Screen {
         batch.end();
         batch.begin();
         batch.setProjectionMatrix(camera.projViewMatrix);
-        buttonCollection.drawButtons(batch);
+        optionTable.draw(batch);
         batch.end();
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)){
-            map.settings.seed = "testSeed2";
-            map.updateMap();
+        if(!typing){
+            if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)){
+                map.settings.seed = "testSeed2";
+                map.updateMap();
+            }
         }
 
         if (Gdx.input.isButtonPressed(0)){
-            buttonCollection.updateButtons(camera);
+            optionTable.update(camera);
         }
+
+        typing = inputButtonTwo.typing;
     }
 
     @Override

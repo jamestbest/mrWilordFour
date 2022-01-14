@@ -10,13 +10,13 @@ public class Table {
     public ButtonCollection buttonCollection;
     ArrayList<ArrayList<Button>> grid;
 
-    int numberOfRows;
+    public int numberOfRows;
 
     int x;
     int y;
 
-    int width;
-    int height;
+    public int width;
+    public int height;
 
     public Table(int x, int y, int width, int height) {
         buttonCollection = new ButtonCollection();
@@ -49,6 +49,14 @@ public class Table {
         grid.add(new ArrayList<>());
     }
 
+    public void addAllWithRows(Button... buttons) {
+        for (int i = 0; i < buttons.length - 1; i++) {
+            add(buttons[i]);
+            row();
+        }
+        add(buttons[buttons.length - 1]);
+    }
+
     public void sort() {
         int max = 0;
         for (ArrayList<Button> buttonArrayList : grid) {
@@ -64,8 +72,18 @@ public class Table {
             b.setSize((int) buttonWidth, (int) buttonHeight);
         }
         for (int i = 0; i < grid.size(); i++) {
-            for (int j = 0; j < grid.get(i).size(); j++) {
+            for (int j = 0; j < grid.get(grid.size() - i - 1).size(); j++) {
                 grid.get(grid.size() - i - 1).get(j).setPos((int) (x + j * (buttonWidth)), (int) (y + i * (buttonHeight + offset)));
+            }
+        }
+    }
+
+    public void centreInColumn(Button button){
+        for (int i = 0; i < grid.size(); i++) {
+            for (int j = 0; j < grid.get(i).size(); j++) {
+                if (grid.get(i).get(j) == button) {
+                    button.setPos((int) (x + j * (width / (float) grid.get(i).size())), (int) (y + i * (height / (float) grid.size())));
+                }
             }
         }
     }

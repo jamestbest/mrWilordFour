@@ -50,8 +50,12 @@ public class InputButton extends TextButton{
                 }
                 if(character == 0x08 && currentPos > 0) {
                     endPos--;
-                    text = text.substring(0, endPos);
+                    String temp = text.substring(0, currentPos - 1);
+                    text = temp + text.substring(currentPos);
                     currentPos = endPos;
+                    if (startPos > 0){
+                        startPos--;
+                    }
                 }
                 if (character == 0x25) {
                     System.out.println("c");
@@ -82,7 +86,7 @@ public class InputButton extends TextButton{
         shapeRenderer.rect(x + this.x + ((width - tempWidth) / 2) + 5, y + (height * ((1 - heightOffset) / 2)), 5, height * heightOffset);
         shapeRenderer.end();
 
-        System.out.println(text);
+        System.out.println(text + " " + startPos + " " + endPos + " " + currentPos);
         updateLine();
 
         batch.begin();
