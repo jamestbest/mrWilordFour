@@ -8,7 +8,7 @@ public class Tile {
     public String type;
 
     public boolean canWalkOn = false;
-    public boolean canSpawnOn = false;
+    public boolean canSpawnOn = true;
 
     public Tile(int x, int y, String type) {
         this.x = x;

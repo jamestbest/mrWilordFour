@@ -3,22 +3,23 @@ package com.mygdx.game.ui.elements;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
-public class Slider extends Button{
+public class Slider extends TextButton{
     float maxValue = 100f;
     float minValue = 0f;
-    float value = 50f;
+    float value;
     float step = 1f;
 
     ShapeRenderer shapeRenderer;
 
     public Slider(int x, int y, int width, int height, String Gda, String name) {
-        super(x, y, width, height, Gda, name);
+        super(x, y, width, height, "", Gda, name);
         shapeRenderer = new ShapeRenderer();
     }
 
     public Slider(int x, int y, int width, int height, String name) {
-        super(x, y, width, height, name);
+        super(x, y, width, height, "", name);
         shapeRenderer = new ShapeRenderer();
+        value = minValue;
     }
 
     public Slider(int x, int y, int width, int height, String name, float maxValue, float minValue, float step) {

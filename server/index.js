@@ -32,4 +32,8 @@ io.on('connection', function(socket){
     console.log(io.sockets.adapter.rooms.get(data));
     console.log(data)
   })
+
+  socket.on("changeTileType", function(data){
+    socket.broadcast.emit("changeTileType", data)
+  })
 });

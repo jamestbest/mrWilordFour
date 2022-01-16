@@ -69,13 +69,14 @@ public class TextButton extends Button {
     public void setFontScale(float scale){
         fontScale = scale;
         font.getData().setScale(fontScale);
-        glyphLayout.width = glyphLayout.width * fontScale;
+        glyphLayout.setText(font, text);
+//        glyphLayout.width = glyphLayout.width * fontScale;
     }
 
     public void resizeFontToCorrectProportionByWidth(){
         glyphLayout.setText(font, text);
-        while (glyphLayout.width > width) {
-            setFontScale(fontScale - 0.5f);
+        while (glyphLayout.width > width * 0.85f) {
+            setFontScale(fontScale - 0.01f);
         }
     }
 
@@ -83,7 +84,6 @@ public class TextButton extends Button {
         glyphLayout.setText(font, text);
         while (glyphLayout.height > height * 0.75f) {
             setFontScale(fontScale - 0.01f);
-            glyphLayout.setText(font, text);
         }
     }
 }

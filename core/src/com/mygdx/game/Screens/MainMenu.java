@@ -13,8 +13,6 @@ import com.mygdx.game.ui.elements.Label;
 import com.mygdx.game.ui.elements.TextButton;
 import com.mygdx.game.ui.extensions.Table;
 
-import java.util.function.Function;
-
 public class MainMenu implements Screen {
     // TODO: 12/01/2022 change the button doing if clicked to adding in a function to each button
     Texture background;
@@ -78,7 +76,7 @@ public class MainMenu implements Screen {
         }
         if (table.buttonCollection.lastPressedButtonName.equals(JoinGame.name)){
             if (!Gdx.input.isButtonPressed(0)) {
-                myGdxGame.setScreen(new GameScreen(myGdxGame, true));
+                myGdxGame.setScreen(new GameScreen(myGdxGame));
             }
         }
         if (table.buttonCollection.lastPressedButtonName.equals(Settings.name)){

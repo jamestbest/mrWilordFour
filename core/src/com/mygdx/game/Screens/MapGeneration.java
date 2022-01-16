@@ -26,13 +26,15 @@ public class MapGeneration implements Screen {
 
     MyGdxGame game;
 
-    Slider slider;
-    InputButtonTwo inputButtonTwo;
-    ToggleButton toggle;
-    Button refreshButton;
-    Button button;
-    Button button1;
-    NumberInput numberInput;
+
+    InputButtonTwo seedInput;
+    ToggleButton riverToggle;
+    NumberInput widthInput;
+    NumberInput heightInput;
+    SliderWithLabel freqSlider;
+    SliderWithLabel riverBendSlider;
+    SliderWithLabel treeDensitySlider;
+    Button RefreshButton;
 
     Label SeedLabel;
     Label ToggleRiverLabel;
@@ -41,9 +43,14 @@ public class MapGeneration implements Screen {
     Label FrequencyLabel;
     Label RiverBendLabel;
     Label TreeDensityLabel;
+    Label RefreshLabel;
+
+    Label Title;
+
 
     Table labelTable;
     Table buttonTable;
+    ButtonCollection extraUI;
 
     boolean typing = false;
 
@@ -68,17 +75,27 @@ public class MapGeneration implements Screen {
         float height = (int) MyGdxGame.initialRes.y / 5f * 3;
         labelTable = new Table((int) MyGdxGame.initialRes.y, (int) MyGdxGame.initialRes.y / 5, (int) width, (int) height);
         buttonTable = new Table((int) (MyGdxGame.initialRes.y + (width * 1.3f)), (int) MyGdxGame.initialRes.y / 5, (int) width, (int) height);
+        extraUI = new ButtonCollection();
 
-        height = (int) (height / 7f); // divide by the number of buttons
+        Title = new Label((int) MyGdxGame.initialRes.x / 47 * 32, (int) MyGdxGame.initialRes.y / 5 * 4, (int) (MyGdxGame.initialRes.x / 10 * 5),
+                (int) MyGdxGame.initialRes.y / 4, "Title", "Edit your map");
+        Title.setSize((int) (MyGdxGame.initialRes.x / 10 * 2), (int) MyGdxGame.initialRes.y / 5);
+        Title.setFontScale(5f);
+        Title.resizeFontToCorrectProportionByWidth();
 
-        slider = new Slider(0, 0, (int) (width * 0.9f), (int) (height * 0.2), "test");
-        inputButtonTwo = new InputButtonTwo(0, 0, (int) (width * 0.9f), (int) (height * 0.7f), seed, "test2", inputMultiplexer);
-        toggle = new ToggleButton(0, 0, (int) (width * 0.5f), (int) (height * 1.3), "test3", "");
-        refreshButton = new Button(0, 0, 50, 50, "RefreshButton", "test4");
+        extraUI.add(Title);
 
-        button = new Button(0, 0, 50, 50, "RefreshButton", "test5");
-        button1 = new Button(0, 0, 50, 50, "RefreshButton", "test6");
-        numberInput = new NumberInputWithSides(0, 0, 50, 50, "", "test7", inputMultiplexer);
+        height = (int) (height / 8f); // divide by the number of buttons
+
+        seedInput = new InputButtonTwo(0, 0, (int) (width * 0.9f), (int) (height * 0.7f), seed, "test2", inputMultiplexer);
+        riverToggle = new ToggleButton(0, 0, (int) (width * 0.4f), (int) (height * 1.4), "test3", "");
+        widthInput = new NumberInputWithSides(0, 0, (int) (width * 0.25f), (int) (height * 0.5f), "test4", "test5", inputMultiplexer);
+        heightInput = new NumberInputWithSides(0, 0, (int) (width * 0.25f), (int) (height * 0.5f), "test6", "test7", inputMultiplexer);
+        freqSlider = new SliderWithLabel(0, 0, (int) (width * 0.9f), (int) (height * 0.2), "test", 5, 1, 1);
+        riverBendSlider = new SliderWithLabel(0, 0, (int) (width * 0.9f), (int) (height * 0.2f), "test8", 100, 0, 1);
+        treeDensitySlider = new SliderWithLabel(0, 0, (int) (width * 0.9f), (int) (height * 0.2f), "test9", 100, 20, 1);
+        RefreshButton = new Button(0, 0, (int) (height * 0.85f), (int) (height * 0.85f),
+                "RefreshButton", "Refresh");
 
         SeedLabel = new Label(0, 0, 0, 0, "seedLabel", "Seed: ");
         ToggleRiverLabel = new Label(0, 0, 0, 0, "toggleRiverLabel", "Toggle River: ");
@@ -87,21 +104,15 @@ public class MapGeneration implements Screen {
         FrequencyLabel = new Label(0, 0, 0, 0, "frequencyLabel", "Frequency: ");
         RiverBendLabel = new Label(0, 0, 0, 0, "riverBendLabel", "River Bend: ");
         TreeDensityLabel = new Label(0, 0, 0, 0, "treeDensityLabel", "Tree Density: ");
+        RefreshLabel = new Label(0, 0, 0, 0, "refreshLabel", "Refresh Map: ");
 
-        labelTable.addAllWithRows(SeedLabel, ToggleRiverLabel, WidthLabel, HeightLabel, FrequencyLabel, RiverBendLabel, TreeDensityLabel);
+        labelTable.addAllWithRows(SeedLabel, ToggleRiverLabel, WidthLabel, HeightLabel, FrequencyLabel, RiverBendLabel, TreeDensityLabel, RefreshLabel);
         labelTable.sort();
 
-        buttonTable.addAllWithRows(inputButtonTwo, toggle, slider, refreshButton, button, button1, numberInput);
+        buttonTable.addAllWithRows(seedInput, riverToggle, widthInput, heightInput, freqSlider, riverBendSlider, treeDensitySlider, RefreshButton);
         buttonTable.sortToFit();
 
-        float fontScale = (int) (MyGdxGame.initialRes.y / 7f) / 100f;
-        HeightLabel.setFontScale(fontScale);
-        WidthLabel.setFontScale(fontScale);
-        FrequencyLabel.setFontScale(fontScale);
-        RiverBendLabel.setFontScale(fontScale);
-        TreeDensityLabel.setFontScale(fontScale);
-        SeedLabel.setFontScale(fontScale);
-        ToggleRiverLabel.setFontScale(fontScale);
+        setAllToCorrectFontSize();
 
         Gdx.input.setInputProcessor(inputMultiplexer);
     }
@@ -126,6 +137,7 @@ public class MapGeneration implements Screen {
         batch.setProjectionMatrix(camera.projViewMatrix);
         labelTable.draw(batch);
         buttonTable.draw(batch);
+        extraUI.drawButtons(batch);
         batch.end();
 
         if(!typing){
@@ -138,9 +150,10 @@ public class MapGeneration implements Screen {
         if (Gdx.input.isButtonPressed(0)){
             labelTable.update(camera);
             buttonTable.update(camera);
+            extraUI.updateButtons(camera);
         }
 
-        typing = inputButtonTwo.typing;
+        typing = seedInput.typing || widthInput.typing || heightInput.typing;
     }
 
     @Override
@@ -177,5 +190,25 @@ public class MapGeneration implements Screen {
             String[] temp = fileName.split("\\.");
             textures.put(temp[0], new Texture(Gdx.files.internal("core/assets/Textures/TileTextures/" + fileName)));
         }
+    }
+
+    public void setAllToCorrectFontSize(){
+        float fontScale = (int) (MyGdxGame.initialRes.y / 7f) / 100f;
+        HeightLabel.setFontScale(fontScale);
+        WidthLabel.setFontScale(fontScale);
+        FrequencyLabel.setFontScale(fontScale);
+        RiverBendLabel.setFontScale(fontScale);
+        TreeDensityLabel.setFontScale(fontScale);
+        SeedLabel.setFontScale(fontScale);
+        ToggleRiverLabel.setFontScale(fontScale);
+        RefreshLabel.setFontScale(fontScale);
+
+
+        seedInput.setFontScale(fontScale);
+        widthInput.setFontScale(fontScale);
+        heightInput.setFontScale(fontScale);
+        freqSlider.setFontScale(fontScale);
+        riverBendSlider.setFontScale(fontScale);
+        treeDensitySlider.setFontScale(fontScale);
     }
 }

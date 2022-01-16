@@ -18,9 +18,6 @@ public class NumberInputWithSides extends NumberInput{
 
     int change = 10;
 
-    int maxValue = 100;
-    int minValue = 0;
-
     Texture plus = new Texture("Textures/ui/buttons/sidePlus.png");
     Texture minus = new Texture("Textures/ui/buttons/sideMinus.png");
 

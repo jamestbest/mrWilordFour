@@ -10,13 +10,13 @@ public class Label extends TextButton {
     public Label(int x, int y, int width, int height, String fontGda, String name, String text) {
         super(x, y, width, height, text, fontGda, name);
         this.text = text;
-        autoSize();
+//        autoSize();
     }
 
     public Label(int x, int y, int width, int height, String name, String text) {
         super(x, y, width, height, text, name);
         this.text = text;
-        autoSize();
+//        autoSize();
     }
 
     public void draw(SpriteBatch batch){

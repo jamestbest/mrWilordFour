@@ -40,6 +40,7 @@ public class ButtonCollection {
             if(button.checkIfPressed(x, y)){
                 pressedButtonName = button.name;
                 lastPressedButtonName = button.name;
+                break;
             }
         }
     }

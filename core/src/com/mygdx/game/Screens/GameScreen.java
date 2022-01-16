@@ -6,6 +6,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Json;
@@ -22,6 +23,7 @@ import org.json.JSONObject;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class GameScreen implements Screen {
@@ -47,7 +49,8 @@ public class GameScreen implements Screen {
     private Socket socket;
     String socketID;
 
-    HashMap<String, Texture> textures = new HashMap<>();
+    HashMap<String, Texture> tileTextures = new HashMap<>();
+    HashMap<String, TextureAtlas> thingTextures = new HashMap<>();
 
     InputProcessor gameInputProcessor = new InputProcessor() {
         @Override
@@ -102,10 +105,22 @@ public class GameScreen implements Screen {
         }
     };
 
-    public GameScreen(MyGdxGame game, boolean joiningMultiplayer) {
+    public GameScreen(MyGdxGame game, ArrayList<Colonist> colonists) {
         this.game = game;
-        this.joiningMultiplayer = joiningMultiplayer;
+        this.joiningMultiplayer = false;
 
+        connectSocket(); //this is placed temp for hosting multiplayer, it will need to happen when they start a multiplayer session
+        createSocketListeners();
+
+        Gdx.graphics.setVSync(false);
+        Gdx.graphics.setForegroundFPS(Integer.MAX_VALUE);
+
+        this.colonists = colonists;
+    }
+
+    public GameScreen(MyGdxGame game){
+        this.game = game;
+        this.joiningMultiplayer = true;
         connectSocket();
         createSocketListeners();
 
@@ -134,8 +149,7 @@ public class GameScreen implements Screen {
 
         Gdx.input.setInputProcessor(gameInputProcessor);
 
-        Json json = new Json();
-        colonists = json.fromJson(ArrayList.class, Gdx.files.internal("ColonistInformation/Backstories"));
+
     }
 
     @Override
@@ -147,10 +161,27 @@ public class GameScreen implements Screen {
 
         batch.begin();
         batch.setProjectionMatrix(camera.projViewMatrix);
-        map.drawMap(batch, textures, camera);
+        map.drawMap(batch, tileTextures, thingTextures, camera);
         batch.end();
 
         Gdx.graphics.setTitle("FPS: " + Gdx.graphics.getFramesPerSecond());
+
+        if (Gdx.input.isButtonJustPressed(0)) {
+            Vector2 mousePos = camera.unproject(new Vector2(Gdx.input.getX(), Gdx.input.getY()));
+            int x = (int) (mousePos.x / TILE_DIMS);
+            int y = (int) (mousePos.y / TILE_DIMS);
+            map.changeTileType(x, y, "grass");
+            System.out.println("Tile at " + x + ", " + y + " changed to grass");
+            JSONObject tileChange = new JSONObject();
+            try {
+                tileChange.put("x", x);
+                tileChange.put("y", y);
+                tileChange.put("type", "grass");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            socket.emit("changeTileType", tileChange);
+        }
     }
 
     @Override
@@ -185,7 +216,18 @@ public class GameScreen implements Screen {
         assert files != null;
         for (String fileName : files) {
             String[] temp = fileName.split("\\.");
-            textures.put(temp[0], new Texture(Gdx.files.internal("core/assets/Textures/TileTextures/" + fileName)));
+            tileTextures.put(temp[0], new Texture(Gdx.files.internal("core/assets/Textures/TileTextures/" + fileName)));
+        }
+
+        File directory2= new File("core/assets/Textures/ThingTextures");
+        String[] files2 = directory2.list();
+        assert files2 != null;
+        for (String fileName : files2) {
+            String[] temp = fileName.split("\\.");
+            System.out.println(Arrays.toString(temp));
+            if (temp[1].equals("atlas")){
+                thingTextures.put(temp[0], new TextureAtlas(Gdx.files.internal("core/assets/Textures/ThingTextures/" + fileName)));
+            }
         }
     }
 
@@ -226,6 +268,18 @@ public class GameScreen implements Screen {
         socket.on("loadWorld", args -> {
             map = json.fromJson(Map.class, args[0].toString());
             System.out.println("Loaded world " + map.addition);
+        });
+
+        socket.on("changeTileType", args -> {
+            JSONObject data = (JSONObject) args[0];
+            try {
+                int x = (int) data.get("x");
+                int y = (int) data.get("y");
+                String type = (String) data.get("type");
+                map.changeTileType(x, y, type);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         });
     }
 }

@@ -29,7 +29,7 @@ public class ColonistSelectionScreen implements Screen {
     ArrayList<Colonist> colonistsToSelectFrom;
     ArrayList<Colonist> colonistsSelected;
 
-    int numberOfColonistsToSelectFrom = 100;
+    int numberOfColonistsToSelectFrom = 10;
     int numberOfColonistsToSelect = 3;
 
     int selectedIndex = numberOfColonistsToSelectFrom - 1;
@@ -47,9 +47,9 @@ public class ColonistSelectionScreen implements Screen {
 
     CameraTwo camera;
 
-    float offsetY = 70;
-    float offsetX = 50;
-    int width = 350;
+    float offsetY = MyGdxGame.initialRes.y / 12f;
+    float offsetX = MyGdxGame.initialRes.x / 38f;
+    int width = (int) (MyGdxGame.initialRes.x / 38 * 7);
     float height = (MyGdxGame.initialRes.y - (3 * offsetY)) / (float) numberOfColonistsToSelectFrom;
 
     float inputTimer = 0.5f;
@@ -67,14 +67,14 @@ public class ColonistSelectionScreen implements Screen {
         buttonCollection = new ButtonCollection();
 
         title = new Label(0,0,0,0, "title", "select your colonists");
-        title.centre(Gdx.graphics.getHeight() / 100 * 46);
+        title.centre((int) (MyGdxGame.initialRes.y / 100 * 46));
 
-        selectRemoveButton = new TextButton(0,0,0, (int) 75, "Select/Remove colonist", "selectButton");
-        selectRemoveButton.autoSize();
+        selectRemoveButton = new TextButton(0,0, (int) (MyGdxGame.initialRes.x / 16 * 3), (int) (MyGdxGame.initialRes.y / 9), "Select/Remove colonist", "selectButton");
+        selectRemoveButton.resizeFontToCorrectProportionByWidth();
         selectRemoveButton.setPos((int) (offsetX * 3 + width), (int) offsetY);
 
-        continueButton = new TextButton(0,0,0,75, "Continue 0/3", "continueButton");
-        continueButton.autoSize();
+        continueButton = new TextButton(0,0,(int) (MyGdxGame.initialRes.x / 32 * 5), (int) (MyGdxGame.initialRes.y / 9), "Continue 0/3", "continueButton");
+        continueButton.resizeFontToCorrectProportionByWidth();
         continueButton.setPos((int) MyGdxGame.initialRes.x / 23 * 16, (int) offsetY);
 
         buttonCollection.add(title, selectRemoveButton, continueButton);
@@ -242,7 +242,7 @@ public class ColonistSelectionScreen implements Screen {
             }
             if (buttonCollection.pressedButtonName.equals("continueButton")){
                 if (colonistsSelected.size() == numberOfColonistsToSelect){
-                    game.setScreen(new GameScreen(game, false));
+                    game.setScreen(new GameScreen(game, colonistsSelected));
                 }
             }
         }
@@ -282,7 +282,9 @@ public class ColonistSelectionScreen implements Screen {
         batch.setProjectionMatrix(camera.projViewMatrix);
         Colonist c = colonistsToSelectFrom.get(selectedIndex);
 
-        font.getData().setScale(1f);
+        glyphLayout.setText(font, "James Coward");
+        float factor = (glyphLayout.height) / (height / 100 * 44);
+        font.getData().setScale(factor);
 
         float x = offsetX * 3 + width;
 
@@ -291,11 +293,11 @@ public class ColonistSelectionScreen implements Screen {
         int gapY = 20;
 
         glyphLayout.setText(font, "Name: " + c.firstName + " " + c.lastName);
-        font.draw(batch, glyphLayout, x, MyGdxGame.initialRes.y / 23 * 11 - gapY);
+        font.draw(batch, glyphLayout, x, MyGdxGame.initialRes.y / 23 * 12 - gapY);
         glyphLayout.setText(font, "Profession: " + c.profession);
-        font.draw(batch, glyphLayout, x, MyGdxGame.initialRes.y / 23 * 9 - gapY);
+        font.draw(batch, glyphLayout, x, MyGdxGame.initialRes.y / 23 * 10 - gapY);
         glyphLayout.setText(font, "Backstory: " + c.backstory);
-        font.draw(batch, glyphLayout, x, MyGdxGame.initialRes.y / 23 * 7 - gapY);
+        font.draw(batch, glyphLayout, x, MyGdxGame.initialRes.y / 23 * 8 - gapY);
 
         Object[] skills = c.skills.keySet().toArray();
         Object[] skillValues = c.skills.values().toArray();
