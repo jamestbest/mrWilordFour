@@ -126,7 +126,7 @@ public class MainMenu implements Screen {
         Settings = new TextButton(0,0,10,10,"Settings", "Settings");
         Exit = new TextButton(0,0,10,10,"Exit", "Exit");
 
-        title = new Label(0,0,10,10,"Title", "mR. Wilord");
+        title = new Label(0,0,100,50,"Title", "mR. Wilord");
         title.centre(Gdx.graphics.getHeight() / 10 * 3);
         title.setFontColor(Color.BLUE);
         title.setFontScale(2f);
@@ -145,5 +145,11 @@ public class MainMenu implements Screen {
         table.add(Exit);
 
         table.sort();
+
+        NewGame.resizeFontToCorrectProportionByHeight();
+        LoadGame.resizeFontToCorrectProportionByHeight();
+        JoinGame.resizeFontToCorrectProportionByHeight();
+        Settings.resizeFontToCorrectProportionByHeight();
+        Exit.resizeFontToCorrectProportionByHeight();
     }
 }

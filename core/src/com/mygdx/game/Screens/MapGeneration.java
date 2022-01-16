@@ -1,8 +1,6 @@
 package com.mygdx.game.Screens;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -32,6 +30,9 @@ public class MapGeneration implements Screen {
     InputButtonTwo inputButtonTwo;
     ToggleButton toggle;
     Button refreshButton;
+    Button button;
+    Button button1;
+    NumberInput numberInput;
 
     Label SeedLabel;
     Label ToggleRiverLabel;
@@ -41,12 +42,18 @@ public class MapGeneration implements Screen {
     Label RiverBendLabel;
     Label TreeDensityLabel;
 
-    Table optionTable;
+    Table labelTable;
+    Table buttonTable;
 
     boolean typing = false;
 
+    InputMultiplexer inputMultiplexer;
+
     public MapGeneration(MyGdxGame game){
         this.game = game;
+
+        inputMultiplexer = new InputMultiplexer();
+
         map = new Map((int) MyGdxGame.initialRes.y / 5 * 4,(int) MyGdxGame.initialRes.y / 10, (int) MyGdxGame.initialRes.y / 10, seed);
         map.getAdditionFromSeed(seed);
         map.generateMap();
@@ -59,13 +66,19 @@ public class MapGeneration implements Screen {
 
         float width = (int) (((MyGdxGame.initialRes.x - MyGdxGame.initialRes.y) / 2f) - (int) MyGdxGame.initialRes.y / 10);
         float height = (int) MyGdxGame.initialRes.y / 5f * 3;
-        optionTable = new Table((int) MyGdxGame.initialRes.y, (int) MyGdxGame.initialRes.y / 5, (int) width, (int) height);
+        labelTable = new Table((int) MyGdxGame.initialRes.y, (int) MyGdxGame.initialRes.y / 5, (int) width, (int) height);
+        buttonTable = new Table((int) (MyGdxGame.initialRes.y + (width * 1.3f)), (int) MyGdxGame.initialRes.y / 5, (int) width, (int) height);
 
-        height /= optionTable.numberOfRows;
-        slider = new Slider(900, 100, 100, 10, "test");
-        inputButtonTwo = new InputButtonTwo(1000, 300, 400, 100, "", "test2");
-        toggle = new ToggleButton(1000, 500, 100, 100, "test3", "");
-        refreshButton = new Button(1000, 700, 50, 50, "RefreshButton", "test4");
+        height = (int) (height / 7f); // divide by the number of buttons
+
+        slider = new Slider(0, 0, (int) (width * 0.9f), (int) (height * 0.2), "test");
+        inputButtonTwo = new InputButtonTwo(0, 0, (int) (width * 0.9f), (int) (height * 0.7f), seed, "test2", inputMultiplexer);
+        toggle = new ToggleButton(0, 0, (int) (width * 0.5f), (int) (height * 1.3), "test3", "");
+        refreshButton = new Button(0, 0, 50, 50, "RefreshButton", "test4");
+
+        button = new Button(0, 0, 50, 50, "RefreshButton", "test5");
+        button1 = new Button(0, 0, 50, 50, "RefreshButton", "test6");
+        numberInput = new NumberInputWithSides(0, 0, 50, 50, "", "test7", inputMultiplexer);
 
         SeedLabel = new Label(0, 0, 0, 0, "seedLabel", "Seed: ");
         ToggleRiverLabel = new Label(0, 0, 0, 0, "toggleRiverLabel", "Toggle River: ");
@@ -75,8 +88,22 @@ public class MapGeneration implements Screen {
         RiverBendLabel = new Label(0, 0, 0, 0, "riverBendLabel", "River Bend: ");
         TreeDensityLabel = new Label(0, 0, 0, 0, "treeDensityLabel", "Tree Density: ");
 
-        optionTable.addAllWithRows(SeedLabel, ToggleRiverLabel, WidthLabel, HeightLabel, FrequencyLabel, RiverBendLabel, TreeDensityLabel);
-        optionTable.sort();
+        labelTable.addAllWithRows(SeedLabel, ToggleRiverLabel, WidthLabel, HeightLabel, FrequencyLabel, RiverBendLabel, TreeDensityLabel);
+        labelTable.sort();
+
+        buttonTable.addAllWithRows(inputButtonTwo, toggle, slider, refreshButton, button, button1, numberInput);
+        buttonTable.sortToFit();
+
+        float fontScale = (int) (MyGdxGame.initialRes.y / 7f) / 100f;
+        HeightLabel.setFontScale(fontScale);
+        WidthLabel.setFontScale(fontScale);
+        FrequencyLabel.setFontScale(fontScale);
+        RiverBendLabel.setFontScale(fontScale);
+        TreeDensityLabel.setFontScale(fontScale);
+        SeedLabel.setFontScale(fontScale);
+        ToggleRiverLabel.setFontScale(fontScale);
+
+        Gdx.input.setInputProcessor(inputMultiplexer);
     }
 
     @Override
@@ -97,7 +124,8 @@ public class MapGeneration implements Screen {
         batch.end();
         batch.begin();
         batch.setProjectionMatrix(camera.projViewMatrix);
-        optionTable.draw(batch);
+        labelTable.draw(batch);
+        buttonTable.draw(batch);
         batch.end();
 
         if(!typing){
@@ -108,7 +136,8 @@ public class MapGeneration implements Screen {
         }
 
         if (Gdx.input.isButtonPressed(0)){
-            optionTable.update(camera);
+            labelTable.update(camera);
+            buttonTable.update(camera);
         }
 
         typing = inputButtonTwo.typing;

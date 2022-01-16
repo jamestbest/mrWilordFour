@@ -71,4 +71,19 @@ public class TextButton extends Button {
         font.getData().setScale(fontScale);
         glyphLayout.width = glyphLayout.width * fontScale;
     }
+
+    public void resizeFontToCorrectProportionByWidth(){
+        glyphLayout.setText(font, text);
+        while (glyphLayout.width > width) {
+            setFontScale(fontScale - 0.5f);
+        }
+    }
+
+    public void resizeFontToCorrectProportionByHeight(){
+        glyphLayout.setText(font, text);
+        while (glyphLayout.height > height * 0.75f) {
+            setFontScale(fontScale - 0.01f);
+            glyphLayout.setText(font, text);
+        }
+    }
 }

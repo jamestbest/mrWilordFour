@@ -1,9 +1,6 @@
 package com.mygdx.game.ui.elements;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.InputAdapter;
-import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -13,8 +10,10 @@ public class InputButtonTwo extends TextButton{
         super(x, y, width, height, text, TextureGda, name);
     }
 
-    public InputButtonTwo(int x, int y, int width, int height, String text, String name) {
+    public InputButtonTwo(int x, int y, int width, int height, String text, String name, InputMultiplexer inputMultiplexer) {
         super(x, y, width, height, text, name);
+        this.text = text;
+        setup(inputMultiplexer);
     }
 
     Texture texture = new Texture("Textures/ui/buttons/InputButton.png");
@@ -38,12 +37,12 @@ public class InputButtonTwo extends TextButton{
 
     public boolean typing = false;
 
-    public void setup(){
+    public void setup(InputMultiplexer inputMultiplexer){
         super.setup();
-        text = "";
-        cursorPos = 0;
+        int textWidth = text.length();
+        cursorPos = textWidth;
         startDrawPos = 0;
-        endDrawPos = 0;
+        endDrawPos = textWidth;
 
         shapeRenderer = new ShapeRenderer();
 
@@ -88,12 +87,11 @@ public class InputButtonTwo extends TextButton{
                         }
                     }
                 }
-
                 return false;
             }
         };
 
-        Gdx.input.setInputProcessor(inputProcessor);
+        inputMultiplexer.addProcessor(inputProcessor);
     }
 
     public void draw(SpriteBatch batch){

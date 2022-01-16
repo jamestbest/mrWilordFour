@@ -1,6 +1,7 @@
 package com.mygdx.game.ui.extensions;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.mygdx.game.Game.CameraTwo;
 import com.mygdx.game.ui.elements.Button;
 
@@ -18,6 +19,8 @@ public class Table {
     public int width;
     public int height;
 
+    ShapeRenderer shapeRenderer;
+
     public Table(int x, int y, int width, int height) {
         buttonCollection = new ButtonCollection();
         grid = new ArrayList<>();
@@ -27,6 +30,8 @@ public class Table {
         this.y = y;
         this.width = width;
         this.height = height;
+
+        shapeRenderer = new ShapeRenderer();
     }
 
     public void draw(SpriteBatch batch) {
@@ -71,20 +76,25 @@ public class Table {
         for (Button b: buttonCollection.buttons) {
             b.setSize((int) buttonWidth, (int) buttonHeight);
         }
+        sortToFit();
+    }
+
+    public void sortWithoutResize(float offset) {
         for (int i = 0; i < grid.size(); i++) {
             for (int j = 0; j < grid.get(grid.size() - i - 1).size(); j++) {
-                grid.get(grid.size() - i - 1).get(j).setPos((int) (x + j * (buttonWidth)), (int) (y + i * (buttonHeight + offset)));
+                Button b = grid.get(grid.size() - i - 1).get(j);
+                b.setPos((x + j * (b.width)), (int) (y + i * (b.height + offset)));
             }
         }
     }
 
-    public void centreInColumn(Button button){
+    public void sortToFit(){ //given that it is a 1d array
+        float height = this.height / (float) grid.size();
         for (int i = 0; i < grid.size(); i++) {
-            for (int j = 0; j < grid.get(i).size(); j++) {
-                if (grid.get(i).get(j) == button) {
-                    button.setPos((int) (x + j * (width / (float) grid.get(i).size())), (int) (y + i * (height / (float) grid.size())));
-                }
-            }
+            Button b = grid.get(i).get(0);
+            float x = this.x + (this.width - b.width) / 2f;
+            float y = this.y + ((grid.size() - i - 1) * (height)) + (height - b.height) / 2f;
+            b.setPos((int) x, (int) y);
         }
     }
 }
