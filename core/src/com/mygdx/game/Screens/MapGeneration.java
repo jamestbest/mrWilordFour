@@ -57,6 +57,8 @@ public class MapGeneration implements Screen {
     InputMultiplexer inputMultiplexer;
 
     public MapGeneration(MyGdxGame game){
+
+        // TODO: 17/01/2022 The slider doesn't appear if the window is resized before it spawns in 
         this.game = game;
 
         inputMultiplexer = new InputMultiplexer();
@@ -114,6 +116,7 @@ public class MapGeneration implements Screen {
 
         setAllToCorrectFontSize();
 
+        System.out.println(freqSlider.x + " " + freqSlider.y + " " + freqSlider.width + " " + freqSlider.height);
         Gdx.input.setInputProcessor(inputMultiplexer);
     }
 
