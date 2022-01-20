@@ -7,7 +7,7 @@ public class Tile {
 
     public String type;
 
-    public boolean canWalkOn = false;
+    public boolean canWalkOn = true;
     public boolean canSpawnOn = true;
 
     public Tile(int x, int y, String type) {

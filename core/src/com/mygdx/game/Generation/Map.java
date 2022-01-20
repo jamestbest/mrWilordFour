@@ -16,8 +16,9 @@ import static com.mygdx.game.Screens.GameScreen.TILES_ON_X;
 import static com.mygdx.game.Screens.GameScreen.TILES_ON_Y;
 
 public class Map {
-    ArrayList<ArrayList<Tile>> tiles;
+    public ArrayList<ArrayList<Tile>> tiles;
     ArrayList<ArrayList<Thing>> things;
+    public ArrayList<ArrayList<Boolean>> booleanMap;
 
     public int addition;
 
@@ -79,6 +80,7 @@ public class Map {
                 if (temp > 0.6f) {
                     Tile tile = new Tile(i, j, "stone");
                     tile.canSpawnOn = false;
+                    tile.canWalkOn = false;
                     tiles.get(i).set(j, tile);
                 }
 
@@ -123,6 +125,21 @@ public class Map {
             }
         }
         generateRiver();
+    }
+
+    public void updateBooleanMap(){
+        booleanMap = new ArrayList<>();
+        for (int i = 0; i < settings.width; i++) {
+            booleanMap.add(new ArrayList<>());
+            for (int j = 0; j < settings.height; j++) {
+                if (tiles.get(i).get(j).type.equals("stone")) {
+                    booleanMap.get(i).add(false);
+                }
+                else {
+                    booleanMap.get(i).add(true);
+                }
+            }
+        }
     }
 
     public void generateBlank(){
@@ -180,19 +197,8 @@ public class Map {
         Vector2 start = riverLocs.get(0);
         Vector2 end = riverLocs.get(1);
         ArrayList<Vector2> path;
-        ArrayList<ArrayList<Boolean>> mapTemp = new ArrayList<>();
-        for (int i = 0; i < settings.width; i++) {
-            mapTemp.add(new ArrayList<>());
-            for (int j = 0; j < settings.height; j++) {
-                if (tiles.get(i).get(j).type.equals("stone")) {
-                    mapTemp.get(i).add(false);
-                }
-                else {
-                    mapTemp.get(i).add(true);
-                }
-            }
-        }
-        path = AStar.pathFind(start, end, addition, mapTemp, settings.riverBend, settings.perlinFrequency);
+        updateBooleanMap();
+        path = AStar.pathFindForRivers(start, end, addition, booleanMap, settings.riverBend, settings.perlinFrequency);
         for (int i = 0; i < path.size(); i++) {
             Vector2 temp = path.get(i);
             if (i + 1 < path.size()) {
@@ -251,5 +257,9 @@ public class Map {
 
     public void changeTileType(int x, int y, String type){
         tiles.get(x).get(y).type = type;
+    }
+
+    public boolean isWithinBounds(int newX, int newY){
+        return newX >= 0 && newX < settings.width && newY >= 0 && newY < settings.height;
     }
 }

@@ -52,6 +52,9 @@ public class GameScreen implements Screen {
     HashMap<String, Texture> tileTextures = new HashMap<>();
     HashMap<String, TextureAtlas> thingTextures = new HashMap<>();
 
+    float counter = 0f;
+    float counterMax = 1f; //gamespeed
+
     InputProcessor gameInputProcessor = new InputProcessor() {
         @Override
         public boolean keyDown(int keycode) {
@@ -133,6 +136,7 @@ public class GameScreen implements Screen {
         initialiseTextures();
         MapSettings mapSettings = new MapSettings(seed);
         map = new Map(mapSettings);
+        setMapForColonists();
         if (!joiningMultiplayer) {
             addition = map.getAdditionFromSeed(seed);
             map.generateMap();
@@ -149,7 +153,7 @@ public class GameScreen implements Screen {
 
         Gdx.input.setInputProcessor(gameInputProcessor);
 
-
+        colonists.get(0).getRandomPosition();
     }
 
     @Override
@@ -162,7 +166,17 @@ public class GameScreen implements Screen {
         batch.begin();
         batch.setProjectionMatrix(camera.projViewMatrix);
         map.drawMap(batch, tileTextures, thingTextures, camera);
+
+        drawAllColonists(batch);
         batch.end();
+
+        colonists.get(0).drawPathOutline(camera);
+
+        counter += delta;
+        if (counter > counterMax) {
+            update();
+            counter = 0f;
+        }
 
         Gdx.graphics.setTitle("FPS: " + Gdx.graphics.getFramesPerSecond());
 
@@ -182,6 +196,13 @@ public class GameScreen implements Screen {
             }
             socket.emit("changeTileType", tileChange);
         }
+    }
+
+    public void update(){ //happens at a rate determined by the gameSpeed
+//        moveAllColonistsRandomly();
+        batch.begin();
+        colonists.get(0).moveAlongPath();
+        batch.end();
     }
 
     @Override
@@ -281,5 +302,23 @@ public class GameScreen implements Screen {
                 e.printStackTrace();
             }
         });
+    }
+
+    public void drawAllColonists(SpriteBatch batch){
+        for (Colonist c : colonists) {
+            c.draw(batch, map.settings.tileDims);
+        }
+    }
+
+    public void moveAllColonistsRandomly(){
+        for (Colonist c : colonists) {
+            c.moveRandomly();
+        }
+    }
+
+    public void setMapForColonists(){
+        for (Colonist c : colonists) {
+            c.setMap(map);
+        }
     }
 }
