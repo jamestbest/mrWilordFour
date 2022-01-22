@@ -1,0 +1,20 @@
+{
+    dirt:
+        {
+            type:dirt,
+            canWalkOn:true,
+            canSpawnOn:true
+        },
+
+    grass:
+        {
+            type:mud,
+            canWalkOn:true
+            canSpawnOn:true
+        },
+
+    stone:
+        {
+            type:stone
+        }
+}

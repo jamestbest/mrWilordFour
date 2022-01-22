@@ -1,6 +1,7 @@
 package com.mygdx.game.Screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
@@ -45,7 +46,8 @@ public class GameScreen implements Screen {
 
     MyGdxGame game;
 
-    boolean joiningMultiplayer;
+    boolean isHost;
+    boolean isMultiplayer;
     private Socket socket;
     String socketID;
 
@@ -53,7 +55,8 @@ public class GameScreen implements Screen {
     HashMap<String, TextureAtlas> thingTextures = new HashMap<>();
 
     float counter = 0f;
-    float counterMax = 1f; //gamespeed
+    float counterMax = 1f;
+    public static float gameSpeed = 2f; //game speed
 
     InputProcessor gameInputProcessor = new InputProcessor() {
         @Override
@@ -110,10 +113,12 @@ public class GameScreen implements Screen {
 
     public GameScreen(MyGdxGame game, ArrayList<Colonist> colonists) {
         this.game = game;
-        this.joiningMultiplayer = false;
+        this.isHost = true;
 
-        connectSocket(); //this is placed temp for hosting multiplayer, it will need to happen when they start a multiplayer session
-        createSocketListeners();
+        if (isMultiplayer) {
+            connectSocket(); //this is placed temp for hosting multiplayer, it will need to happen when they start a multiplayer session
+            createSocketListeners();
+        }
 
         Gdx.graphics.setVSync(false);
         Gdx.graphics.setForegroundFPS(Integer.MAX_VALUE);
@@ -123,7 +128,7 @@ public class GameScreen implements Screen {
 
     public GameScreen(MyGdxGame game){
         this.game = game;
-        this.joiningMultiplayer = true;
+        this.isHost = false;
         connectSocket();
         createSocketListeners();
 
@@ -137,7 +142,7 @@ public class GameScreen implements Screen {
         MapSettings mapSettings = new MapSettings(seed);
         map = new Map(mapSettings);
         setMapForColonists();
-        if (!joiningMultiplayer) {
+        if (isHost) {
             addition = map.getAdditionFromSeed(seed);
             map.generateMap();
         }
@@ -152,8 +157,6 @@ public class GameScreen implements Screen {
         camera.setMinMax(new Vector2(0,0), new Vector2(map.settings.width * TILE_DIMS, map.settings.height * TILE_DIMS));
 
         Gdx.input.setInputProcessor(gameInputProcessor);
-
-        colonists.get(0).getRandomPosition();
     }
 
     @Override
@@ -171,8 +174,10 @@ public class GameScreen implements Screen {
         batch.end();
 
         colonists.get(0).drawPathOutline(camera);
+        colonists.get(1).drawPathOutline(camera);
+        colonists.get(2).drawPathOutline(camera);
 
-        counter += delta;
+        counter += delta * gameSpeed;
         if (counter > counterMax) {
             update();
             counter = 0f;
@@ -194,14 +199,32 @@ public class GameScreen implements Screen {
             } catch (JSONException e) {
                 e.printStackTrace();
             }
-            socket.emit("changeTileType", tileChange);
+            map.updateBooleanMap();
+            if (isMultiplayer){
+                socket.emit("changeTileType", tileChange);
+            }
+        }
+        if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
+            Vector2 mousePos = camera.unproject(new Vector2(Gdx.input.getX(), Gdx.input.getY()));
+            int x = (int) (mousePos.x / TILE_DIMS);
+            int y = (int) (mousePos.y / TILE_DIMS);
+            if (map.isWithinBounds(x, y)) {
+                colonists.get(0).setMoveToPos(x,y);
+            }
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
+            Gdx.app.log("Multiplayer", "enabling multiplayer");
+            connectSocket();
+            createSocketListeners();
+            isMultiplayer = true;
         }
     }
 
     public void update(){ //happens at a rate determined by the gameSpeed
-//        moveAllColonistsRandomly();
+        moveColonists();
         batch.begin();
-        colonists.get(0).moveAlongPath();
+
         batch.end();
     }
 
@@ -298,6 +321,7 @@ public class GameScreen implements Screen {
                 int y = (int) data.get("y");
                 String type = (String) data.get("type");
                 map.changeTileType(x, y, type);
+                map.updateBooleanMap();
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -310,9 +334,9 @@ public class GameScreen implements Screen {
         }
     }
 
-    public void moveAllColonistsRandomly(){
+    public void moveColonists(){
         for (Colonist c : colonists) {
-            c.moveRandomly();
+            c.moveColonist();
         }
     }
 

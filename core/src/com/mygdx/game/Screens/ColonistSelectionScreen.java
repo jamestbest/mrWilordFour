@@ -22,6 +22,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Random;
 
+import static com.badlogic.gdx.math.MathUtils.random;
+
 public class ColonistSelectionScreen implements Screen {
     MyGdxGame game;
 
@@ -38,6 +40,7 @@ public class ColonistSelectionScreen implements Screen {
     Label title;
     TextButton selectRemoveButton;
     TextButton continueButton;
+    TextButton randomiseButton;
 
     ShapeRenderer shapeRenderer;
     SpriteBatch batch;
@@ -53,6 +56,9 @@ public class ColonistSelectionScreen implements Screen {
     float height = (MyGdxGame.initialRes.y - (3 * offsetY)) / (float) numberOfColonistsToSelectFrom;
 
     float inputTimer = 0.5f;
+
+    Random random = new Random();
+    String[] clothes;
 
     public ColonistSelectionScreen(MyGdxGame game) {
         this.game = game;
@@ -77,7 +83,11 @@ public class ColonistSelectionScreen implements Screen {
         continueButton.resizeFontToCorrectProportionByWidth();
         continueButton.setPos((int) MyGdxGame.initialRes.x / 23 * 16, (int) offsetY);
 
-        buttonCollection.add(title, selectRemoveButton, continueButton);
+        randomiseButton = new TextButton(0,0, (int) (MyGdxGame.initialRes.x / 16 * 3), (int) (MyGdxGame.initialRes.y / 9), "Randomise", "randomiseButton");
+        randomiseButton.resizeFontToCorrectProportionByWidth();
+        randomiseButton.setPos((int) (offsetX * 4 + 2 * width), (int) offsetY);
+
+        buttonCollection.add(title, selectRemoveButton, continueButton, randomiseButton);
 
         font = new BitmapFont(Gdx.files.internal("Fonts/" + MyGdxGame.fontName + ".fnt"));
         glyphLayout = new GlyphLayout();
@@ -147,18 +157,22 @@ public class ColonistSelectionScreen implements Screen {
         colonistsToSelectFrom = new ArrayList<>();
         colonistsSelected = new ArrayList<>();
 
-        Random random = new Random();
-        String[] clothes = getListOfClothes();
+        clothes = getListOfClothes();
 
         for (int i = 0; i < numberOfColonistsToSelectFrom; i++) {
-            int j = random.nextInt(colonistTemplates.size());
-            int k = random.nextInt(clothes.length);
-            Colonist c = new Colonist();
-            c.copyTemplate(colonistTemplates.get(j));
-            c.clotheName = clothes[k];
-            c.setup();
-            colonistsToSelectFrom.add(c);
+            colonistsToSelectFrom.add(generateColonist());
         }
+    }
+
+    public Colonist generateColonist(){
+        int j = random.nextInt(colonistTemplates.size());
+        int k = random.nextInt(clothes.length);
+        Colonist c = new Colonist();
+        c.copyTemplate(colonistTemplates.get(j));
+        c.clotheName = clothes[k];
+        c.setup();
+
+        return c;
     }
 
     public String[] getListOfClothes(){
@@ -190,8 +204,15 @@ public class ColonistSelectionScreen implements Screen {
         }
 
         for (int i = 0; i < numberOfColonistsToSelectFrom; i++) {
+            if (colonistsSelected.contains(colonistsToSelectFrom.get(i))){
+                font.setColor(Color.BLUE);
+            }
+            else {
+                font.setColor(Color.WHITE);
+            }
             glyphLayout.setText(font, colonistsToSelectFrom.get(i).firstName + " " + colonistsToSelectFrom.get(i).lastName);
             font.draw(batch, glyphLayout, offsetX + height + 10, offsetY + (height * i) + (offsetY / numberOfColonistsToSelectFrom * i) + (height / 2) + (glyphLayout.height / 2));
+            font.setColor(Color.WHITE);
         }
         batch.end();
     }
@@ -244,6 +265,9 @@ public class ColonistSelectionScreen implements Screen {
                 if (colonistsSelected.size() == numberOfColonistsToSelect){
                     game.setScreen(new GameScreen(game, colonistsSelected));
                 }
+            }
+            if (buttonCollection.pressedButtonName.equals("randomiseButton")){
+                colonistsToSelectFrom.set(selectedIndex, generateColonist());
             }
         }
     }

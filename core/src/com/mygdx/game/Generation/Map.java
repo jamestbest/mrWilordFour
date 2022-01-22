@@ -1,9 +1,11 @@
 package com.mygdx.game.Generation;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Json;
 import com.mygdx.game.AStar.AStar;
 import com.mygdx.game.Game.CameraTwo;
 import com.mygdx.game.Math.Math;
@@ -30,6 +32,8 @@ public class Map {
     public MapSettings settings;
 
     ArrayList<Vector2> riverLocs;
+
+    public static HashMap<String, TileInformation> tileInformationHashMap;
 
     public Map(MapSettings settings){
         this.settings = settings;
@@ -61,6 +65,7 @@ public class Map {
     }
 
     public void generateMap(){
+        setTileInfoHashMap();
         tiles = new ArrayList<>();
         things = new ArrayList<>();
         generateGrass();
@@ -73,7 +78,6 @@ public class Map {
 
     public void generateStone(){
         for(int i = 0; i < settings.width; i++) {
-            tiles.add(new ArrayList<>());
             for (int j = 0; j < settings.height; j++) {
                 float temp = (float) Noise2D.noise((((float) i / settings.width) * settings.perlinFrequency) + addition,
                         (((float) j / settings.height) * settings.perlinFrequency) + addition, 255);
@@ -132,11 +136,11 @@ public class Map {
         for (int i = 0; i < settings.width; i++) {
             booleanMap.add(new ArrayList<>());
             for (int j = 0; j < settings.height; j++) {
-                if (tiles.get(i).get(j).type.equals("stone")) {
-                    booleanMap.get(i).add(false);
+                if (tiles.get(i).get(j).canWalkOn) {
+                    booleanMap.get(i).add(true);
                 }
                 else {
-                    booleanMap.get(i).add(true);
+                    booleanMap.get(i).add(false);
                 }
             }
         }
@@ -256,10 +260,19 @@ public class Map {
     }
 
     public void changeTileType(int x, int y, String type){
-        tiles.get(x).get(y).type = type;
+        Tile temp = tiles.get(x).get(y);
+        temp.type = type;
+        temp.canSpawnOn = tileInformationHashMap.get(type).canSpawnOn;
+        temp.canWalkOn = tileInformationHashMap.get(type).canWalkOn;
     }
 
     public boolean isWithinBounds(int newX, int newY){
         return newX >= 0 && newX < settings.width && newY >= 0 && newY < settings.height;
+    }
+
+    public static void setTileInfoHashMap(){
+        Json json = new Json();
+        tileInformationHashMap = json.fromJson(HashMap.class, TileInformation.class, Gdx.files.internal("TileInfo/tileInfo.txt"));
+        System.out.println("");
     }
 }

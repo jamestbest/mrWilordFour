@@ -7,8 +7,12 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Json;
 import com.mygdx.game.AStar.AStar;
+import com.mygdx.game.DataStructures.Queue;
 import com.mygdx.game.Generation.Map;
+import com.mygdx.game.Generation.TileInformation;
+import com.mygdx.game.Screens.GameScreen;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -21,6 +25,9 @@ public class Colonist {
 
     public int x;
     public int y;
+
+    int nextX;
+    int nextY;
 
     public int health;
     public HashMap<String, Integer> skills;
@@ -38,11 +45,16 @@ public class Colonist {
     static Random random = new Random();
     static ShapeRenderer shapeRenderer = new ShapeRenderer();
 
-    ArrayList<Vector2> pathToComplete;
+    ArrayList<Vector2> pathToComplete = new ArrayList<>();
 
     Map map;
 
     boolean movingAcrossPath = false;
+
+    float timer = 0f;
+    float timerMax = 1f;
+
+    int randomMoveRadius = 25;
 
     public Colonist() {
         this.health = 100;
@@ -101,7 +113,14 @@ public class Colonist {
     }
 
     public void draw(SpriteBatch batch, float tileDims){
-        batch.draw(textureAtlas.findRegion(direction), x * tileDims, y * tileDims, tileDims, tileDims);
+        timer += Gdx.graphics.getDeltaTime() * GameScreen.gameSpeed;
+        if (timer >= timerMax) {
+            x = nextX;
+            y = nextY;
+            timer = 0f;
+        }
+        updateDirection();
+        batch.draw(textureAtlas.findRegion(direction),  (x + ((nextX - x) * timer)) * tileDims , (y + ((nextY - y) * timer)) * tileDims, tileDims, tileDims);
     }
 
     public void moveRandomly(){
@@ -110,25 +129,52 @@ public class Colonist {
 
         if (map.isWithinBounds(randomX + x, randomY + y)) {
             if (map.tiles.get(x + randomX).get(y + randomY).canWalkOn) {
-                x += randomX;
-                y += randomY;
+                nextX = x + randomX;
+                nextY = y + randomY;
             }
         }
     }
 
+    public void setMoveToPos(int x, int y){
+        pathToComplete = AStar.pathFindForColonist(new Vector2(this.x, this.y), new Vector2(x, y), map.addition, map.booleanMap);
+        movingAcrossPath = pathToComplete.size() > 0;
+    }
+
     public void getRandomPosition(){
-        int randomX = random.nextInt(map.settings.width);
-        int randomY = random.nextInt(map.settings.height);
+        int count = 0;
+        Vector2 randomPos = getPosInRange();
+        int randomX = (int) randomPos.x;
+        int randomY = (int) randomPos.y;
 
-        if (!map.tiles.get(randomX).get(randomY).canWalkOn) {
-            getRandomPosition();
+        while (!map.tiles.get(x + randomX).get(y + randomY).canWalkOn) {
+            randomPos = getPosInRange();
+            randomX = (int) randomPos.x;
+            randomY = (int) randomPos.y;
+            count++;
+            if (count > 100) {
+                break;
+            }
         }
 
-        pathToComplete = AStar.pathFindForColonist(new Vector2(x, y), new Vector2(randomX, randomY), map.addition, map.booleanMap);
+        pathToComplete = AStar.pathFindForColonist(new Vector2(x, y), new Vector2(randomX + x, randomY + y), map.addition, map.booleanMap);
 
-        if (pathToComplete.size() > 0) {
-            movingAcrossPath = true;
+        movingAcrossPath = pathToComplete.size() > 0;
+    }
+
+    public Vector2 getPosInRange(){
+        int randomX = random.nextInt(randomMoveRadius * 2);
+        int randomY = random.nextInt(randomMoveRadius * 2);
+
+        randomX -= randomMoveRadius;
+        randomY -= randomMoveRadius;
+        while (!map.isWithinBounds(x + randomX, y + randomY)){
+            randomX = random.nextInt(randomMoveRadius * 2);
+            randomY = random.nextInt(randomMoveRadius * 2);
+
+            randomX -= randomMoveRadius;
+            randomY -= randomMoveRadius;
         }
+        return new Vector2(randomX, randomY);
     }
 
     public void moveAlongPath(){
@@ -137,22 +183,43 @@ public class Colonist {
             if(nextTile.x == x && nextTile.y == y){
                 pathToComplete.remove(0);
             }
-            else{
-                if(nextTile.x > x){
-                    direction = "right";
-                }
-                else if(nextTile.x < x){
-                    direction = "left";
-                }
-                else if(nextTile.y > y){
-                    direction = "front";
-                }
-                else if(nextTile.y < y){
-                    direction = "back";
-                }
-                x = (int) nextTile.x;
-                y = (int) nextTile.y;
+        }
+        else {
+            movingAcrossPath = false;
+        }
+        if (pathToComplete.size() >= 1) {
+            nextX = (int) pathToComplete.get(0).x;
+            nextY = (int) pathToComplete.get(0).y;
+        }
+    }
+
+    public void moveColonist(){
+        if (movingAcrossPath) {
+            moveAlongPath();
+        }
+        else {
+            int choice = random.nextInt(10);
+            if (choice <= 3){
+                getRandomPosition();
             }
+            else {
+                moveRandomly();
+            }
+        }
+    }
+
+    public void updateDirection(){
+        if(nextX > x){
+            direction = "right";
+        }
+        else if(nextX < x){
+            direction = "left";
+        }
+        if(nextY > y){
+            direction = "back";
+        }
+        else if(nextY < y){
+            direction = "front";
         }
     }
 

@@ -58,6 +58,11 @@ public class AStar {
 
         while (nodesToCheck.size() > 0) {
 //            nodesToCheck = QuickSort.sortNodes(nodesToCheck); //too slow
+//            System.out.println(count);
+            if (nodesToCheck.get(0).x == end.x && nodesToCheck.get(0).y == end.y) {
+                break;
+            }
+
             nodesToCheck.sort(comparing(Node::getGlobal));
 
             currentNode = nodesToCheck.get(0);
