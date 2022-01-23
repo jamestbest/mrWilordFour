@@ -9,6 +9,7 @@ import com.badlogic.gdx.utils.Json;
 import com.mygdx.game.AStar.AStar;
 import com.mygdx.game.Game.CameraTwo;
 import com.mygdx.game.Math.Math;
+import com.mygdx.game.Screens.GameScreen;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,9 +42,6 @@ public class Map {
 
     public Map(MapSettings settings, int drawHeight, int x, int y){
         this.settings = settings;
-        settings.width = TILES_ON_X;
-        settings.height = TILES_ON_Y;
-        settings.tileDims = (drawHeight / (float) settings.height);
 
         this.x = x;
         this.y = y;
@@ -51,10 +49,7 @@ public class Map {
 
     public Map(int drawHeight, int x, int y, String seed){
         this.settings = new MapSettings(seed);
-        settings.width = TILES_ON_X;
-        settings.height = TILES_ON_Y;
         this.drawHeight = drawHeight;
-        settings.tileDims = (drawHeight / (float) settings.height);
 
         this.x = x;
         this.y = y;
@@ -71,16 +66,19 @@ public class Map {
         generateGrass();
         generateStone();
 
-        findRiverLocs();
-        generateRiver();
+        if (settings.riverToggle){
+            findRiverLocs();
+            generateRiver();
+        }
+
         generateTrees();
     }
 
     public void generateStone(){
-        for(int i = 0; i < settings.width; i++) {
-            for (int j = 0; j < settings.height; j++) {
-                float temp = (float) Noise2D.noise((((float) i / settings.width) * settings.perlinFrequency) + addition,
-                        (((float) j / settings.height) * settings.perlinFrequency) + addition, 255);
+        for(int i = 0; i < TILES_ON_X; i++) {
+            for (int j = 0; j < TILES_ON_Y; j++) {
+                float temp = (float) Noise2D.noise((((float) i / TILES_ON_X) * settings.perlinFrequency) + addition,
+                        (((float) j / TILES_ON_Y) * settings.perlinFrequency) + addition, 255);
                 if (temp > 0.6f) {
                     Tile tile = new Tile(i, j, "stone");
                     tile.canSpawnOn = false;
@@ -93,11 +91,11 @@ public class Map {
     }
 
     public void generateGrass(){
-        for(int i = 0; i < settings.width; i++) {
+        for(int i = 0; i < TILES_ON_X; i++) {
             tiles.add(new ArrayList<>());
-            for (int j = 0; j < settings.height; j++) {
-                float temp = (float) Noise2D.noise((((float) i / settings.width) * 40) + addition,
-                        (((float) j / settings.height) * 40) + addition, 255);
+            for (int j = 0; j < TILES_ON_Y; j++) {
+                float temp = (float) Noise2D.noise((((float) i / TILES_ON_X) * 40) + addition,
+                        (((float) j / TILES_ON_Y) * 40) + addition, 255);
                 Tile tile;
                 if (temp > 0.55f) {
                     tile = new Tile(i, j, "grass");
@@ -112,30 +110,17 @@ public class Map {
     }
 
     public void updateMap(){
-        settings.tileDims = (drawHeight / (float) settings.height);
+        GameScreen.TILE_DIMS = (drawHeight / (float) TILES_ON_Y);
         getAdditionFromSeed(settings.seed);
-        tiles = new ArrayList<>();
-        for(int i = 0; i < settings.width; i++){
-            tiles.add(new ArrayList<>());
-            for(int j = 0; j < settings.height; j++){
-                float temp = (float) Noise2D.noise((((float) i / settings.width) * 3) + addition,
-                        (((float) j / settings.height) * 3) + addition, 255);
-                if(temp > 0.6f){
-                    tiles.get(i).add(new Tile(i, j, "stone"));
-                }
-                else{
-                    tiles.get(i).add(new Tile(i, j, "dirt"));
-                }
-            }
-        }
-        generateRiver();
+        tiles.clear();
+        generateMap();
     }
 
     public void updateBooleanMap(){
         booleanMap = new ArrayList<>();
-        for (int i = 0; i < settings.width; i++) {
+        for (int i = 0; i < TILES_ON_X; i++) {
             booleanMap.add(new ArrayList<>());
-            for (int j = 0; j < settings.height; j++) {
+            for (int j = 0; j < TILES_ON_Y; j++) {
                 if (tiles.get(i).get(j).canWalkOn) {
                     booleanMap.get(i).add(true);
                 }
@@ -149,25 +134,25 @@ public class Map {
     public void generateBlank(){
         tiles = new ArrayList<>();
         things = new ArrayList<>();
-        for(int i = 0; i < settings.width; i++){
+        for(int i = 0; i < TILES_ON_X; i++){
             tiles.add(new ArrayList<>());
             things.add(new ArrayList<>());
-            for(int j = 0; j < settings.height; j++){
+            for(int j = 0; j < TILES_ON_Y; j++){
                 tiles.get(i).add(new Tile(i, j, "dirt"));
-                things.get(i).add(new Thing(i, j, (int) settings.tileDims, (int) settings.tileDims, "", (int) settings.tileDims));
+                things.get(i).add(new Thing(i, j, (int) GameScreen.TILE_DIMS, (int) GameScreen.TILE_DIMS, "", (int) GameScreen.TILE_DIMS));
             }
         }
     }
 
     public void drawMap(SpriteBatch batch, HashMap<String, Texture> tileTextures, HashMap<String, TextureAtlas> thingTextures, CameraTwo camera){
-        int startX = (int)(Math.highest (((camera.position.x - (camera.width * camera.zoom)/2f) / settings.tileDims) - 5, 0));
-        int startY = (int)(Math.highest (((camera.position.y - (camera.height * camera.zoom)/2f) / settings.tileDims) - 5, 0));
+        int startX = (int)(Math.highest (((camera.position.x - (camera.width * camera.zoom)/2f) / GameScreen.TILE_DIMS) - 5, 0));
+        int startY = (int)(Math.highest (((camera.position.y - (camera.height * camera.zoom)/2f) / GameScreen.TILE_DIMS) - 5, 0));
 
-        int endX = (int)(Math.lowest((camera.width * camera.zoom / settings.tileDims) + startX + 10, TILES_ON_X));
-        int endY = (int)(Math.lowest((camera.height * camera.zoom / settings.tileDims) + startY + 10, TILES_ON_Y));
+        int endX = (int)(Math.lowest((camera.width * camera.zoom / GameScreen.TILE_DIMS) + startX + 10, TILES_ON_X));
+        int endY = (int)(Math.lowest((camera.height * camera.zoom / GameScreen.TILE_DIMS) + startY + 10, TILES_ON_Y));
         for(int i = startX; i < endX; i++){
             for(int j = startY; j < endY; j++){
-                batch.draw(tileTextures.get(tiles.get(i).get(j).type), i * settings.tileDims, j * settings.tileDims, settings.tileDims, settings.tileDims);
+                batch.draw(tileTextures.get(tiles.get(i).get(j).type), i * GameScreen.TILE_DIMS, j * GameScreen.TILE_DIMS, GameScreen.TILE_DIMS, GameScreen.TILE_DIMS);
             }
         }
         for(int i = startX; i < endX; i++) {
@@ -180,10 +165,16 @@ public class Map {
         }
     }
 
-    public void drawMiniMap(SpriteBatch batch, HashMap<String, Texture> textures){
-        for (int i = 0; i < settings.width; i++) {
-            for (int j = 0; j < settings.height; j++) {
-                batch.draw(textures.get(tiles.get(i).get(j).type), i * settings.tileDims + x, j * settings.tileDims + y, settings.tileDims, settings.tileDims);
+    public void drawMiniMap(SpriteBatch batch, HashMap<String, Texture> textures, HashMap<String, TextureAtlas> thingTextures){
+        float miniMapDims = drawHeight / (float) TILES_ON_Y;
+        
+        for (int i = 0; i < TILES_ON_X; i++) {
+            for (int j = 0; j < TILES_ON_Y; j++) {
+                batch.draw(textures.get(tiles.get(i).get(j).type), i * miniMapDims + x, j * miniMapDims + y, miniMapDims, miniMapDims);
+
+                if (!things.get(i).get(j).type.equals("")) {
+                    batch.draw(thingTextures.get(things.get(i).get(j).type).findRegion("0"), i * miniMapDims + x, j * miniMapDims + y, miniMapDims, miniMapDims);
+                }
             }
         }
     }
@@ -208,7 +199,7 @@ public class Map {
             if (i + 1 < path.size()) {
                 if (path.get(i + 1).y == temp.y) {
                     for (int j = 0; j < 2; j++) {
-                        if (temp.y + j < settings.height){
+                        if (temp.y + j < TILES_ON_Y){
                             Tile tempTile = tiles.get((int) temp.x).get((int) (temp.y + j));
                             tempTile.type = "water";
                             tempTile.canSpawnOn = false;
@@ -218,7 +209,7 @@ public class Map {
 
             }
             for (int j = 0; j < 4; j++) {
-                if (temp.x + j < settings.width) {
+                if (temp.x + j < TILES_ON_X) {
                     Tile tempTile = tiles.get((int) (temp.x + j)).get((int) temp.y);
                     tempTile.type = "water";
                     tempTile.canSpawnOn = false;
@@ -230,30 +221,30 @@ public class Map {
     public void findRiverLocs(){
         riverLocs = new ArrayList<>();
         Random rand = new Random();
-        int sx = rand.nextInt(settings.width);
-        int ex = rand.nextInt(settings.width);
+        int sx = rand.nextInt(TILES_ON_X);
+        int ex = rand.nextInt(TILES_ON_X);
 
-        while(tiles.get(sx).get(0).type.equals("stone")){
-            sx = rand.nextInt(settings.width);
+        while(!tiles.get(sx).get(0).canSpawnOn){
+            sx = rand.nextInt(TILES_ON_X);
         }
-        while(tiles.get(ex).get(0).type.equals("stone")){
-            ex = rand.nextInt(settings.width);
+        while(!tiles.get(ex).get(TILES_ON_Y - 1).canSpawnOn){
+            ex = rand.nextInt(TILES_ON_X);
         }
         riverLocs.add(new Vector2(sx, 0));
-        riverLocs.add(new Vector2(ex, settings.height - 1));
+        riverLocs.add(new Vector2(ex, TILES_ON_Y - 1));
     }
 
     public void generateTrees(){
         Random random = new Random();
-        for(int i = 0; i < settings.width; i++){
+        for(int i = 0; i < TILES_ON_X; i++){
             things.add(new ArrayList<>());
-            for(int j = 0; j < settings.height; j++){
+            for(int j = 0; j < TILES_ON_Y; j++){
                 if(random.nextInt(100) < settings.treeFreq && tiles.get(i).get(j).canSpawnOn){
-                    Thing temp = new Thing(i, j, (int) settings.tileDims, (int) settings.tileDims * 2, "tree", (int) settings.tileDims);
+                    Thing temp = new Thing(i, j, (int) GameScreen.TILE_DIMS, (int) GameScreen.TILE_DIMS * 2, "tree", (int) GameScreen.TILE_DIMS);
                     things.get(i).add(temp);
                 }
                 else {
-                    things.get(i).add(new Thing(i, j, (int) settings.tileDims, (int) settings.tileDims, "", (int) settings.tileDims));
+                    things.get(i).add(new Thing(i, j, (int) GameScreen.TILE_DIMS, (int) GameScreen.TILE_DIMS, "", (int) GameScreen.TILE_DIMS));
                 }
             }
         }
@@ -267,7 +258,7 @@ public class Map {
     }
 
     public boolean isWithinBounds(int newX, int newY){
-        return newX >= 0 && newX < settings.width && newY >= 0 && newY < settings.height;
+        return newX >= 0 && newX < TILES_ON_X && newY >= 0 && newY < TILES_ON_Y;
     }
 
     public static void setTileInfoHashMap(){

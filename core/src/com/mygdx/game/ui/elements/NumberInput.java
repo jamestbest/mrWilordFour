@@ -9,14 +9,16 @@ public class NumberInput extends TextButton{
         super(x, y, width, height, text, TextureGda, name);
     }
 
-    public NumberInput(int x, int y, int width, int height, String text, String name, InputMultiplexer inputMultiplexer) {
+    public NumberInput(int x, int y, int width, int height, String text, String name, InputMultiplexer inputMultiplexer, int minValue, int maxValue) {
         super(x, y, width, height, text, name);
         this.text = text;
+        this.minValue = minValue;
+        this.maxValue = maxValue;
         setup(inputMultiplexer);
     }
 
-    int maxValue = 100;
-    int minValue = 0;
+    int maxValue;
+    int minValue;
 
     public void setup(InputMultiplexer inputMultiplexer){
         super.setup();
@@ -44,7 +46,7 @@ public class NumberInput extends TextButton{
         inputMultiplexer.addProcessor(inputProcessor);
     }
 
-    String text;
+    public String text;
     Texture texture = new Texture("Textures/ui/buttons/InputButton.png");
 
     InputProcessor inputProcessor;

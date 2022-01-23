@@ -230,7 +230,7 @@ public class Colonist {
             shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
             shapeRenderer.setProjectionMatrix(cameraTwo.projViewMatrix);
             shapeRenderer.setColor(0, 0, 1, 0.5f);
-            shapeRenderer.rect(v.x * map.settings.tileDims, v.y * map.settings.tileDims, map.settings.tileDims, map.settings.tileDims);
+            shapeRenderer.rect(v.x * GameScreen.TILE_DIMS, v.y * GameScreen.TILE_DIMS, GameScreen.TILE_DIMS, GameScreen.TILE_DIMS);
             shapeRenderer.end();
             Gdx.gl.glDisable(GL30.GL_BLEND);
         }

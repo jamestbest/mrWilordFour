@@ -28,9 +28,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 public class GameScreen implements Screen {
-    public static final int TILES_ON_X = 250;
-    public static final int TILES_ON_Y = 250;
-    public static final float TILE_DIMS = 20;
+    public static int TILES_ON_X = 250;
+    public static int TILES_ON_Y = 250;
+    public static float TILE_DIMS = 20;
 
     SpriteBatch batch;
     ShapeRenderer shapeRenderer;
@@ -154,7 +154,7 @@ public class GameScreen implements Screen {
         batch = new SpriteBatch();
         shapeRenderer = new ShapeRenderer();
         camera = new CameraTwo();
-        camera.setMinMax(new Vector2(0,0), new Vector2(map.settings.width * TILE_DIMS, map.settings.height * TILE_DIMS));
+        camera.setMinMax(new Vector2(0,0), new Vector2(GameScreen.TILES_ON_X * TILE_DIMS, GameScreen.TILES_ON_Y * TILE_DIMS));
 
         Gdx.input.setInputProcessor(gameInputProcessor);
     }
@@ -330,7 +330,7 @@ public class GameScreen implements Screen {
 
     public void drawAllColonists(SpriteBatch batch){
         for (Colonist c : colonists) {
-            c.draw(batch, map.settings.tileDims);
+            c.draw(batch, GameScreen.TILE_DIMS);
         }
     }
 

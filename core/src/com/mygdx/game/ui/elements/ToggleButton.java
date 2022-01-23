@@ -12,7 +12,7 @@ public class ToggleButton extends Button{
     }
 
     String type;
-    boolean toggled = false;
+    public boolean toggled = true;
 
     Texture toggledTexture;
     Texture unToggledTexture;

@@ -11,9 +11,9 @@ public class NumberInputWithSides extends NumberInput{
         super(x, y, width, height, text, TextureGda, name);
     }
 
-    public NumberInputWithSides(int x, int y, int width, int height, String text, String name, InputMultiplexer inputMultiplexer) {
-        super(x, y, width, height, text, name, inputMultiplexer);
-        this.text = "0";
+    public NumberInputWithSides(int x, int y, int width, int height, String text, String name, InputMultiplexer inputMultiplexer, int minValue, int maxValue) {
+        super(x, y, width, height, text, name, inputMultiplexer, minValue, maxValue);
+        this.text = String.valueOf(maxValue);
     }
 
     int change = 10;

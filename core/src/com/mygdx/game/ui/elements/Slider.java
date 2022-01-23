@@ -6,7 +6,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 public class Slider extends TextButton{
     float maxValue = 100f;
     float minValue = 0f;
-    float value;
+    public float value;
     float step = 1f;
 
     ShapeRenderer shapeRenderer;

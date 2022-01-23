@@ -18,15 +18,16 @@ public class SliderWithLabel extends Slider {
         setup();
     }
 
-    public SliderWithLabel(int x, int y, int width, int height, String name, float maxValue, float minValue, float step) {
+    public SliderWithLabel(int x, int y, int width, int height, String name, float maxValue, float minValue, float step, int startValue) {
         super(x, y, width, height, name, maxValue, minValue, step);
-        setup();
+        setup(startValue);
     }
 
-    public void setup(){
+    public void setup(int startValue){
         font = new BitmapFont(Gdx.files.internal("Fonts/" + MyGdxGame.fontName + ".fnt"));
         glyphLayout = new GlyphLayout();
-        value = minValue;
+        value = startValue;
+        percentageAcross = (value - minValue) / (maxValue - minValue);
     }
 
     float percentageAcross = 0f;

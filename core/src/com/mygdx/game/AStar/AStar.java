@@ -2,6 +2,7 @@ package com.mygdx.game.AStar;
 
 import com.badlogic.gdx.math.Vector2;
 import com.mygdx.game.Generation.Noise2D;
+import com.mygdx.game.Screens.GameScreen;
 
 import java.util.ArrayList;
 
@@ -12,11 +13,12 @@ public class AStar {
     
     public static ArrayList<Vector2> pathFindForRivers(Vector2 start, Vector2 end, int addition, ArrayList<ArrayList<Boolean>> map, int riverBend, int freq) {
         grid = new ArrayList<>();
-        for (int i = 0; i < 250; i++) {
+        for (int i = 0; i < GameScreen.TILES_ON_X; i++) {
             grid.add(new ArrayList<>());
-            for (int j = 0; j < 250; j++) {
+            for (int j = 0; j < GameScreen.TILES_ON_Y; j++) {
                 Node temp = new Node(i, j);
-                temp.HMP = (float) Noise2D.noise((i / 250f) * freq + addition, (j / 250f) * freq + addition, 255);
+                temp.HMP = (float) Noise2D.noise((i / (float) GameScreen.TILES_ON_X) * freq + addition,
+                        (j / (float) GameScreen.TILES_ON_Y) * freq + addition, 255);
                 temp.HMP *= riverBend;
                 temp.accessible = map.get(i).get(j);
                 temp.setDistance(end);
@@ -30,9 +32,9 @@ public class AStar {
     public static ArrayList<Vector2> pathFindForColonist(Vector2 start, Vector2 end, int addition, ArrayList<ArrayList<Boolean>> map){
         grid.clear();
         grid = new ArrayList<>();
-        for (int i = 0; i < 250; i++) {
+        for (int i = 0; i < GameScreen.TILES_ON_X; i++) {
             grid.add(new ArrayList<>());
-            for (int j = 0; j < 250; j++) {
+            for (int j = 0; j < GameScreen.TILES_ON_Y; j++) {
                 Node temp = new Node(i, j);
                 temp.HMP = 0;
                 temp.accessible = map.get(i).get(j);

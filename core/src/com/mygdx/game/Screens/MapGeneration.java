@@ -4,6 +4,7 @@ import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.mygdx.game.Game.CameraTwo;
 import com.mygdx.game.Game.MyGdxGame;
 import com.mygdx.game.Generation.Map;
@@ -22,15 +23,15 @@ public class MapGeneration implements Screen {
 
     SpriteBatch batch;
 
-    HashMap<String, Texture> textures = new HashMap<>();
+    HashMap<String, Texture> tileTextures = new HashMap<>();
+    HashMap<String, TextureAtlas> thingTextures = new HashMap<>();
 
     MyGdxGame game;
 
 
     InputButtonTwo seedInput;
     ToggleButton riverToggle;
-    NumberInput widthInput;
-    NumberInput heightInput;
+    NumberInput dimsInput;
     SliderWithLabel freqSlider;
     SliderWithLabel riverBendSlider;
     SliderWithLabel treeDensitySlider;
@@ -38,8 +39,7 @@ public class MapGeneration implements Screen {
 
     Label SeedLabel;
     Label ToggleRiverLabel;
-    Label WidthLabel;
-    Label HeightLabel;
+    Label dimsLabel;
     Label FrequencyLabel;
     Label RiverBendLabel;
     Label TreeDensityLabel;
@@ -89,29 +89,27 @@ public class MapGeneration implements Screen {
 
         height = (int) (height / 8f); // divide by the number of buttons
 
-        seedInput = new InputButtonTwo(0, 0, (int) (width * 0.9f), (int) (height * 0.7f), seed, "test2", inputMultiplexer);
-        riverToggle = new ToggleButton(0, 0, (int) (width * 0.4f), (int) (height * 1.4), "test3", "");
-        widthInput = new NumberInputWithSides(0, 0, (int) (width * 0.25f), (int) (height * 0.5f), "test4", "test5", inputMultiplexer);
-        heightInput = new NumberInputWithSides(0, 0, (int) (width * 0.25f), (int) (height * 0.5f), "test6", "test7", inputMultiplexer);
-        freqSlider = new SliderWithLabel(0, 0, (int) (width * 0.9f), (int) (height * 0.2), "test", 5, 1, 1);
-        riverBendSlider = new SliderWithLabel(0, 0, (int) (width * 0.9f), (int) (height * 0.2f), "test8", 100, 0, 1);
-        treeDensitySlider = new SliderWithLabel(0, 0, (int) (width * 0.9f), (int) (height * 0.2f), "test9", 100, 20, 1);
+        seedInput = new InputButtonTwo(0, 0, (int) (width * 0.9f), (int) (height * 0.7f), seed, "seedInput", inputMultiplexer);
+        riverToggle = new ToggleButton(0, 0, (int) (width * 0.4f), (int) (height * 1.4), "riverToggle", "");
+        dimsInput = new NumberInputWithSides(0, 0, (int) (width * 0.30f), (int) (height * 0.5f), "test4", "widthInput", inputMultiplexer, 1, 250);
+        freqSlider = new SliderWithLabel(0, 0, (int) (width * 0.9f), (int) (height * 0.2), "freqSlider", 5, 1, 1, 3);
+        riverBendSlider = new SliderWithLabel(0, 0, (int) (width * 0.9f), (int) (height * 0.2f), "riverBendSlider", 100, 0, 1, 50);
+        treeDensitySlider = new SliderWithLabel(0, 0, (int) (width * 0.9f), (int) (height * 0.2f), "treeDensitySlider", 50, 0, 1, 5);
         RefreshButton = new Button(0, 0, (int) (height * 0.85f), (int) (height * 0.85f),
-                "RefreshButton", "Refresh");
+                "RefreshButton", "RefreshButton");
 
         SeedLabel = new Label(0, 0, 0, 0, "seedLabel", "Seed: ");
         ToggleRiverLabel = new Label(0, 0, 0, 0, "toggleRiverLabel", "Toggle River: ");
-        WidthLabel = new Label(0, 0, 0, 0, "widthLabel", "Width: ");
-        HeightLabel = new Label(0, 0, 0, 0, "heightLabel", "Height: ");
+        dimsLabel = new Label(0, 0, 0, 0, "widthLabel", "Dims: ");
         FrequencyLabel = new Label(0, 0, 0, 0, "frequencyLabel", "Frequency: ");
         RiverBendLabel = new Label(0, 0, 0, 0, "riverBendLabel", "River Bend: ");
         TreeDensityLabel = new Label(0, 0, 0, 0, "treeDensityLabel", "Tree Density: ");
         RefreshLabel = new Label(0, 0, 0, 0, "refreshLabel", "Refresh Map: ");
 
-        labelTable.addAllWithRows(SeedLabel, ToggleRiverLabel, WidthLabel, HeightLabel, FrequencyLabel, RiverBendLabel, TreeDensityLabel, RefreshLabel);
+        labelTable.addAllWithRows(SeedLabel, ToggleRiverLabel, dimsLabel, FrequencyLabel, RiverBendLabel, TreeDensityLabel, RefreshLabel);
         labelTable.sort();
 
-        buttonTable.addAllWithRows(seedInput, riverToggle, widthInput, heightInput, freqSlider, riverBendSlider, treeDensitySlider, RefreshButton);
+        buttonTable.addAllWithRows(seedInput, riverToggle, dimsInput, freqSlider, riverBendSlider, treeDensitySlider, RefreshButton);
         buttonTable.sortToFit();
 
         setAllToCorrectFontSize();
@@ -134,7 +132,7 @@ public class MapGeneration implements Screen {
 
         batch.begin();
         batch.setProjectionMatrix(camera.projViewMatrix);
-        map.drawMiniMap(batch, textures);
+        map.drawMiniMap(batch, tileTextures, thingTextures);
         batch.end();
         batch.begin();
         batch.setProjectionMatrix(camera.projViewMatrix);
@@ -156,7 +154,19 @@ public class MapGeneration implements Screen {
             extraUI.updateButtons(camera);
         }
 
-        typing = seedInput.typing || widthInput.typing || heightInput.typing;
+        if (buttonTable.buttonCollection.pressedButtonName.equals("RefreshButton") && Gdx.input.isButtonJustPressed(0)){
+            map.settings.seed = seedInput.text;
+            GameScreen.TILES_ON_X = Integer.parseInt(dimsInput.text);
+            GameScreen.TILES_ON_Y = Integer.parseInt(dimsInput.text);
+            map.settings.perlinFrequency = (int) freqSlider.value;
+            map.settings.riverBend = (int) riverBendSlider.value;
+            map.settings.treeFreq = (int) treeDensitySlider.value;
+            map.settings.riverToggle = riverToggle.toggled;
+
+            map.updateMap();
+        }
+
+        typing = seedInput.typing || dimsInput.typing;
     }
 
     @Override
@@ -191,14 +201,22 @@ public class MapGeneration implements Screen {
         assert files != null;
         for (String fileName : files) {
             String[] temp = fileName.split("\\.");
-            textures.put(temp[0], new Texture(Gdx.files.internal("core/assets/Textures/TileTextures/" + fileName)));
+            tileTextures.put(temp[0], new Texture(Gdx.files.internal("core/assets/Textures/TileTextures/" + fileName)));
+        }
+        File directory2 = new File("core/assets/Textures/ThingTextures");
+        String[] files2 = directory2.list();
+        assert files2 != null;
+        for (String fileName : files2) {
+            String[] temp = fileName.split("\\.");
+            if (temp[1].equals("atlas")) {
+                thingTextures.put(temp[0], new TextureAtlas(Gdx.files.internal("core/assets/Textures/ThingTextures/" + fileName)));
+            }
         }
     }
 
     public void setAllToCorrectFontSize(){
         float fontScale = (int) (MyGdxGame.initialRes.y / 7f) / 100f;
-        HeightLabel.setFontScale(fontScale);
-        WidthLabel.setFontScale(fontScale);
+        dimsLabel.setFontScale(fontScale);
         FrequencyLabel.setFontScale(fontScale);
         RiverBendLabel.setFontScale(fontScale);
         TreeDensityLabel.setFontScale(fontScale);
@@ -208,8 +226,7 @@ public class MapGeneration implements Screen {
 
 
         seedInput.setFontScale(fontScale);
-        widthInput.setFontScale(fontScale);
-        heightInput.setFontScale(fontScale);
+        dimsInput.setFontScale(fontScale);
         freqSlider.setFontScale(fontScale);
         riverBendSlider.setFontScale(fontScale);
         treeDensitySlider.setFontScale(fontScale);

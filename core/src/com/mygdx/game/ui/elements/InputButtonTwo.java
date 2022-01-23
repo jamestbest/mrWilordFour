@@ -37,6 +37,8 @@ public class InputButtonTwo extends TextButton{
 
     public boolean typing = false;
 
+    public String text;
+
     public void setup(InputMultiplexer inputMultiplexer){
         super.setup();
         int textWidth = text.length();

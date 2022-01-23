@@ -1,10 +1,6 @@
 package com.mygdx.game.Generation;
 
 public class MapSettings {
-    public int width = 250;
-    public int height = 250;
-    public float tileDims = 20;
-
     public String seed;
 
     public int perlinFrequency;
@@ -12,11 +8,14 @@ public class MapSettings {
     public int treeFreq;
     public int riverBend;
 
-    public MapSettings( int perlinFrequency, int treeFreq, int riverBend, String seed) {
+    public boolean riverToggle;
+
+    public MapSettings(int perlinFrequency, int treeFreq, int riverBend, String seed, boolean riverToggle) {
         this.perlinFrequency = perlinFrequency;
         this.treeFreq = treeFreq;
         this.riverBend = riverBend;
         this.seed = seed;
+        this.riverToggle = riverToggle;
     }
 
     public MapSettings(){
@@ -24,6 +23,6 @@ public class MapSettings {
     }
 
     public MapSettings(String seed) {
-        this(3,1,10000, seed);
+        this(3,1,10000, seed, true);
     }
 }
