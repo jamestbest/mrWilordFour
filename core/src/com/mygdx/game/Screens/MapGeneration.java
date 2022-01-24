@@ -35,7 +35,9 @@ public class MapGeneration implements Screen {
     SliderWithLabel freqSlider;
     SliderWithLabel riverBendSlider;
     SliderWithLabel treeDensitySlider;
-    Button RefreshButton;
+    Button refreshButton;
+
+    TextButton continueButton;
 
     Label SeedLabel;
     Label ToggleRiverLabel;
@@ -92,11 +94,16 @@ public class MapGeneration implements Screen {
         seedInput = new InputButtonTwo(0, 0, (int) (width * 0.9f), (int) (height * 0.7f), seed, "seedInput", inputMultiplexer);
         riverToggle = new ToggleButton(0, 0, (int) (width * 0.4f), (int) (height * 1.4), "riverToggle", "");
         dimsInput = new NumberInputWithSides(0, 0, (int) (width * 0.30f), (int) (height * 0.5f), "test4", "widthInput", inputMultiplexer, 1, 250);
-        freqSlider = new SliderWithLabel(0, 0, (int) (width * 0.9f), (int) (height * 0.2), "freqSlider", 5, 1, 1, 3);
+        freqSlider = new SliderWithLabel(0, 0, (int) (width * 0.9f), (int) (height * 0.2), "freqSlider", 7, 1, 1, 3);
         riverBendSlider = new SliderWithLabel(0, 0, (int) (width * 0.9f), (int) (height * 0.2f), "riverBendSlider", 100, 0, 1, 50);
         treeDensitySlider = new SliderWithLabel(0, 0, (int) (width * 0.9f), (int) (height * 0.2f), "treeDensitySlider", 50, 0, 1, 5);
-        RefreshButton = new Button(0, 0, (int) (height * 0.85f), (int) (height * 0.85f),
+        refreshButton = new Button(0, 0, (int) (height * 0.85f), (int) (height * 0.85f),
                 "RefreshButton", "RefreshButton");
+
+        continueButton = new TextButton((int) (MyGdxGame.initialRes.x), (int) (height * 0.3), (int) (width * 0.5f), (int) (height * 0.8f), "Continue", "Continue");
+        continueButton.autoSize();
+        continueButton.translate(-continueButton.width * 1.5f, continueButton.height * 0.5f);
+        extraUI.add(continueButton);
 
         SeedLabel = new Label(0, 0, 0, 0, "seedLabel", "Seed: ");
         ToggleRiverLabel = new Label(0, 0, 0, 0, "toggleRiverLabel", "Toggle River: ");
@@ -109,7 +116,7 @@ public class MapGeneration implements Screen {
         labelTable.addAllWithRows(SeedLabel, ToggleRiverLabel, dimsLabel, FrequencyLabel, RiverBendLabel, TreeDensityLabel, RefreshLabel);
         labelTable.sort();
 
-        buttonTable.addAllWithRows(seedInput, riverToggle, dimsInput, freqSlider, riverBendSlider, treeDensitySlider, RefreshButton);
+        buttonTable.addAllWithRows(seedInput, riverToggle, dimsInput, freqSlider, riverBendSlider, treeDensitySlider, refreshButton);
         buttonTable.sortToFit();
 
         setAllToCorrectFontSize();
@@ -164,6 +171,10 @@ public class MapGeneration implements Screen {
             map.settings.riverToggle = riverToggle.toggled;
 
             map.updateMap();
+        }
+
+        if (extraUI.pressedButtonName.equals("Continue") && Gdx.input.isButtonJustPressed(0)){
+            game.setScreen(new ColonistSelectionScreen(game, map));
         }
 
         typing = seedInput.typing || dimsInput.typing;

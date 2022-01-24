@@ -19,12 +19,16 @@ io.on('connection', function(socket){
   socket.broadcast.emit("newPlayer")
 
   socket.on('disconnect', function(){
-    console.log('user disconnected' + socket.id);
+    console.log('user disconnected ' + socket.id);
     players.splice(players.indexOf(socket), 1);
   });
 
   socket.on("loadWorld", function(data){
     players[players.length - 1].emit("loadWorld", data)
+  })
+
+  socket.on("loadColonists", function(data){
+    players[players.length - 1].emit("loadColonists", data)
   })
 
   socket.on("joinRoom", function(data){

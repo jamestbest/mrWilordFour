@@ -53,6 +53,7 @@ public class GameScreen implements Screen {
 
     HashMap<String, Texture> tileTextures = new HashMap<>();
     HashMap<String, TextureAtlas> thingTextures = new HashMap<>();
+    HashMap<String, TextureAtlas> colonistClothes = new HashMap<>();
 
     float counter = 0f;
     float counterMax = 1f;
@@ -111,9 +112,10 @@ public class GameScreen implements Screen {
         }
     };
 
-    public GameScreen(MyGdxGame game, ArrayList<Colonist> colonists) {
+    public GameScreen(MyGdxGame game, ArrayList<Colonist> colonists, Map map) {
         this.game = game;
         this.isHost = true;
+        this.map = map;
 
         if (isMultiplayer) {
             connectSocket(); //this is placed temp for hosting multiplayer, it will need to happen when they start a multiplayer session
@@ -139,17 +141,20 @@ public class GameScreen implements Screen {
     @Override
     public void show() {
         initialiseTextures();
-        MapSettings mapSettings = new MapSettings(seed);
-        map = new Map(mapSettings);
-        setMapForColonists();
+
         if (isHost) {
-            addition = map.getAdditionFromSeed(seed);
-            map.generateMap();
+
         }
         else {
+            MapSettings mapSettings = new MapSettings(seed);
+            map = new Map(mapSettings);
             map.generateBlank();
+            colonists = new ArrayList<>();
             System.out.println("Generating blank map");
         }
+
+        setMapForColonists();
+        setupColonistClothes();
 
         batch = new SpriteBatch();
         shapeRenderer = new ShapeRenderer();
@@ -173,9 +178,9 @@ public class GameScreen implements Screen {
         drawAllColonists(batch);
         batch.end();
 
-        colonists.get(0).drawPathOutline(camera);
-        colonists.get(1).drawPathOutline(camera);
-        colonists.get(2).drawPathOutline(camera);
+        for (Colonist colonist : colonists) {
+            colonist.drawPathOutline(camera);
+        }
 
         counter += delta * gameSpeed;
         if (counter > counterMax) {
@@ -296,7 +301,6 @@ public class GameScreen implements Screen {
             catch (Exception e) {
                 System.out.println("Error in creating map json");
             }
-
         });
         socket.on("connect_error", args -> System.out.println("Socket connect_error"));
         socket.on("socketID", args -> {
@@ -312,6 +316,18 @@ public class GameScreen implements Screen {
         socket.on("loadWorld", args -> {
             map = json.fromJson(Map.class, args[0].toString());
             System.out.println("Loaded world " + map.addition);
+            try {
+                System.out.println(colonists.size());
+                socket.emit("loadColonists", json.toJson(colonists));
+            }
+            catch (Exception e) {
+                System.out.println("Error in creating map json");
+            }
+        });
+
+        socket.on("loadColonists", args -> {
+            colonists = json.fromJson(ArrayList.class, args[0].toString());
+            System.out.println("Loaded colonists " + colonists.size());
         });
 
         socket.on("changeTileType", args -> {
@@ -330,7 +346,7 @@ public class GameScreen implements Screen {
 
     public void drawAllColonists(SpriteBatch batch){
         for (Colonist c : colonists) {
-            c.draw(batch, GameScreen.TILE_DIMS);
+            c.draw(batch, GameScreen.TILE_DIMS, colonistClothes);
         }
     }
 
@@ -343,6 +359,18 @@ public class GameScreen implements Screen {
     public void setMapForColonists(){
         for (Colonist c : colonists) {
             c.setMap(map);
+        }
+    }
+
+    public void setupColonistClothes(){
+        File directory= new File("core/assets/Textures/TAResources");
+        String[] files = directory.list();
+        assert files != null;
+        for (String fileName : files) {
+            String[] temp = fileName.split("\\.");
+            if (temp[1].equals("atlas")){
+                colonistClothes.put(temp[0], new TextureAtlas(Gdx.files.internal("core/assets/Textures/TAResources/" + fileName)));
+            }
         }
     }
 }

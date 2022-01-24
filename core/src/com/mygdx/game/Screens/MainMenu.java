@@ -66,22 +66,22 @@ public class MainMenu implements Screen {
         }
         if (table.buttonCollection.lastPressedButtonName.equals(NewGame.name)){
             if (!Gdx.input.isButtonPressed(0)) {
-                myGdxGame.setScreen(new ColonistSelectionScreen(myGdxGame));
+                myGdxGame.setScreen(new MapGeneration(myGdxGame));
             }
         }
         if (table.buttonCollection.lastPressedButtonName.equals(LoadGame.name)){
             if (!Gdx.input.isButtonPressed(0)) {
-                myGdxGame.setScreen(new MapGeneration(myGdxGame));
+
             }
         }
         if (table.buttonCollection.lastPressedButtonName.equals(JoinGame.name)){
             if (!Gdx.input.isButtonPressed(0)) {
-                myGdxGame.setScreen(new GameScreen(myGdxGame));
+
             }
         }
         if (table.buttonCollection.lastPressedButtonName.equals(Settings.name)){
             if (!Gdx.input.isButtonPressed(0)) {
-                myGdxGame.setScreen(new ColonistSelectionScreen(myGdxGame));
+
             }
         }
         if (table.buttonCollection.lastPressedButtonName.equals(Exit.name)){

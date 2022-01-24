@@ -61,6 +61,11 @@ public class TextButton extends Button {
         width = (int) (glyphLayout.width * 1.25f);
     }
 
+    public void translate(float x, float y){
+        this.x += x;
+        this.y += y;
+    }
+
     public void setFontColor(Color color){
         fontColor = color;
         font.setColor(fontColor);

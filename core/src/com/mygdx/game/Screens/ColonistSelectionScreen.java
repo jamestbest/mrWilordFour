@@ -8,18 +8,21 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Json;
 import com.mygdx.game.Game.CameraTwo;
 import com.mygdx.game.Game.Colonist;
 import com.mygdx.game.Game.MyGdxGame;
+import com.mygdx.game.Generation.Map;
 import com.mygdx.game.ui.elements.Label;
 import com.mygdx.game.ui.elements.TextButton;
 import com.mygdx.game.ui.extensions.ButtonCollection;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Random;
 
 import static com.badlogic.gdx.math.MathUtils.random;
@@ -55,13 +58,18 @@ public class ColonistSelectionScreen implements Screen {
     int width = (int) (MyGdxGame.initialRes.x / 38 * 7);
     float height = (MyGdxGame.initialRes.y - (3 * offsetY)) / (float) numberOfColonistsToSelectFrom;
 
+    HashMap<String, TextureAtlas> colonistClothes = new HashMap<>();
+
     float inputTimer = 0.5f;
 
     Random random = new Random();
     String[] clothes;
 
-    public ColonistSelectionScreen(MyGdxGame game) {
+    Map map;
+
+    public ColonistSelectionScreen(MyGdxGame game, Map map) {
         this.game = game;
+        this.map = map;
         Json json = new Json();
         colonistTemplates = json.fromJson(ArrayList.class, Colonist.class, Gdx.files.internal("ColonistInformation/Backstories"));
 
@@ -92,6 +100,8 @@ public class ColonistSelectionScreen implements Screen {
         font = new BitmapFont(Gdx.files.internal("Fonts/" + MyGdxGame.fontName + ".fnt"));
         glyphLayout = new GlyphLayout();
         setupFont();
+
+        setupColonistClothes();
 
         camera = new CameraTwo();
         camera.allowMovement = false;
@@ -200,7 +210,9 @@ public class ColonistSelectionScreen implements Screen {
         batch.begin();
         batch.setProjectionMatrix(camera.projViewMatrix);
         for (int i = 0; i < numberOfColonistsToSelectFrom; i++) {
-            batch.draw(colonistsToSelectFrom.get(i).textureAtlas.findRegion("front"), offsetX, offsetY + (height * i) + (offsetY / numberOfColonistsToSelectFrom * i), height - 2, height - 2);
+            batch.draw(colonistClothes.get(colonistsToSelectFrom.get(i).clotheName)
+                    .findRegion("front"),
+                    offsetX, offsetY + (height * i) + (offsetY / numberOfColonistsToSelectFrom * i), height - 2, height - 2);
         }
 
         for (int i = 0; i < numberOfColonistsToSelectFrom; i++) {
@@ -263,10 +275,11 @@ public class ColonistSelectionScreen implements Screen {
             }
             if (buttonCollection.pressedButtonName.equals("continueButton")){
                 if (colonistsSelected.size() == numberOfColonistsToSelect){
-                    game.setScreen(new GameScreen(game, colonistsSelected));
+                    game.setScreen(new GameScreen(game, colonistsSelected, map));
                 }
             }
             if (buttonCollection.pressedButtonName.equals("randomiseButton")){
+                colonistsSelected.remove(colonistsToSelectFrom.get(selectedIndex));
                 colonistsToSelectFrom.set(selectedIndex, generateColonist());
             }
         }
@@ -312,7 +325,9 @@ public class ColonistSelectionScreen implements Screen {
 
         float x = offsetX * 3 + width;
 
-        batch.draw(c.textureAtlas.findRegion("front"), x, MyGdxGame.initialRes.y / 11 * 6, MyGdxGame.initialRes.x / 5, MyGdxGame.initialRes.x / 5);
+        batch.draw(colonistClothes.get(c.clotheName)
+                .findRegion("front"),
+                x, MyGdxGame.initialRes.y / 11 * 6, MyGdxGame.initialRes.x / 5, MyGdxGame.initialRes.x / 5);
 
         int gapY = 20;
 
@@ -336,5 +351,17 @@ public class ColonistSelectionScreen implements Screen {
         }
 
         batch.end();
+    }
+
+    public void setupColonistClothes(){
+        File directory= new File("core/assets/Textures/TAResources");
+        String[] files = directory.list();
+        assert files != null;
+        for (String fileName : files) {
+            String[] temp = fileName.split("\\.");
+            if (temp[1].equals("atlas")){
+                colonistClothes.put(temp[0], new TextureAtlas(Gdx.files.internal("core/assets/Textures/TAResources/" + fileName)));
+            }
+        }
     }
 }

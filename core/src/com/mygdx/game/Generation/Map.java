@@ -110,9 +110,10 @@ public class Map {
     }
 
     public void updateMap(){
-        GameScreen.TILE_DIMS = (drawHeight / (float) TILES_ON_Y);
+//        GameScreen.TILE_DIMS = (drawHeight / (float) TILES_ON_Y);
         getAdditionFromSeed(settings.seed);
         tiles.clear();
+        things.clear();
         generateMap();
     }
 
@@ -179,13 +180,12 @@ public class Map {
         }
     }
 
-    public int getAdditionFromSeed(String seed){
+    public void getAdditionFromSeed(String seed){
         addition = 0;
         for (char c: seed.toCharArray()
         ) {
             addition += c * 1000;
         }
-        return addition;
     }
 
     public void generateRiver(){
@@ -248,6 +248,7 @@ public class Map {
                 }
             }
         }
+        System.out.println("Trees generated");
     }
 
     public void changeTileType(int x, int y, String type){

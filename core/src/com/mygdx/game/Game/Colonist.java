@@ -36,7 +36,6 @@ public class Colonist {
     public String backstory;
 
     public String clotheName;
-    public TextureAtlas textureAtlas;
     String direction = "front";
 
     public String firstName;
@@ -61,7 +60,6 @@ public class Colonist {
     }
 
     public void setup(){
-        generateTextureAtlas();
         getRandomName();
         System.out.println(firstName + " " + lastName + " is a " + profession);
     }
@@ -74,10 +72,6 @@ public class Colonist {
         this.skills = template.skills;
         this.profession = template.profession;
         this.backstory = template.backstory;
-    }
-
-    public void generateTextureAtlas(){
-        textureAtlas = new TextureAtlas("Textures/TAResources/" + clotheName + ".atlas");
     }
 
     public void getRandomName() {
@@ -112,7 +106,7 @@ public class Colonist {
         return null;
     }
 
-    public void draw(SpriteBatch batch, float tileDims){
+    public void draw(SpriteBatch batch, float tileDims, HashMap<String, TextureAtlas> clothes){
         timer += Gdx.graphics.getDeltaTime() * GameScreen.gameSpeed;
         if (timer >= timerMax) {
             x = nextX;
@@ -120,7 +114,7 @@ public class Colonist {
             timer = 0f;
         }
         updateDirection();
-        batch.draw(textureAtlas.findRegion(direction),  (x + ((nextX - x) * timer)) * tileDims , (y + ((nextY - y) * timer)) * tileDims, tileDims, tileDims);
+        batch.draw(clothes.get(clotheName).findRegion(direction),  (x + ((nextX - x) * timer)) * tileDims , (y + ((nextY - y) * timer)) * tileDims, tileDims, tileDims);
     }
 
     public void moveRandomly(){
