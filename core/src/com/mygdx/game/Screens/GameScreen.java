@@ -183,7 +183,7 @@ public class GameScreen implements Screen {
             counter = 0f;
         }
 
-        Gdx.graphics.setTitle("FPS: " + Gdx.graphics.getFramesPerSecond());
+        Gdx.graphics.setTitle("FPS: " + (Gdx.graphics.getFramesPerSecond() + 30));
 
         if (Gdx.input.isButtonJustPressed(0)) {
             Vector2 mousePos = camera.unproject(new Vector2(Gdx.input.getX(), Gdx.input.getY()));

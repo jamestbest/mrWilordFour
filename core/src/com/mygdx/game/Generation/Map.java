@@ -77,9 +77,9 @@ public class Map {
     public void generateStone(){
         for(int i = 0; i < TILES_ON_X; i++) {
             for (int j = 0; j < TILES_ON_Y; j++) {
-                float temp = (float) Noise2D.noise((((float) i / TILES_ON_X) * settings.perlinFrequency) + addition,
+                double temp = Noise2D.noise((((float) i / TILES_ON_X) * settings.perlinFrequency) + addition,
                         (((float) j / TILES_ON_Y) * settings.perlinFrequency) + addition, 255);
-                if (temp > 0.6f) {
+                if (temp > 0.65f) {
                     Tile tile = new Tile(i, j, "stone");
                     tile.canSpawnOn = false;
                     tile.canWalkOn = false;
@@ -251,10 +251,12 @@ public class Map {
     }
 
     public void changeTileType(int x, int y, String type){
-        Tile temp = tiles.get(x).get(y);
-        temp.type = type;
-        temp.canSpawnOn = tileInformationHashMap.get(type).canSpawnOn;
-        temp.canWalkOn = tileInformationHashMap.get(type).canWalkOn;
+        if (isWithinBounds(x, y)){
+            Tile temp = tiles.get(x).get(y);
+            temp.type = type;
+            temp.canSpawnOn = tileInformationHashMap.get(type).canSpawnOn;
+            temp.canWalkOn = tileInformationHashMap.get(type).canWalkOn;
+        }
     }
 
     public boolean isWithinBounds(int newX, int newY){

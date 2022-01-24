@@ -2,6 +2,7 @@ package com.mygdx.game.ui.elements;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Matrix4;
 
 public class Slider extends TextButton{
     float maxValue = 100f;
@@ -32,6 +33,7 @@ public class Slider extends TextButton{
     public void draw(SpriteBatch batch){
         batch.end();
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setProjectionMatrix(batch.getProjectionMatrix());
         shapeRenderer.setColor(0.416f, 0.431f, 0.459f, 1);
         shapeRenderer.rect(x, y, width, height);
         shapeRenderer.setColor(0.349f,0.361f,0.38f,1);

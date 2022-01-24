@@ -73,7 +73,7 @@ public class ColonistSelectionScreen implements Screen {
         buttonCollection = new ButtonCollection();
 
         title = new Label(0,0,0,0, "title", "select your colonists");
-        title.centre((int) (MyGdxGame.initialRes.y / 100 * 46));
+        title.centre((int) (MyGdxGame.initialRes.y / 100 * 47));
 
         selectRemoveButton = new TextButton(0,0, (int) (MyGdxGame.initialRes.x / 16 * 3), (int) (MyGdxGame.initialRes.y / 9), "Select/Remove colonist", "selectButton");
         selectRemoveButton.resizeFontToCorrectProportionByWidth();

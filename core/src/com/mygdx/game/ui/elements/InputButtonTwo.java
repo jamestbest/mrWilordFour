@@ -110,6 +110,7 @@ public class InputButtonTwo extends TextButton{
         glyphLayout.setText(font, text.substring(startDrawPos, cursorPos));
         float Pos = x + (width * ((1 - textAllowance) /2f)) + glyphLayout.width;
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setProjectionMatrix(batch.getProjectionMatrix());
         float cursorHeight = height * 0.70f;
         if (typing) {
             if (lineWaitTimer > lineTotalWaitTime / 2f) {

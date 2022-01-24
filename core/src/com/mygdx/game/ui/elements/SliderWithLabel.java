@@ -36,6 +36,7 @@ public class SliderWithLabel extends Slider {
         batch.end();
         float tempWidth = width * 0.75f;
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setProjectionMatrix(batch.getProjectionMatrix());
         shapeRenderer.setColor(0.416f, 0.431f, 0.459f, 1);
         shapeRenderer.rect(x, y, tempWidth, height);
         shapeRenderer.setColor(0.349f,0.361f,0.38f,1);

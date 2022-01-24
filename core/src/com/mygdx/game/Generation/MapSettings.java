@@ -23,6 +23,6 @@ public class MapSettings {
     }
 
     public MapSettings(String seed) {
-        this(3,1,10000, seed, true);
+        this(4,1,10000, seed, true);
     }
 }

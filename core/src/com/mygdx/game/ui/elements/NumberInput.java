@@ -33,6 +33,9 @@ public class NumberInput extends TextButton{
                                 text = String.valueOf(maxValue);
                             }
                         }
+                        if (Integer.parseInt(text) < minValue){
+                            text = String.valueOf(minValue);
+                        }
                     }
                     if (character == '\b') {
                         if (text.length() > 0) {
