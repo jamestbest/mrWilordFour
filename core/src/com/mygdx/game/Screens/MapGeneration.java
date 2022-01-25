@@ -60,7 +60,8 @@ public class MapGeneration implements Screen {
 
     public MapGeneration(MyGdxGame game){
 
-        // TODO: 17/01/2022 The slider doesn't appear if the window is resized before it spawns in 
+        // FIXED: 17/01/2022 The slider doesn't appear if the window is resized before it spawns in
+        // TODO: 25/01/2022 AMOGUS MAP
         this.game = game;
 
         inputMultiplexer = new InputMultiplexer();
