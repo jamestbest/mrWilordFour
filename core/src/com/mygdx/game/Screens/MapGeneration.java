@@ -1,6 +1,7 @@
 package com.mygdx.game.Screens;
 
 import com.badlogic.gdx.*;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -13,6 +14,7 @@ import com.mygdx.game.ui.extensions.ButtonCollection;
 import com.mygdx.game.ui.extensions.Table;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class MapGeneration implements Screen {
@@ -207,20 +209,24 @@ public class MapGeneration implements Screen {
 
     public void initialiseTextures(){
         //loads every texture in the textures map
-        File directory= new File("core/assets/Textures/TileTextures");
-        String[] files = directory.list();
+        FileHandle directory= Gdx.files.internal("core/assets/Textures/TileTextures");
+        FileHandle[] files = directory.list();
+        System.out.println(directory.path());
+        System.out.println(directory.isDirectory());
         assert files != null;
-        for (String fileName : files) {
-            String[] temp = fileName.split("\\.");
-            tileTextures.put(temp[0], new Texture(Gdx.files.internal("core/assets/Textures/TileTextures/" + fileName)));
+        for (FileHandle fileName : files) {
+            String[] temp = fileName.name().split("\\.");
+            tileTextures.put(temp[0], new Texture(Gdx.files.internal(fileName.path())));
         }
-        File directory2 = new File("core/assets/Textures/ThingTextures");
-        String[] files2 = directory2.list();
+        FileHandle directory2= Gdx.files.internal("core/assets/Textures/ThingTextures");
+        System.out.println(directory2.path());
+        System.out.println(directory2.isDirectory());
+        FileHandle[] files2 = directory2.list();
         assert files2 != null;
-        for (String fileName : files2) {
-            String[] temp = fileName.split("\\.");
+        for (FileHandle fileName : files2) {
+            String[] temp = fileName.name().split("\\.");
             if (temp[1].equals("atlas")) {
-                thingTextures.put(temp[0], new TextureAtlas(Gdx.files.internal("core/assets/Textures/ThingTextures/" + fileName)));
+                thingTextures.put(temp[0], new TextureAtlas(Gdx.files.internal(fileName.path())));
             }
         }
     }

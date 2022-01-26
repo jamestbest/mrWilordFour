@@ -173,10 +173,13 @@ public class GameScreen implements Screen {
 
         batch.begin();
         batch.setProjectionMatrix(camera.projViewMatrix);
-        map.drawMap(batch, tileTextures, thingTextures, camera);
+        map.drawMap(batch, tileTextures, camera);
 
         drawAllColonists(batch);
+
+        map.drawThings(batch, thingTextures, camera);
         batch.end();
+
 
         for (Colonist colonist : colonists) {
             colonist.drawPathOutline(camera);

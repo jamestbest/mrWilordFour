@@ -145,7 +145,7 @@ public class Map {
         }
     }
 
-    public void drawMap(SpriteBatch batch, HashMap<String, Texture> tileTextures, HashMap<String, TextureAtlas> thingTextures, CameraTwo camera){
+    public void drawMap(SpriteBatch batch, HashMap<String, Texture> tileTextures, CameraTwo camera){
         int startX = (int)(Math.highest (((camera.position.x - (camera.width * camera.zoom)/2f) / GameScreen.TILE_DIMS) - 5, 0));
         int startY = (int)(Math.highest (((camera.position.y - (camera.height * camera.zoom)/2f) / GameScreen.TILE_DIMS) - 5, 0));
 
@@ -156,6 +156,15 @@ public class Map {
                 batch.draw(tileTextures.get(tiles.get(i).get(j).type), i * GameScreen.TILE_DIMS, j * GameScreen.TILE_DIMS, GameScreen.TILE_DIMS, GameScreen.TILE_DIMS);
             }
         }
+
+    }
+
+    public void drawThings(SpriteBatch batch, HashMap<String, TextureAtlas> thingTextures, CameraTwo camera){
+        int startX = (int)(Math.highest (((camera.position.x - (camera.width * camera.zoom)/2f) / GameScreen.TILE_DIMS) - 5, 0));
+        int startY = (int)(Math.highest (((camera.position.y - (camera.height * camera.zoom)/2f) / GameScreen.TILE_DIMS) - 5, 0));
+
+        int endX = (int)(Math.lowest((camera.width * camera.zoom / GameScreen.TILE_DIMS) + startX + 10, TILES_ON_X));
+        int endY = (int)(Math.lowest((camera.height * camera.zoom / GameScreen.TILE_DIMS) + startY + 10, TILES_ON_Y));
         for(int i = startX; i < endX; i++) {
             for (int j = endY - 1; j > startY; j--) {
                 if (!things.get(i).get(j).type.equals("")) {
