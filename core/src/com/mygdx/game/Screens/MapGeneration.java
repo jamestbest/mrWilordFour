@@ -210,7 +210,7 @@ public class MapGeneration implements Screen {
 
     public void initialiseTextures(){
         //loads every texture in the textures map
-        FileHandle directory= Gdx.files.internal("core/assets/Textures/TileTextures");
+        FileHandle directory = Gdx.files.getFileHandle("assets/Textures/TileTextures", Files.FileType.Absolute);
         FileHandle[] files = directory.list();
         System.out.println(directory.path());
         System.out.println(directory.isDirectory());
@@ -219,8 +219,9 @@ public class MapGeneration implements Screen {
             String[] temp = fileName.name().split("\\.");
             tileTextures.put(temp[0], new Texture(Gdx.files.internal(fileName.path())));
         }
-        FileHandle directory2= Gdx.files.internal("core/assets/Textures/ThingTextures");
-        System.out.println(directory2.path());
+        FileHandle directory2= Gdx.files.getFileHandle("assets/Textures/ThingTextures", Files.FileType.Absolute);
+        System.out.println(directory2.parent().path());
+        System.out.println(directory2.file().getAbsolutePath());
         System.out.println(directory2.isDirectory());
         FileHandle[] files2 = directory2.list();
         assert files2 != null;
