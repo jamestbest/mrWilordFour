@@ -9,6 +9,7 @@ public class MyGdxGame extends Game {
 	public static Vector2 initialRes;
 
 	public static String fontName = "Arial";
+	public static String title = "mR. Wilord";
 	
 	@Override
 	public void create () {

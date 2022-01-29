@@ -217,7 +217,7 @@ public class ColonistSelectionScreen implements Screen {
 
         for (int i = 0; i < numberOfColonistsToSelectFrom; i++) {
             if (colonistsSelected.contains(colonistsToSelectFrom.get(i))){
-                font.setColor(Color.BLUE);
+                font.setColor(Color.GOLD);
             }
             else {
                 font.setColor(Color.WHITE);
@@ -300,14 +300,14 @@ public class ColonistSelectionScreen implements Screen {
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setProjectionMatrix(camera.projViewMatrix);
 
-        shapeRenderer.setColor(Color.BLUE);
+        shapeRenderer.setColor(Color.GOLD);
         for (int i = 0; i < numberOfColonistsToSelectFrom; i++) {
             if (colonistsSelected.contains(colonistsToSelectFrom.get(i))){
                 shapeRenderer.rect(offsetX, offsetY + (height * i) + (offsetY / numberOfColonistsToSelectFrom * i), width, height);
             }
         }
 
-        shapeRenderer.setColor(Color.GOLD);
+        shapeRenderer.setColor(Color.BLUE);
         shapeRenderer.rect(offsetX, offsetY + (height * selectedIndex) + (offsetY / numberOfColonistsToSelectFrom * selectedIndex), width, height);
 
         shapeRenderer.setColor(Color.WHITE);

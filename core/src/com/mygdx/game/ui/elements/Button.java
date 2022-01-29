@@ -40,6 +40,10 @@ public class Button {
         this(x, y, width, height, "BlueButton", name);
     }
 
+    public Button(String name){
+        this(0, 0, 0, 0, "BlueButton", name);
+    }
+
     public void draw(SpriteBatch batch) {
         if (visible) {
             if(pressed){

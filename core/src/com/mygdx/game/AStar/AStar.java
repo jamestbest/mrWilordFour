@@ -30,7 +30,9 @@ public class AStar {
     }
 
     public static ArrayList<Vector2> pathFindForColonist(Vector2 start, Vector2 end, int addition, ArrayList<ArrayList<Boolean>> map){
-        grid.clear();
+        if (grid != null) {
+            grid.clear();
+        }
         grid = new ArrayList<>();
         for (int i = 0; i < GameScreen.TILES_ON_X; i++) {
             grid.add(new ArrayList<>());

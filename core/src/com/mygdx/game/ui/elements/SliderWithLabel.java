@@ -46,7 +46,7 @@ public class SliderWithLabel extends Slider {
         batch.begin();
 
         glyphLayout.setText(font, String.valueOf((int)value));
-        font.draw(batch, glyphLayout, x + tempWidth * 1.1f, y + height);
+        font.draw(batch, glyphLayout, x + tempWidth * 1.1f, y + (height + glyphLayout.height) / 2f);
 
         batch.end();
         batch.begin();

@@ -19,6 +19,8 @@ public class Table {
     public int width;
     public int height;
 
+    int max = 1;
+
     ShapeRenderer shapeRenderer;
 
     public Table(int x, int y, int width, int height) {
@@ -63,13 +65,12 @@ public class Table {
     }
 
     public void sort() {
-        int max = 0;
         for (ArrayList<Button> buttonArrayList : grid) {
             if (buttonArrayList.size() > max) {
                 max = buttonArrayList.size();
             }
         }
-        float offset = height / (float) max / 10f;
+        float offset = height / (float) grid.size() / 10f;
         float buttonWidth = width / (float) max;
         float buttonHeight = (height - ((grid.size() - 1) * offset)) / (float) grid.size();
 
@@ -88,13 +89,16 @@ public class Table {
         }
     }
 
-    public void sortToFit(){ //given that it is a 1d array
+    public void sortToFit(){
         float height = this.height / (float) grid.size();
         for (int i = 0; i < grid.size(); i++) {
-            Button b = grid.get(i).get(0);
-            float x = this.x + (this.width - b.width) / 2f;
-            float y = this.y + ((grid.size() - i - 1) * (height)) + (height - b.height) / 2f;
-            b.setPos((int) x, (int) y);
+            for (int j = 0; j < grid.get(i).size(); j++) {
+                Button b = grid.get(i).get(j);
+                float x1 = this.x + ((this.width / (float) max) * (j));
+                float x = x1 + ((this.width / (float) max) - b.width) / 2;
+                float y = this.y + ((grid.size() - i - 1) * (height)) + (height - b.height) / 2f;
+                b.setPos((int) x, (int) y);
+            }
         }
     }
 }

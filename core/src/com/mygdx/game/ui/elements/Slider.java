@@ -54,4 +54,9 @@ public class Slider extends TextButton{
         }
         return false;
     }
+
+    public void setSize(int width, int height){
+        this.width = width / 3 * 2;
+        this.height = height / 10;
+    }
 }

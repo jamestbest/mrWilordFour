@@ -95,7 +95,7 @@ public class MapGeneration implements Screen {
         height = (int) (height / 8f); // divide by the number of buttons
 
         seedInput = new InputButtonTwo(0, 0, (int) (width * 0.9f), (int) (height * 0.7f), seed, "seedInput", inputMultiplexer);
-        riverToggle = new ToggleButton(0, 0, (int) (width * 0.4f), (int) (height * 1.4), "riverToggle", "");
+        riverToggle = new ToggleButton(0, 0, (int) (width * 0.4f), (int) (height * 1.4), "riverToggle");
         dimsInput = new NumberInputWithSides(0, 0, (int) (width * 0.30f), (int) (height * 0.5f), "test4", "widthInput", inputMultiplexer, 1, 250);
         freqSlider = new SliderWithLabel(0, 0, (int) (width * 0.9f), (int) (height * 0.2), "freqSlider", 7, 1, 1, 3);
         riverBendSlider = new SliderWithLabel(0, 0, (int) (width * 0.9f), (int) (height * 0.2f), "riverBendSlider", 100, 0, 1, 50);
@@ -210,18 +210,26 @@ public class MapGeneration implements Screen {
 
     public void initialiseTextures(){
         //loads every texture in the textures map
-        FileHandle directory = Gdx.files.getFileHandle("assets/Textures/TileTextures", Files.FileType.Absolute);
+        System.out.println(Gdx.files.isLocalStorageAvailable());
+        File dir = new File("core/assets/Textures/TileTextures/dirt.png");
+        System.out.println(dir.exists());
+
+
+
+        System.out.println(Gdx.files.getLocalStoragePath());
+        FileHandle directory = Gdx.files.internal("core/assets/Textures/TileTextures");
+        System.out.println(Arrays.toString(directory.list()));
         FileHandle[] files = directory.list();
         System.out.println(directory.path());
+        System.out.println(directory.exists());
         System.out.println(directory.isDirectory());
         assert files != null;
         for (FileHandle fileName : files) {
             String[] temp = fileName.name().split("\\.");
             tileTextures.put(temp[0], new Texture(Gdx.files.internal(fileName.path())));
         }
-        FileHandle directory2= Gdx.files.getFileHandle("assets/Textures/ThingTextures", Files.FileType.Absolute);
-        System.out.println(directory2.parent().path());
-        System.out.println(directory2.file().getAbsolutePath());
+        FileHandle directory2= Gdx.files.internal("core/assets/Textures/ThingTextures");
+        System.out.println(directory2.path());
         System.out.println(directory2.isDirectory());
         FileHandle[] files2 = directory2.list();
         assert files2 != null;

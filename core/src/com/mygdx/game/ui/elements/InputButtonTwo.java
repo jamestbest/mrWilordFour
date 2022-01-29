@@ -52,6 +52,9 @@ public class InputButtonTwo extends TextButton{
             @Override
             public boolean keyTyped(char character) {
                 if(typing){
+                    if (character != ' '){
+                        lineWaitTimer = (float) (0.5 * lineTotalWaitTime);
+                    }
                     if (character == '\b') {
                         if (cursorPos > 0) {
                             String temp = text.substring(0, cursorPos - 1);
@@ -131,6 +134,7 @@ public class InputButtonTwo extends TextButton{
         waitTimer += Gdx.graphics.getDeltaTime();
         if ((waitTimer > totalWaitTime || Gdx.input.isKeyJustPressed(Input.Keys.ANY_KEY)) && typing) {
             if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
+                lineWaitTimer = (float) (0.5 * lineTotalWaitTime);
                 if (cursorPos > 1) {
                     cursorPos--;
                 }
@@ -147,6 +151,7 @@ public class InputButtonTwo extends TextButton{
                 waitTimer = 0;
             }
             if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+                lineWaitTimer = (float) (0.5 * lineTotalWaitTime);
                 if (cursorPos < text.length()) {
                     cursorPos++;
                 }
@@ -178,5 +183,10 @@ public class InputButtonTwo extends TextButton{
             }
         }
         return false;
+    }
+
+    public void setSize(int width, int height){
+        this.width = (int) (width * 0.75);
+        this.height = (int) (height * 0.35);
     }
 }

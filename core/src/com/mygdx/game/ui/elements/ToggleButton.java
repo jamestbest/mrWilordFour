@@ -11,6 +11,10 @@ public class ToggleButton extends Button{
         setup();
     }
 
+    public ToggleButton(int x, int y, int width, int height, String name){
+        this(x, y, width, height, name, "");
+    }
+
     String type;
     public boolean toggled = true;
 
@@ -34,5 +38,9 @@ public class ToggleButton extends Button{
             }
         }
         return false;
+    }
+
+    public void setSize(int width, int height){
+        super.setSize(width / 4, height / 3 * 2);
     }
 }

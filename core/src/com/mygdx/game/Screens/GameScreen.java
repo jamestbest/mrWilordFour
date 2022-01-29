@@ -11,6 +11,7 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Json;
+
 import com.mygdx.game.Game.CameraTwo;
 import com.mygdx.game.Game.Colonist;
 import com.mygdx.game.Game.MyGdxGame;
@@ -26,6 +27,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Random;
 
 public class GameScreen implements Screen {
     public static int TILES_ON_X = 250;
@@ -117,11 +119,6 @@ public class GameScreen implements Screen {
         this.isHost = true;
         this.map = map;
 
-        if (isMultiplayer) {
-            connectSocket(); //this is placed temp for hosting multiplayer, it will need to happen when they start a multiplayer session
-            createSocketListeners();
-        }
-
         Gdx.graphics.setVSync(false);
         Gdx.graphics.setForegroundFPS(Integer.MAX_VALUE);
 
@@ -131,6 +128,7 @@ public class GameScreen implements Screen {
     public GameScreen(MyGdxGame game){
         this.game = game;
         this.isHost = false;
+        this.isMultiplayer = true;
         connectSocket();
         createSocketListeners();
 
@@ -153,7 +151,6 @@ public class GameScreen implements Screen {
             System.out.println("Generating blank map");
         }
 
-        setMapForColonists();
         setupColonistClothes();
 
         batch = new SpriteBatch();
@@ -180,9 +177,8 @@ public class GameScreen implements Screen {
         map.drawThings(batch, thingTextures, camera);
         batch.end();
 
-
         for (Colonist colonist : colonists) {
-            colonist.drawPathOutline(camera);
+            colonist.drawPathOutline(camera, shapeRenderer);
         }
 
         counter += delta * gameSpeed;
@@ -217,7 +213,7 @@ public class GameScreen implements Screen {
             int x = (int) (mousePos.x / TILE_DIMS);
             int y = (int) (mousePos.y / TILE_DIMS);
             if (map.isWithinBounds(x, y)) {
-                colonists.get(0).setMoveToPos(x,y);
+                colonists.get(0).setMoveToPos(x,y, map);
             }
         }
 
@@ -299,12 +295,17 @@ public class GameScreen implements Screen {
         socket.on("connect", args -> System.out.println("Connected to server"));
         socket.on("newPlayer", args -> {
             try {
-                socket.emit("loadWorld", json.toJson(map));
+                JSONObject data = new JSONObject();
+                data.put("map", json.toJson(map));
+                data.put("colonists", json.toJson(colonists));
+                System.out.println(data.get("colonists"));
+                socket.emit("loadWorld", data);
             }
             catch (Exception e) {
                 System.out.println("Error in creating map json");
             }
         });
+
         socket.on("connect_error", args -> System.out.println("Socket connect_error"));
         socket.on("socketID", args -> {
             JSONObject data = (JSONObject) args[0];
@@ -316,20 +317,24 @@ public class GameScreen implements Screen {
             }
         });
         socket.on("sayID", args -> System.out.println("ID: " + socketID));
-        socket.on("loadWorld", args -> {
-            map = json.fromJson(Map.class, args[0].toString());
-            System.out.println("Loaded world " + map.addition);
+        socket.on("loadWorldClient", args -> {
+            JSONObject data = (JSONObject) args[0];
             try {
-                System.out.println(colonists.size());
-                socket.emit("loadColonists", json.toJson(colonists));
-            }
-            catch (Exception e) {
-                System.out.println("Error in creating map json");
+                map = json.fromJson(Map.class, data.get("map").toString());
+                colonists = json.fromJson(ArrayList.class, data.get("colonists").toString());
+                System.out.println("Loaded world" + colonists.size());
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
         });
 
+        socket.on("testTwo", args -> {
+            System.out.println("testTwo: " + args[0]);
+        });
+
+
         socket.on("loadColonists", args -> {
-            colonists = json.fromJson(ArrayList.class, args[0].toString());
+            colonists = json.fromJson(ArrayList.class, Colonist.class, args[0].toString());
             System.out.println("Loaded colonists " + colonists.size());
         });
 
@@ -355,13 +360,7 @@ public class GameScreen implements Screen {
 
     public void moveColonists(){
         for (Colonist c : colonists) {
-            c.moveColonist();
-        }
-    }
-
-    public void setMapForColonists(){
-        for (Colonist c : colonists) {
-            c.setMap(map);
+            c.moveColonist(map);
         }
     }
 

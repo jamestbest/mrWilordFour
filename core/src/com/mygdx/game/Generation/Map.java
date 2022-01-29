@@ -60,7 +60,7 @@ public class Map {
     }
 
     public void generateMap(){
-        setTileInfoHashMap();
+        setup();
         tiles = new ArrayList<>();
         things = new ArrayList<>();
         generateGrass();
@@ -73,6 +73,11 @@ public class Map {
 
         generateTrees();
     }
+
+    public void setup(){
+        setTileInfoHashMap();
+    }
+
 
     public void generateStone(){
         for(int i = 0; i < TILES_ON_X; i++) {
@@ -133,6 +138,7 @@ public class Map {
     }
 
     public void generateBlank(){
+        setup();
         tiles = new ArrayList<>();
         things = new ArrayList<>();
         for(int i = 0; i < TILES_ON_X; i++){

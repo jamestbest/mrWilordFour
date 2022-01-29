@@ -42,11 +42,8 @@ public class Colonist {
     public String lastName;
 
     static Random random = new Random();
-    static ShapeRenderer shapeRenderer = new ShapeRenderer();
 
     ArrayList<Vector2> pathToComplete = new ArrayList<>();
-
-    Map map;
 
     boolean movingAcrossPath = false;
 
@@ -62,10 +59,6 @@ public class Colonist {
     public void setup(){
         getRandomName();
         System.out.println(firstName + " " + lastName + " is a " + profession);
-    }
-
-    public void setMap(Map map){
-        this.map = map;
     }
 
     public void copyTemplate(Colonist template){
@@ -117,7 +110,7 @@ public class Colonist {
         batch.draw(clothes.get(clotheName).findRegion(direction),  (x + ((nextX - x) * timer)) * tileDims , (y + ((nextY - y) * timer)) * tileDims, tileDims, tileDims);
     }
 
-    public void moveRandomly(){
+    public void moveRandomly(Map map){
         int randomX = random.nextInt(3) - 1;
         int randomY = random.nextInt(3) - 1;
 
@@ -129,19 +122,19 @@ public class Colonist {
         }
     }
 
-    public void setMoveToPos(int x, int y){
+    public void setMoveToPos(int x, int y, Map map){
         pathToComplete = AStar.pathFindForColonist(new Vector2(this.x, this.y), new Vector2(x, y), map.addition, map.booleanMap);
         movingAcrossPath = pathToComplete.size() > 0;
     }
 
-    public void getRandomPosition(){
+    public void getRandomPosition(Map map){
         int count = 0;
-        Vector2 randomPos = getPosInRange();
+        Vector2 randomPos = getPosInRange(map);
         int randomX = (int) randomPos.x;
         int randomY = (int) randomPos.y;
 
         while (!map.tiles.get(x + randomX).get(y + randomY).canWalkOn) {
-            randomPos = getPosInRange();
+            randomPos = getPosInRange(map);
             randomX = (int) randomPos.x;
             randomY = (int) randomPos.y;
             count++;
@@ -155,7 +148,7 @@ public class Colonist {
         movingAcrossPath = pathToComplete.size() > 0;
     }
 
-    public Vector2 getPosInRange(){
+    public Vector2 getPosInRange(Map map){
         int randomX = random.nextInt(randomMoveRadius * 2);
         int randomY = random.nextInt(randomMoveRadius * 2);
 
@@ -187,17 +180,17 @@ public class Colonist {
         }
     }
 
-    public void moveColonist(){
+    public void moveColonist(Map map){
         if (movingAcrossPath) {
             moveAlongPath();
         }
         else {
             int choice = random.nextInt(10);
             if (choice <= 3){
-                getRandomPosition();
+                getRandomPosition(map);
             }
             else {
-                moveRandomly();
+                moveRandomly(map);
             }
         }
     }
@@ -217,7 +210,7 @@ public class Colonist {
         }
     }
 
-    public void drawPathOutline(CameraTwo cameraTwo){
+    public void drawPathOutline(CameraTwo cameraTwo, ShapeRenderer shapeRenderer){
         for (Vector2 v : pathToComplete) {
             Gdx.gl.glEnable(GL30.GL_BLEND);
             Gdx.gl.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
