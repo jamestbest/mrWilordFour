@@ -79,7 +79,7 @@ public class Colonist {
 
     public ArrayList<String> makeArrayOfNames(String nameOfFile) {
         try {
-            FileReader fileReader = new FileReader("core/assets/ColonistInformation/" + nameOfFile);
+            FileReader fileReader = new FileReader("assets/ColonistInformation/" + nameOfFile);
 
             BufferedReader br = new BufferedReader(fileReader);
 

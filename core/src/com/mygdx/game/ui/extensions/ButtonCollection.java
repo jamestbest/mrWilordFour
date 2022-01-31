@@ -46,7 +46,7 @@ public class ButtonCollection {
                 y = (int) temp.y;
             }
             else {
-                y = (int) (MyGdxGame.initialRes.y - y);
+                y = (int) (Gdx.graphics.getHeight() - y);
             }
             System.out.println(x + " " + y);
             for (Button button : buttons) {
