@@ -45,6 +45,8 @@ public class Colonist {
 
     ArrayList<Vector2> pathToComplete = new ArrayList<>();
 
+    HashMap<String, Integer> priorityFromType;
+
     boolean movingAcrossPath = false;
 
     float timer = 0f;
@@ -59,6 +61,7 @@ public class Colonist {
     public void setup(){
         getRandomName();
         System.out.println(firstName + " " + lastName + " is a " + profession);
+        setupPriorities();
     }
 
     public void copyTemplate(Colonist template){
@@ -221,5 +224,42 @@ public class Colonist {
             shapeRenderer.end();
             Gdx.gl.glDisable(GL30.GL_BLEND);
         }
+    }
+
+    public void setupPriorities(){
+        priorityFromType = new HashMap<>();
+        priorityFromType.put("Mine", 1);
+        priorityFromType.put("Plant", 2);
+        priorityFromType.put("CutDown", 3);
+        priorityFromType.put("Harvest", 4);
+    }
+
+    public Task getNextTask(ArrayList<Task> availableTasks){
+        float minDistance = Integer.MAX_VALUE;
+        int maxPriority = 0;
+        String maxPriorityTaskType = "";
+        Task bestTask = null;
+
+        for(Task task : availableTasks){
+            if(priorityFromType.get(task.type) > maxPriority){
+                maxPriority = priorityFromType.get(task.type);
+                maxPriorityTaskType = task.type;
+            }
+        }
+
+        for (Task task : availableTasks) {
+            if (task.type.equals(maxPriorityTaskType)) {
+                float distance = getDistance(task.x, task.y);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    bestTask = task;
+                }
+            }
+        }
+        return bestTask;
+    }
+
+    public float getDistance(int x, int y){
+        return (float) Math.sqrt(Math.pow(x - this.x, 2) + Math.pow(y - this.y, 2));
     }
 }

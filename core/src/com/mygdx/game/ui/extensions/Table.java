@@ -40,8 +40,8 @@ public class Table {
         buttonCollection.drawButtons(batch);
     }
 
-    public void update(CameraTwo camera) {
-        buttonCollection.updateButtons(camera);
+    public boolean update(CameraTwo camera) {
+        return buttonCollection.updateButtons(camera);
     }
 
     public void add(Button... button) {
