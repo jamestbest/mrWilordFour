@@ -8,7 +8,7 @@
 
     grass:
         {
-            type:mud,
+            type:grass,
             canWalkOn:true
             canSpawnOn:true
         },
@@ -16,5 +16,11 @@
     stone:
         {
             type:stone
-        }
+        },
+
+    water:
+        {
+            type:water,
+            canWalkOn:true
+        },
 }

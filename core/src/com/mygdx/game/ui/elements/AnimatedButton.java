@@ -44,7 +44,7 @@ public class AnimatedButton extends Button {
     }
 
     public void setAllTextures(){
-        File dir = new File("assets/Textures/ui/buttons/animated/" + Gda);
+        File dir = new File("core/assets/Textures/ui/buttons/animated/" + Gda);
         String[] files = dir.list();
         textures = new Array<>(files.length);
         for (String file : files) {

@@ -186,7 +186,7 @@ public class ColonistSelectionScreen implements Screen {
     }
 
     public String[] getListOfClothes(){
-        File dir = new File("assets/Textures/TAResources");
+        File dir = new File("core/assets/Textures/TAResources");
         String[] files = dir.list();
         assert files != null;
         String[] output = new String[files.length / 2];
@@ -354,13 +354,13 @@ public class ColonistSelectionScreen implements Screen {
     }
 
     public void setupColonistClothes(){
-        File directory= new File("assets/Textures/TAResources");
+        File directory= new File("core/assets/Textures/TAResources");
         String[] files = directory.list();
         assert files != null;
         for (String fileName : files) {
             String[] temp = fileName.split("\\.");
             if (temp[1].equals("atlas")){
-                colonistClothes.put(temp[0], new TextureAtlas(Gdx.files.internal("assets/Textures/TAResources/" + fileName)));
+                colonistClothes.put(temp[0], new TextureAtlas(Gdx.files.internal("core/assets/Textures/TAResources/" + fileName)));
             }
         }
     }

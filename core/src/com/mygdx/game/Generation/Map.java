@@ -18,7 +18,6 @@ import java.util.Random;
 public class Map {
     public ArrayList<ArrayList<Tile>> tiles;
     public ArrayList<ArrayList<Thing>> things;
-    public ArrayList<ArrayList<Boolean>> booleanMap;
 
     public int addition;
 
@@ -112,26 +111,10 @@ public class Map {
     }
 
     public void updateMap(){
-//        GameScreen.TILE_DIMS = (drawHeight / (float) GameScreen.TILES_ON_Y);
         getAdditionFromSeed(settings.seed);
         tiles.clear();
         things.clear();
         generateMap();
-    }
-
-    public void updateBooleanMap(){
-        booleanMap = new ArrayList<>();
-        for (int i = 0; i < GameScreen.TILES_ON_X; i++) {
-            booleanMap.add(new ArrayList<>());
-            for (int j = 0; j < GameScreen.TILES_ON_Y; j++) {
-                if (tiles.get(i).get(j).canWalkOn) {
-                    booleanMap.get(i).add(true);
-                }
-                else {
-                    booleanMap.get(i).add(false);
-                }
-            }
-        }
     }
 
     public void generateBlank(){
@@ -159,7 +142,6 @@ public class Map {
                 batch.draw(tileTextures.get(tiles.get(i).get(j).type), i * GameScreen.TILE_DIMS, j * GameScreen.TILE_DIMS, GameScreen.TILE_DIMS, GameScreen.TILE_DIMS);
             }
         }
-
     }
 
     public void drawThings(SpriteBatch batch, HashMap<String, TextureAtlas> thingTextures, CameraTwo camera){
@@ -204,8 +186,8 @@ public class Map {
         Vector2 start = riverLocs.get(0);
         Vector2 end = riverLocs.get(1);
         ArrayList<Vector2> path;
-        updateBooleanMap();
-        path = AStar.pathFindForRivers(start, end, addition, booleanMap, settings.riverBend, settings.perlinFrequency);
+//        updateBooleanMap();
+        path = AStar.pathFindForRivers(start, end, addition, tiles, settings.riverBend, settings.perlinFrequency);
         for (int i = 0; i < path.size(); i++) {
             Vector2 temp = path.get(i);
             if (i + 1 < path.size()) {
@@ -280,5 +262,30 @@ public class Map {
         Json json = new Json();
         tileInformationHashMap = json.fromJson(HashMap.class, TileInformation.class, Gdx.files.internal("TileInfo/tileInfo.txt"));
         System.out.println("");
+    }
+
+    public ArrayList<String> packageTiles(){
+        ArrayList<String> output = new ArrayList<>();
+        for (int i = 0; i < GameScreen.TILES_ON_X; i++) {
+            for (int j = 0; j < GameScreen.TILES_ON_Y; j++) {
+                output.add(tiles.get(i).get(j).type);
+            }
+        }
+        return output;
+    }
+
+    public void unPackageTiles(ArrayList<String> input){
+        setup();
+        ArrayList<ArrayList<Tile>> tempArray = new ArrayList<>();
+        for (int i = 0; i < GameScreen.TILES_ON_X; i++) {
+            tempArray.add(new ArrayList<>());
+            for (int j = 0; j < GameScreen.TILES_ON_Y; j++) {
+                Tile temp = new Tile(i, j, input.get(i * GameScreen.TILES_ON_Y + j));
+                temp.canSpawnOn = tileInformationHashMap.get(temp.type).canSpawnOn;
+                temp.canWalkOn = tileInformationHashMap.get(temp.type).canWalkOn;
+                tempArray.get(i).add(temp);
+            }
+        }
+        tiles = tempArray;
     }
 }

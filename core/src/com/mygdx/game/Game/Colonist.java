@@ -1,17 +1,13 @@
 package com.mygdx.game.Game;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL30;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.Json;
 import com.mygdx.game.AStar.AStar;
-import com.mygdx.game.DataStructures.Queue;
 import com.mygdx.game.Generation.Map;
-import com.mygdx.game.Generation.TileInformation;
 import com.mygdx.game.Screens.GameScreen;
 
 import java.io.BufferedReader;
@@ -79,7 +75,7 @@ public class Colonist {
 
     public ArrayList<String> makeArrayOfNames(String nameOfFile) {
         try {
-            FileReader fileReader = new FileReader("assets/ColonistInformation/" + nameOfFile);
+            FileReader fileReader = new FileReader("core/assets/ColonistInformation/" + nameOfFile);
 
             BufferedReader br = new BufferedReader(fileReader);
 
@@ -126,7 +122,7 @@ public class Colonist {
     }
 
     public void setMoveToPos(int x, int y, Map map){
-        pathToComplete = AStar.pathFindForColonist(new Vector2(this.x, this.y), new Vector2(x, y), map.addition, map.booleanMap);
+        pathToComplete = AStar.pathFindForColonist(new Vector2(this.x, this.y), new Vector2(x, y), map.tiles);
         movingAcrossPath = pathToComplete.size() > 0;
     }
 
@@ -146,7 +142,7 @@ public class Colonist {
             }
         }
 
-        pathToComplete = AStar.pathFindForColonist(new Vector2(x, y), new Vector2(randomX + x, randomY + y), map.addition, map.booleanMap);
+        pathToComplete = AStar.pathFindForColonist(new Vector2(x, y), new Vector2(randomX + x, randomY + y), map.tiles);
 
         movingAcrossPath = pathToComplete.size() > 0;
     }

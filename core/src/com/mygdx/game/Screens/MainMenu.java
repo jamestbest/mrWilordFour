@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.mygdx.game.Game.CameraTwo;
 import com.mygdx.game.Game.MyGdxGame;
+import com.mygdx.game.Jif.GifWithMusicPlayer;
 import com.mygdx.game.ui.elements.Label;
 import com.mygdx.game.ui.elements.TextButton;
 import com.mygdx.game.ui.extensions.Table;
@@ -33,6 +34,10 @@ public class MainMenu implements Screen {
     CameraTwo camera;
 
     MyGdxGame myGdxGame;
+
+    GifWithMusicPlayer GWMP;
+
+    boolean playGif = false;
 
     public MainMenu(MyGdxGame game) {
         myGdxGame = game;
@@ -61,6 +66,12 @@ public class MainMenu implements Screen {
         table.draw(batch);
         title.draw(batch);
 
+        batch.end();
+
+        if (playGif) {
+            GWMP.render();
+        }
+
         if (Gdx.input.isButtonPressed(0)) {
             table.update(camera);
         }
@@ -71,7 +82,11 @@ public class MainMenu implements Screen {
         }
         if (table.buttonCollection.lastPressedButtonName.equals(LoadGame.name)){
             if (!Gdx.input.isButtonPressed(0)) {
-                myGdxGame.setScreen(new Settings(myGdxGame));
+                if (!playGif) {
+                    GWMP = new GifWithMusicPlayer("Globama", "Globama", "mp3");
+                    playGif = true;
+                }
+
             }
         }
         if (table.buttonCollection.lastPressedButtonName.equals(JoinGame.name)){
@@ -81,7 +96,7 @@ public class MainMenu implements Screen {
         }
         if (table.buttonCollection.lastPressedButtonName.equals(Settings.name)){
             if (!Gdx.input.isButtonPressed(0)) {
-
+                myGdxGame.setScreen(new Settings(myGdxGame));
             }
         }
         if (table.buttonCollection.lastPressedButtonName.equals(Exit.name)){
@@ -89,7 +104,6 @@ public class MainMenu implements Screen {
                 Gdx.app.exit();
             }
         }
-        batch.end();
     }
 
     @Override

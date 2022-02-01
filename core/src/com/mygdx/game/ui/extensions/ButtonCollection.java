@@ -46,9 +46,8 @@ public class ButtonCollection {
                 y = (int) temp.y;
             }
             else {
-                y = (int) (Gdx.graphics.getHeight() - y);
+                y = Gdx.graphics.getHeight() - y;
             }
-            System.out.println(x + " " + y);
             for (Button button : buttons) {
                 if (button.checkIfPressed(x, y)) {
                     pressedButtonName = button.name;

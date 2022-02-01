@@ -2,6 +2,7 @@ package com.mygdx.game.AStar;
 
 import com.badlogic.gdx.math.Vector2;
 import com.mygdx.game.Generation.Noise2D;
+import com.mygdx.game.Generation.Tile;
 import com.mygdx.game.Screens.GameScreen;
 
 import java.util.ArrayList;
@@ -11,7 +12,7 @@ import static java.util.Comparator.comparing;
 public class AStar {
     public static ArrayList<ArrayList<Node>> grid;
     
-    public static ArrayList<Vector2> pathFindForRivers(Vector2 start, Vector2 end, int addition, ArrayList<ArrayList<Boolean>> map, int riverBend, int freq) {
+    public static ArrayList<Vector2> pathFindForRivers(Vector2 start, Vector2 end, int addition, ArrayList<ArrayList<Tile>> map, int riverBend, int freq) {
         grid = new ArrayList<>();
         for (int i = 0; i < GameScreen.TILES_ON_X; i++) {
             grid.add(new ArrayList<>());
@@ -20,7 +21,7 @@ public class AStar {
                 temp.HMP = (float) Noise2D.noise((i / (float) GameScreen.TILES_ON_X) * freq + addition,
                         (j / (float) GameScreen.TILES_ON_Y) * freq + addition, 255);
                 temp.HMP *= riverBend;
-                temp.accessible = map.get(i).get(j);
+                temp.accessible = map.get(i).get(j).canSpawnOn;
                 temp.setDistance(end);
                 grid.get(i).add(temp);
             }
@@ -29,7 +30,7 @@ public class AStar {
         return PathFind(start, end);
     }
 
-    public static ArrayList<Vector2> pathFindForColonist(Vector2 start, Vector2 end, int addition, ArrayList<ArrayList<Boolean>> map){
+    public static ArrayList<Vector2> pathFindForColonist(Vector2 start, Vector2 end, ArrayList<ArrayList<Tile>> map){
         if (grid != null) {
             grid.clear();
         }
@@ -39,7 +40,7 @@ public class AStar {
             for (int j = 0; j < GameScreen.TILES_ON_Y; j++) {
                 Node temp = new Node(i, j);
                 temp.HMP = 0;
-                temp.accessible = map.get(i).get(j);
+                temp.accessible = map.get(i).get(j).canSpawnOn;
                 temp.setDistance(end);
                 grid.get(i).add(temp);
             }
