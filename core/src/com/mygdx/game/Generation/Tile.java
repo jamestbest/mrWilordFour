@@ -1,5 +1,7 @@
 package com.mygdx.game.Generation;
 
+import com.mygdx.game.Game.Task;
+
 public class Tile {
 
     public int x;
@@ -10,6 +12,8 @@ public class Tile {
     public boolean canWalkOn = true;
     public boolean canSpawnOn = true;
 
+    public Task task;
+
     public Tile(int x, int y, String type) {
         this.x = x;
         this.y = y;
@@ -18,5 +22,9 @@ public class Tile {
 
     public Tile(){
 
+    }
+
+    public void setTask(String task){
+    	this.task = new Task(task);
     }
 }

@@ -39,6 +39,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Objects;
 
 public class GameScreen implements Screen {
     public static int TILES_ON_X = 250;
@@ -67,6 +68,7 @@ public class GameScreen implements Screen {
     HashMap<String, Texture> tileTextures = new HashMap<>();
     HashMap<String, TextureAtlas> thingTextures = new HashMap<>();
     HashMap<String, TextureAtlas> colonistClothes = new HashMap<>();
+    HashMap<String, Texture> actionSymbols = new HashMap<>();
 
     float counter = 0f;
     float counterMax = 1f;
@@ -79,9 +81,13 @@ public class GameScreen implements Screen {
     HashMap<String, ArrayList<String>> orderTypes;
 
     String taskTypeSelected = "Mine";
-    ArrayList<Task> tasks;
+    ArrayList<Task> tasks = new ArrayList<>();
+
+    boolean cancelSelection;
 
     // TODO: 30/01/2022 add the selection rect and then add tasks based on the type and if the tile type is a match
+    // TODO: 02/02/2022 Some of the tasks need to be drawn above the things and others below - gl
+    // TODO: 02/02/2022 need to change how the colonists get tasks
 
     Vector2 minSelecting = new Vector2(0, 0);
     Vector2 maxSelecting = new Vector2(0, 0);
@@ -114,6 +120,10 @@ public class GameScreen implements Screen {
 
         @Override
         public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+            if (!cancelSelection) {
+                setTasksFromSelection(taskTypeSelected);
+            }
+            cancelSelection = false;
             return false;
         }
 
@@ -125,6 +135,9 @@ public class GameScreen implements Screen {
             }
             if (Gdx.input.isButtonPressed(0)){
                 maxSelecting = camera.unproject(new Vector2(screenX, screenY));
+                if (cancelSelection){
+                    minSelecting = maxSelecting;
+                }
             }
             return false;
         }
@@ -188,6 +201,7 @@ public class GameScreen implements Screen {
         setupOrdersButtons();
 
         setupOrderTypes();
+        setupActionSymbols();
 
         batch = new SpriteBatch();
         batchWithNoProj = new SpriteBatch();
@@ -212,9 +226,12 @@ public class GameScreen implements Screen {
         batch.setProjectionMatrix(camera.projViewMatrix);
         map.drawMap(batch, tileTextures, camera);
 
+        drawTaskType(batch);
+
         drawAllColonists(batch);
 
         map.drawThings(batch, thingTextures, camera);
+
         batch.end();
 
         batchWithNoProj.begin();
@@ -232,13 +249,14 @@ public class GameScreen implements Screen {
             counter = 0f;
         }
 
-
-
         Gdx.graphics.setTitle(MyGdxGame.title + "     FPS: " + (Gdx.graphics.getFramesPerSecond()));
 
         if (Gdx.input.isButtonPressed(0)) {
             if (!(bottomBarButtons.updateButtons(camera) || ordersButtons.updateButtons(camera))){
                 drawSelectionScreen(shapeRenderer, camera);
+            }
+            else {
+                cancelSelection = true;
             }
         }
 
@@ -546,8 +564,13 @@ public class GameScreen implements Screen {
         orderTypes.put("Harvest", new ArrayList<>(Arrays.asList()));
     }
 
-    public boolean canUseOrderOnType(String order, String type){
-        return orderTypes.get(order).contains(type);
+    public boolean canUseOrderOnType(String order, String tileType, String thingType){
+        if (orderTypes.get(order).contains(tileType)){
+            if (orderTypes.get(order).contains(thingType) || Objects.equals(thingType, "")){
+                return true;
+            }
+        }
+        return false;
     }
 
     public void setCustomCursor(String name){
@@ -569,5 +592,46 @@ public class GameScreen implements Screen {
         shapeRenderer.rect(minSelecting.x, minSelecting.y, maxSelecting.x - minSelecting.x, maxSelecting.y - minSelecting.y);
         shapeRenderer.end();
         Gdx.gl.glDisable(GL30.GL_BLEND);
+    }
+
+    public void setTasksFromSelection(String taskType){
+        int minx = (int) (Math.min(minSelecting.x, maxSelecting.x) / GameScreen.TILE_DIMS);
+        int miny = (int) (Math.min(minSelecting.y, maxSelecting.y) / GameScreen.TILE_DIMS);
+        int maxx = (int) (Math.max(minSelecting.x, maxSelecting.x) / GameScreen.TILE_DIMS);
+        int maxy = (int) (Math.max(minSelecting.y, maxSelecting.y) / GameScreen.TILE_DIMS);
+
+        minx = Math.max(0, minx);
+        miny = Math.max(0, miny);
+        maxx = Math.min(GameScreen.TILES_ON_X, maxx);
+        maxy = Math.min(GameScreen.TILES_ON_Y, maxy);
+
+        for (int i = minx; i < maxx; i++) {
+            for (int j = miny; j < maxy; j++) {
+                if (canUseOrderOnType(taskType, map.tiles.get(i).get(j).type, map.things.get(i).get(j).type)){
+                    map.tiles.get(i).get(j).setTask(taskType);
+                }
+            }
+        }
+    }
+
+    public void drawTaskType(SpriteBatch batch){
+        for (int i = 0; i < GameScreen.TILES_ON_X; i++) {
+            for (int j = 0; j < GameScreen.TILES_ON_Y; j++) {
+                if (map.tiles.get(i).get(j).task != null) {
+                    Texture t = actionSymbols.get(map.tiles.get(i).get(j).task.type);
+                    batch.draw(t, i * GameScreen.TILE_DIMS, j * GameScreen.TILE_DIMS, GameScreen.TILE_DIMS, GameScreen.TILE_DIMS);
+                }
+            }
+        }
+    }
+
+    public void setupActionSymbols(){
+        File dir = new File("core/assets/Textures/ui/imgButtons");
+        File[] files = dir.listFiles();
+        assert files != null;
+        for (File file : files) {
+            Texture t = new Texture(file.getPath());
+            actionSymbols.put(file.getName().split("\\.")[0], t);
+        }
     }
 }

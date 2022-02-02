@@ -231,28 +231,29 @@ public class Colonist {
     }
 
     public Task getNextTask(ArrayList<Task> availableTasks){
-        float minDistance = Integer.MAX_VALUE;
-        int maxPriority = 0;
-        String maxPriorityTaskType = "";
-        Task bestTask = null;
-
-        for(Task task : availableTasks){
-            if(priorityFromType.get(task.type) > maxPriority){
-                maxPriority = priorityFromType.get(task.type);
-                maxPriorityTaskType = task.type;
-            }
-        }
-
-        for (Task task : availableTasks) {
-            if (task.type.equals(maxPriorityTaskType)) {
-                float distance = getDistance(task.x, task.y);
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    bestTask = task;
-                }
-            }
-        }
-        return bestTask;
+//        float minDistance = Integer.MAX_VALUE;
+//        int maxPriority = 0;
+//        String maxPriorityTaskType = "";
+//        Task bestTask = null;
+//
+//        for(Task task : availableTasks){
+//            if(priorityFromType.get(task.type) > maxPriority){
+//                maxPriority = priorityFromType.get(task.type);
+//                maxPriorityTaskType = task.type;
+//            }
+//        }
+//
+//        for (Task task : availableTasks) {
+//            if (task.type.equals(maxPriorityTaskType)) {
+//                float distance = getDistance(task.x, task.y);
+//                if (distance < minDistance) {
+//                    minDistance = distance;
+//                    bestTask = task;
+//                }
+//            }
+//        }
+//        return bestTask;
+        return null;
     }
 
     public float getDistance(int x, int y){
