@@ -178,7 +178,7 @@ public class Map {
         addition = 0;
         for (char c: seed.toCharArray()
         ) {
-            addition += c * 1000;
+            addition += c * 10;
         }
     }
 

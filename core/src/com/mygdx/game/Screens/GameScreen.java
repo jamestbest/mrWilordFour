@@ -233,9 +233,17 @@ public class GameScreen implements Screen {
         ordersButtons.drawButtons(batchWithNoProj);
         batchWithNoProj.end();
 
+
+        Gdx.gl.glEnable(GL30.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setProjectionMatrix(camera.projViewMatrix);
+        shapeRenderer.setColor(0, 0, 1, 0.5f);
         for (Colonist colonist : colonists) {
-            colonist.drawPathOutline(camera, shapeRenderer);
+            colonist.drawPathOutline(shapeRenderer);
         }
+        shapeRenderer.end();
+        Gdx.gl.glDisable(GL30.GL_BLEND);
 
         counter += delta * gameSpeed;
         if (counter > counterMax) {
@@ -298,6 +306,10 @@ public class GameScreen implements Screen {
         if (Gdx.input.isKeyJustPressed(Input.Keys.V)) {
             setCursorDefault();
         }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.T)){
+            System.out.println(colonists.get(0).getNextTask(map.tiles));
+        }
     }
 
     public void update(){ //happens at a rate determined by the gameSpeed
@@ -345,6 +357,8 @@ public class GameScreen implements Screen {
 
     static void getAllMapTextures(HashMap<String, Texture> tileTextures, HashMap<String, TextureAtlas> thingTextures) {
         File directory= new File("core/assets/Textures/TileTextures");
+
+
         String[] files = directory.list();
         assert files != null;
         for (String fileName : files) {

@@ -63,8 +63,15 @@ public class InputButtonTwo extends TextButton{
                             endDrawPos--;
                             glyphLayout.setText(font, text.substring(startDrawPos, endDrawPos));
                             while (glyphLayout.width < width * textAllowance) {
-                                glyphLayout.setText(font, text.substring(startDrawPos, endDrawPos));
-                                if (startDrawPos > 0) {
+                                if (startDrawPos == 0){
+                                    if (endDrawPos < text.length()) {
+                                        endDrawPos++;
+                                    }
+                                    else {
+                                        break;
+                                    }
+                                }
+                                if (startDrawPos > 0){
                                     startDrawPos--;
                                 }
                                 else {
@@ -74,11 +81,12 @@ public class InputButtonTwo extends TextButton{
                                     glyphLayout.setText(font, text.substring(startDrawPos, endDrawPos));
                                     startDrawPos++;
                                 }
+                                glyphLayout.setText(font, text.substring(startDrawPos, endDrawPos));
                             }
                         }
                     }
                     else if (character == '\r' || character == '\t' || character == '\0' || character == '\f' || character == '\n') {
-
+                        Gdx.app.log("InputButton", "error invalid character");
                     }
                     else {
                         String temp = text.substring(0, cursorPos);
@@ -89,6 +97,14 @@ public class InputButtonTwo extends TextButton{
                         while (glyphLayout.width > width * textAllowance) {
                             startDrawPos++;
                             glyphLayout.setText(font, text.substring(startDrawPos, endDrawPos));
+                        }
+                        if (cursorPos - 1 == 0 && startDrawPos > 0){
+                            startDrawPos--;
+                            glyphLayout.setText(font, text.substring(startDrawPos, endDrawPos));
+                            while (glyphLayout.width > width * textAllowance) {
+                                endDrawPos--;
+                                glyphLayout.setText(font, text.substring(startDrawPos, endDrawPos));
+                            }
                         }
                     }
                 }
@@ -135,7 +151,7 @@ public class InputButtonTwo extends TextButton{
         if ((waitTimer > totalWaitTime || Gdx.input.isKeyJustPressed(Input.Keys.ANY_KEY)) && typing) {
             if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
                 lineWaitTimer = (float) (0.5 * lineTotalWaitTime);
-                if (cursorPos > 1) {
+                if (cursorPos > 0) {
                     cursorPos--;
                 }
                 if (cursorPos - 1 < startDrawPos) {

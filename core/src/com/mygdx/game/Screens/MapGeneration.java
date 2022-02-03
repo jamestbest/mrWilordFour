@@ -208,27 +208,14 @@ public class MapGeneration implements Screen {
 
     public void initialiseTextures(){
         //loads every texture in the textures map
-        System.out.println(Gdx.files.isLocalStorageAvailable());
-        File dir = new File("core/assets/Textures/TileTextures/dirt.png");
-        System.out.println(dir.exists());
-
-
-
-        System.out.println(Gdx.files.getLocalStoragePath());
         FileHandle directory = Gdx.files.internal("core/assets/Textures/TileTextures");
-        System.out.println(Arrays.toString(directory.list()));
         FileHandle[] files = directory.list();
-        System.out.println(directory.path());
-        System.out.println(directory.exists());
-        System.out.println(directory.isDirectory());
         assert files != null;
         for (FileHandle fileName : files) {
             String[] temp = fileName.name().split("\\.");
             tileTextures.put(temp[0], new Texture(Gdx.files.internal(fileName.path())));
         }
         FileHandle directory2= Gdx.files.internal("core/assets/Textures/ThingTextures");
-        System.out.println(directory2.path());
-        System.out.println(directory2.isDirectory());
         FileHandle[] files2 = directory2.list();
         assert files2 != null;
         for (FileHandle fileName : files2) {

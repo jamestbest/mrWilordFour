@@ -1,13 +1,13 @@
 package com.mygdx.game.Game;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.GL30;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.mygdx.game.AStar.AStar;
 import com.mygdx.game.Generation.Map;
+import com.mygdx.game.Generation.Tile;
 import com.mygdx.game.Screens.GameScreen;
 
 import java.io.BufferedReader;
@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.Random;
 
 public class Colonist {
-
     public int x;
     public int y;
 
@@ -54,13 +53,13 @@ public class Colonist {
         this.health = 100;
     }
 
-    public void setup(){
+    public void setup() {
         getRandomName();
         System.out.println(firstName + " " + lastName + " is a " + profession);
         setupPriorities();
     }
 
-    public void copyTemplate(Colonist template){
+    public void copyTemplate(Colonist template) {
         this.skills = template.skills;
         this.profession = template.profession;
         this.backstory = template.backstory;
@@ -82,7 +81,7 @@ public class Colonist {
             ArrayList<String> temp = new ArrayList<>();
 
             String line = br.readLine();
-            while(line != null) {
+            while (line != null) {
                 temp.add(line);
                 line = br.readLine();
             }
@@ -90,15 +89,14 @@ public class Colonist {
             fileReader.close();
             br.close();
             return temp;
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             Gdx.app.log("Colonist", "Error reading file");
         }
 
         return null;
     }
 
-    public void draw(SpriteBatch batch, float tileDims, HashMap<String, TextureAtlas> clothes){
+    public void draw(SpriteBatch batch, float tileDims, HashMap<String, TextureAtlas> clothes) {
         timer += Gdx.graphics.getDeltaTime() * GameScreen.gameSpeed;
         if (timer >= timerMax) {
             x = nextX;
@@ -106,10 +104,10 @@ public class Colonist {
             timer = 0f;
         }
         updateDirection();
-        batch.draw(clothes.get(clotheName).findRegion(direction),  (x + ((nextX - x) * timer)) * tileDims , (y + ((nextY - y) * timer)) * tileDims, tileDims, tileDims);
+        batch.draw(clothes.get(clotheName).findRegion(direction), (x + ((nextX - x) * timer)) * tileDims, (y + ((nextY - y) * timer)) * tileDims, tileDims, tileDims);
     }
 
-    public void moveRandomly(Map map){
+    public void moveRandomly(Map map) {
         int randomX = random.nextInt(3) - 1;
         int randomY = random.nextInt(3) - 1;
 
@@ -121,12 +119,12 @@ public class Colonist {
         }
     }
 
-    public void setMoveToPos(int x, int y, Map map){
+    public void setMoveToPos(int x, int y, Map map) {
         pathToComplete = AStar.pathFindForColonist(new Vector2(this.x, this.y), new Vector2(x, y), map.tiles);
         movingAcrossPath = pathToComplete.size() > 0;
     }
 
-    public void getRandomPosition(Map map){
+    public void getRandomPosition(Map map) {
         int count = 0;
         Vector2 randomPos = getPosInRange(map);
         int randomX = (int) randomPos.x;
@@ -147,13 +145,13 @@ public class Colonist {
         movingAcrossPath = pathToComplete.size() > 0;
     }
 
-    public Vector2 getPosInRange(Map map){
+    public Vector2 getPosInRange(Map map) {
         int randomX = random.nextInt(randomMoveRadius * 2);
         int randomY = random.nextInt(randomMoveRadius * 2);
 
         randomX -= randomMoveRadius;
         randomY -= randomMoveRadius;
-        while (!map.isWithinBounds(x + randomX, y + randomY)){
+        while (!map.isWithinBounds(x + randomX, y + randomY)) {
             randomX = random.nextInt(randomMoveRadius * 2);
             randomY = random.nextInt(randomMoveRadius * 2);
 
@@ -163,14 +161,13 @@ public class Colonist {
         return new Vector2(randomX, randomY);
     }
 
-    public void moveAlongPath(){
-        if(pathToComplete.size() > 0){
+    public void moveAlongPath() {
+        if (pathToComplete.size() > 0) {
             Vector2 nextTile = pathToComplete.get(0);
-            if(nextTile.x == x && nextTile.y == y){
+            if (nextTile.x == x && nextTile.y == y) {
                 pathToComplete.remove(0);
             }
-        }
-        else {
+        } else {
             movingAcrossPath = false;
         }
         if (pathToComplete.size() >= 1) {
@@ -179,50 +176,39 @@ public class Colonist {
         }
     }
 
-    public void moveColonist(Map map){
+    public void moveColonist(Map map) {
         if (movingAcrossPath) {
             moveAlongPath();
-        }
-        else {
+        } else {
             int choice = random.nextInt(10);
-            if (choice <= 3){
+            if (choice <= 3) {
                 getRandomPosition(map);
-            }
-            else {
+            } else {
                 moveRandomly(map);
             }
         }
     }
 
-    public void updateDirection(){
-        if(nextX > x){
+    public void updateDirection() {
+        if (nextX > x) {
             direction = "right";
-        }
-        else if(nextX < x){
+        } else if (nextX < x) {
             direction = "left";
         }
-        if(nextY > y){
+        if (nextY > y) {
             direction = "back";
-        }
-        else if(nextY < y){
+        } else if (nextY < y) {
             direction = "front";
         }
     }
 
-    public void drawPathOutline(CameraTwo cameraTwo, ShapeRenderer shapeRenderer){
+    public void drawPathOutline(ShapeRenderer shapeRenderer) {
         for (Vector2 v : pathToComplete) {
-            Gdx.gl.glEnable(GL30.GL_BLEND);
-            Gdx.gl.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
-            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-            shapeRenderer.setProjectionMatrix(cameraTwo.projViewMatrix);
-            shapeRenderer.setColor(0, 0, 1, 0.5f);
             shapeRenderer.rect(v.x * GameScreen.TILE_DIMS, v.y * GameScreen.TILE_DIMS, GameScreen.TILE_DIMS, GameScreen.TILE_DIMS);
-            shapeRenderer.end();
-            Gdx.gl.glDisable(GL30.GL_BLEND);
         }
     }
 
-    public void setupPriorities(){
+    public void setupPriorities() {
         priorityFromType = new HashMap<>();
         priorityFromType.put("Mine", 1);
         priorityFromType.put("Plant", 2);
@@ -230,12 +216,12 @@ public class Colonist {
         priorityFromType.put("Harvest", 4);
     }
 
-    public Task getNextTask(ArrayList<Task> availableTasks){
-//        float minDistance = Integer.MAX_VALUE;
-//        int maxPriority = 0;
-//        String maxPriorityTaskType = "";
-//        Task bestTask = null;
-//
+    public Vector2 getNextTask(ArrayList<ArrayList<Tile>> tiles) {
+        float minDistance = Integer.MAX_VALUE;
+        int maxPriority = 0;
+        String maxPriorityTaskType = "";
+        Vector2 bestTask = null;
+
 //        for(Task task : availableTasks){
 //            if(priorityFromType.get(task.type) > maxPriority){
 //                maxPriority = priorityFromType.get(task.type);
@@ -253,7 +239,34 @@ public class Colonist {
 //            }
 //        }
 //        return bestTask;
-        return null;
+
+        for (int i = 0; i < GameScreen.TILES_ON_X; i++) {
+            for (int j = 0; j < GameScreen.TILES_ON_Y; j++) {
+                Task task = tiles.get(i).get(j).task;
+                if (task != null){
+                    if (priorityFromType.get(task.type) > maxPriority) {
+                        maxPriority = priorityFromType.get(task.type);
+                        maxPriorityTaskType = task.type;
+                    }
+                }
+            }
+        }
+
+        for (int i = 0; i < GameScreen.TILES_ON_X; i++) {
+            for (int j = 0; j < GameScreen.TILES_ON_Y; j++) {
+                Task task = tiles.get(i).get(j).task;
+                if (task != null) {
+                    if (task.type.equals(maxPriorityTaskType)) {
+                        float distance = getDistance(i, j);
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            bestTask = new Vector2(i, j);
+                        }
+                    }
+                }
+            }
+        }
+        return bestTask;
     }
 
     public float getDistance(int x, int y){
