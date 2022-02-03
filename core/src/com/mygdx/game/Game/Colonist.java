@@ -43,6 +43,10 @@ public class Colonist {
     HashMap<String, Integer> priorityFromType;
 
     boolean movingAcrossPath = false;
+    boolean completingTask = false;
+    boolean doingTaskAnimation = false;
+
+    Vector2 currentTaskLoc;
 
     float timer = 0f;
     float timerMax = 1f;
@@ -169,6 +173,9 @@ public class Colonist {
             }
         } else {
             movingAcrossPath = false;
+            if (completingTask){
+                doingTaskAnimation = true;
+            }
         }
         if (pathToComplete.size() >= 1) {
             nextX = (int) pathToComplete.get(0).x;
@@ -177,11 +184,17 @@ public class Colonist {
     }
 
     public void moveColonist(Map map) {
-        if (movingAcrossPath) {
+        if (doingTaskAnimation){
+            doTaskAnimation(map);
+        }
+        else if (movingAcrossPath) {
             moveAlongPath();
         } else {
+            if (getNextTask(map.tiles)) {
+                movingAcrossPath = true;
+            }
             int choice = random.nextInt(10);
-            if (choice <= 3) {
+            if (choice <= -1) {
                 getRandomPosition(map);
             } else {
                 moveRandomly(map);
@@ -216,35 +229,18 @@ public class Colonist {
         priorityFromType.put("Harvest", 4);
     }
 
-    public Vector2 getNextTask(ArrayList<ArrayList<Tile>> tiles) {
+    public boolean getNextTask(ArrayList<ArrayList<Tile>> tiles) {
         float minDistance = Integer.MAX_VALUE;
         int maxPriority = 0;
         String maxPriorityTaskType = "";
         Vector2 bestTask = null;
 
-//        for(Task task : availableTasks){
-//            if(priorityFromType.get(task.type) > maxPriority){
-//                maxPriority = priorityFromType.get(task.type);
-//                maxPriorityTaskType = task.type;
-//            }
-//        }
-//
-//        for (Task task : availableTasks) {
-//            if (task.type.equals(maxPriorityTaskType)) {
-//                float distance = getDistance(task.x, task.y);
-//                if (distance < minDistance) {
-//                    minDistance = distance;
-//                    bestTask = task;
-//                }
-//            }
-//        }
-//        return bestTask;
-
         for (int i = 0; i < GameScreen.TILES_ON_X; i++) {
             for (int j = 0; j < GameScreen.TILES_ON_Y; j++) {
                 Task task = tiles.get(i).get(j).task;
                 if (task != null){
-                    if (priorityFromType.get(task.type) > maxPriority) {
+                    boolean canGetToTask = task.getNeighbour(tiles, i, j) != null || tiles.get(i).get(j).canWalkOn;
+                    if (priorityFromType.get(task.type) > maxPriority && canGetToTask && !task.reserved) {
                         maxPriority = priorityFromType.get(task.type);
                         maxPriorityTaskType = task.type;
                     }
@@ -256,7 +252,8 @@ public class Colonist {
             for (int j = 0; j < GameScreen.TILES_ON_Y; j++) {
                 Task task = tiles.get(i).get(j).task;
                 if (task != null) {
-                    if (task.type.equals(maxPriorityTaskType)) {
+                    boolean canGetToTask = task.getNeighbour(tiles, i, j) != null || tiles.get(i).get(j).canWalkOn;
+                    if (task.type.equals(maxPriorityTaskType) && canGetToTask && !task.reserved) {
                         float distance = getDistance(i, j);
                         if (distance < minDistance) {
                             minDistance = distance;
@@ -266,10 +263,29 @@ public class Colonist {
                 }
             }
         }
-        return bestTask;
+        if (bestTask != null) {
+            Vector2 neighbour = tiles.get((int) bestTask.x).get((int) bestTask.y).task.getNeighbour(tiles, (int) bestTask.x, (int) bestTask.y);
+            if (tiles.get((int) bestTask.x).get((int) bestTask.y).canWalkOn) {
+                pathToComplete = AStar.pathFindForColonist(new Vector2(x, y), bestTask, tiles);
+            }
+            else {
+                pathToComplete = AStar.pathFindForColonist(new Vector2(x, y), neighbour, tiles);
+            }
+            completingTask = true;
+            tiles.get((int) bestTask.x).get((int) bestTask.y).task.reserved = true;
+            currentTaskLoc = new Vector2(bestTask.x, bestTask.y);
+        }
+        return bestTask != null;
     }
 
     public float getDistance(int x, int y){
         return (float) Math.sqrt(Math.pow(x - this.x, 2) + Math.pow(y - this.y, 2));
+    }
+
+    public void doTaskAnimation(Map map){
+        System.out.println("doing task animation");
+        Random random = new Random();
+        doingTaskAnimation = random.nextInt(100) <= 90;
+        map.tiles.get((int) currentTaskLoc.x).get((int) currentTaskLoc.y).task = null;
     }
 }

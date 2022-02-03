@@ -137,9 +137,42 @@ public class Map {
 
         int endX = (int)(Math.lowest((camera.width * camera.zoom / GameScreen.TILE_DIMS) + startX + 10, GameScreen.TILES_ON_X));
         int endY = (int)(Math.lowest((camera.height * camera.zoom / GameScreen.TILE_DIMS) + startY + 10, GameScreen.TILES_ON_Y));
+
+        Texture temp;
+        temp = tileTextures.get("grass");
         for(int i = startX; i < endX; i++){
             for(int j = startY; j < endY; j++){
-                batch.draw(tileTextures.get(tiles.get(i).get(j).type), i * GameScreen.TILE_DIMS, j * GameScreen.TILE_DIMS, GameScreen.TILE_DIMS, GameScreen.TILE_DIMS);
+                if (tiles.get(i).get(j).type.equals("grass")){
+                    batch.draw(temp, i * GameScreen.TILE_DIMS, j * GameScreen.TILE_DIMS, GameScreen.TILE_DIMS, GameScreen.TILE_DIMS);
+                }
+//                batch.draw(tileTextures.get(tiles.get(i).get(j).type), i * GameScreen.TILE_DIMS, j * GameScreen.TILE_DIMS, GameScreen.TILE_DIMS, GameScreen.TILE_DIMS);
+            }
+        }
+        temp = tileTextures.get("dirt");
+        for(int i = startX; i < endX; i++){
+            for(int j = startY; j < endY; j++){
+                if (tiles.get(i).get(j).type.equals("dirt")){
+                    batch.draw(temp, i * GameScreen.TILE_DIMS, j * GameScreen.TILE_DIMS, GameScreen.TILE_DIMS, GameScreen.TILE_DIMS);
+                }
+//                batch.draw(tileTextures.get(tiles.get(i).get(j).type), i * GameScreen.TILE_DIMS, j * GameScreen.TILE_DIMS, GameScreen.TILE_DIMS, GameScreen.TILE_DIMS);
+            }
+        }
+        temp = tileTextures.get("stone");
+        for(int i = startX; i < endX; i++){
+            for(int j = startY; j < endY; j++){
+                if (tiles.get(i).get(j).type.equals("stone")){
+                    batch.draw(temp, i * GameScreen.TILE_DIMS, j * GameScreen.TILE_DIMS, GameScreen.TILE_DIMS, GameScreen.TILE_DIMS);
+                }
+//                batch.draw(tileTextures.get(tiles.get(i).get(j).type), i * GameScreen.TILE_DIMS, j * GameScreen.TILE_DIMS, GameScreen.TILE_DIMS, GameScreen.TILE_DIMS);
+            }
+        }
+        temp = tileTextures.get("water");
+        for(int i = startX; i < endX; i++){
+            for(int j = startY; j < endY; j++){
+                if (tiles.get(i).get(j).type.equals("water")){
+                    batch.draw(temp, i * GameScreen.TILE_DIMS, j * GameScreen.TILE_DIMS, GameScreen.TILE_DIMS, GameScreen.TILE_DIMS);
+                }
+//                batch.draw(tileTextures.get(tiles.get(i).get(j).type), i * GameScreen.TILE_DIMS, j * GameScreen.TILE_DIMS, GameScreen.TILE_DIMS, GameScreen.TILE_DIMS);
             }
         }
     }

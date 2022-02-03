@@ -78,7 +78,6 @@ public class GameScreen implements Screen {
     HashMap<String, ArrayList<String>> orderTypes;
 
     String taskTypeSelected = "Mine";
-    ArrayList<Task> tasks = new ArrayList<>();
 
     boolean cancelSelection;
 
@@ -88,8 +87,6 @@ public class GameScreen implements Screen {
 
     Vector2 minSelecting = new Vector2(0, 0);
     Vector2 maxSelecting = new Vector2(0, 0);
-
-    boolean mapLoaded = false;
 
     InputProcessor gameInputProcessor = new InputProcessor() {
         @Override
@@ -590,10 +587,8 @@ public class GameScreen implements Screen {
     }
 
     public boolean canUseOrderOnType(String order, String tileType, String thingType){
-        if (orderTypes.get(order).contains(tileType)){
-            if (orderTypes.get(order).contains(thingType) || Objects.equals(thingType, "")){
-                return true;
-            }
+        if (orderTypes.get(order).contains(tileType) || orderTypes.get(order).contains(thingType)){
+            return true;
         }
         return false;
     }

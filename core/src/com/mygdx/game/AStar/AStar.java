@@ -40,7 +40,7 @@ public class AStar {
             for (int j = 0; j < GameScreen.TILES_ON_Y; j++) {
                 Node temp = new Node(i, j);
                 temp.HMP = 0;
-                temp.accessible = map.get(i).get(j).canSpawnOn;
+                temp.accessible = map.get(i).get(j).canWalkOn;
                 temp.setDistance(end);
                 grid.get(i).add(temp);
             }
