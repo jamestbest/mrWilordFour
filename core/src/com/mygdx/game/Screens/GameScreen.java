@@ -36,10 +36,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Objects;
+import java.util.*;
 
 public class GameScreen implements Screen {
     public static int TILES_ON_X = 250;
@@ -183,7 +180,7 @@ public class GameScreen implements Screen {
 
     @Override
     public void show() {
-        initialiseTextures();
+        initialiseAllTextures();
 
         if (isHost) {
 
@@ -196,12 +193,9 @@ public class GameScreen implements Screen {
             System.out.println("Generating blank map");
         }
 
-        setupColonistClothes();
         setupBBB();
         setupOrdersButtons();
-
         setupOrderTypes();
-        setupActionSymbols();
 
         batch = new SpriteBatch();
         batchWithNoProj = new SpriteBatch();
@@ -338,8 +332,18 @@ public class GameScreen implements Screen {
 
     }
 
+    public void initialiseAllTextures(){
+        initialiseTextures();
+        setupActionSymbols();
+        setupColonistClothes();
+    }
+
     public void initialiseTextures(){
         //loads every texture in the textures map
+        getAllMapTextures(tileTextures, thingTextures);
+    }
+
+    static void getAllMapTextures(HashMap<String, Texture> tileTextures, HashMap<String, TextureAtlas> thingTextures) {
         File directory= new File("core/assets/Textures/TileTextures");
         String[] files = directory.list();
         assert files != null;
@@ -361,8 +365,11 @@ public class GameScreen implements Screen {
     }
 
     public void connectSocket() {
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Enter IP address: ");
+        String ip = sc.nextLine();
         try {
-            socket = IO.socket("http://localhost:8080");
+            socket = IO.socket("http://" + ip);
             socket.connect();
         }
         catch (URISyntaxException e) {
@@ -464,6 +471,10 @@ public class GameScreen implements Screen {
     }
 
     public void setupColonistClothes(){
+        getTAResources(colonistClothes);
+    }
+
+    static void getTAResources(HashMap<String, TextureAtlas> colonistClothes) {
         File directory= new File("core/assets/Textures/TAResources");
         String[] files = directory.list();
         assert files != null;

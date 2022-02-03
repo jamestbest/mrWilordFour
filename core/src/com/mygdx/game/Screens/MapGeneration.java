@@ -30,7 +30,6 @@ public class MapGeneration implements Screen {
 
     MyGdxGame game;
 
-
     InputButtonTwo seedInput;
     ToggleButton riverToggle;
     NumberInput dimsInput;
@@ -50,7 +49,6 @@ public class MapGeneration implements Screen {
     Label RefreshLabel;
 
     Label Title;
-
 
     Table labelTable;
     Table buttonTable;

@@ -91,7 +91,8 @@ public class MainMenu implements Screen {
         }
         if (table.buttonCollection.lastPressedButtonName.equals(JoinGame.name)){
             if (!Gdx.input.isButtonPressed(0)) {
-                myGdxGame.setScreen(new GameScreen(myGdxGame));
+//                myGdxGame.setScreen(new GameScreen(myGdxGame));
+                myGdxGame.setScreen(new JoinGameScreen(myGdxGame));
             }
         }
         if (table.buttonCollection.lastPressedButtonName.equals(Settings.name)){

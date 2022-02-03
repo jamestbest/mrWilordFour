@@ -354,14 +354,6 @@ public class ColonistSelectionScreen implements Screen {
     }
 
     public void setupColonistClothes(){
-        File directory= new File("core/assets/Textures/TAResources");
-        String[] files = directory.list();
-        assert files != null;
-        for (String fileName : files) {
-            String[] temp = fileName.split("\\.");
-            if (temp[1].equals("atlas")){
-                colonistClothes.put(temp[0], new TextureAtlas(Gdx.files.internal("core/assets/Textures/TAResources/" + fileName)));
-            }
-        }
+        GameScreen.getTAResources(colonistClothes);
     }
 }
