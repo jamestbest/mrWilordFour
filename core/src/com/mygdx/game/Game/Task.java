@@ -63,16 +63,16 @@ public class Task {
     }
 
     public void completeTask(int x, int y, Map map, HashMap<String, Integer> resources) {
-        if (type.equals("Mine")){
-            map.tiles.get(x).get(y).type = "dirt";
-            resources.replace("stone", resources.get("stone") + 1);
-        }
-        else if (type.equals("CutDown")){
-            map.things.get(x).get(y).type = "";
-        }
-        else if (type.equals("Plant")){
-            map.things.get(x).get(y).type = "tree";
-            map.things.get(x).get(y).height = (int) (GameScreen.TILE_DIMS * 2);
+        switch (type) {
+            case "Mine" -> {
+                map.tiles.get(x).get(y).type = "dirt";
+                resources.replace("stone", resources.get("stone") + 1);
+            }
+            case "CutDown" -> map.things.get(x).get(y).type = "";
+            case "Plant" -> {
+                map.things.get(x).get(y).type = "tree";
+                map.things.get(x).get(y).height = (int) (GameScreen.TILE_DIMS * 2);
+            }
         }
     }
 }
