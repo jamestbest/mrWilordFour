@@ -12,8 +12,8 @@ public class Thing {
 
     public String type;
 
-    int width;
-    int height;
+    public int width;
+    public int height;
 
     int tileDims;
 

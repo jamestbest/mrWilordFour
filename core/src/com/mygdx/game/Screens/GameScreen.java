@@ -6,7 +6,6 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.*;
-import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -15,28 +14,29 @@ import com.badlogic.gdx.utils.Json;
 import com.mygdx.game.Game.CameraTwo;
 import com.mygdx.game.Game.Colonist;
 import com.mygdx.game.Game.MyGdxGame;
-import com.mygdx.game.Game.Task;
 import com.mygdx.game.Generation.Map;
 import com.mygdx.game.Generation.MapSettings;
 import com.mygdx.game.Generation.Tile;
 import com.mygdx.game.Saving.RLE;
 import com.mygdx.game.ui.elements.Button;
 import com.mygdx.game.ui.elements.ImgButton;
+import com.mygdx.game.ui.elements.ImgTextButton;
 import com.mygdx.game.ui.elements.TextButton;
 import com.mygdx.game.ui.extensions.ButtonCollection;
-import com.sun.tools.javac.Main;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Scanner;
 
 public class GameScreen implements Screen {
     public static int TILES_ON_X = 250;
@@ -74,16 +74,18 @@ public class GameScreen implements Screen {
     ButtonCollection bottomBarButtons;
     ButtonCollection ordersButtons;
     ButtonCollection buildingButtons;
+    ButtonCollection resourceButtons;
 
     HashMap<String, ArrayList<String>> orderTypes;
+    HashMap<String, Integer> resources;
 
     String taskTypeSelected = "Mine";
 
     boolean cancelSelection;
 
-    // TODO: 30/01/2022 add the selection rect and then add tasks based on the type and if the tile type is a match
+    // DONE: 30/01/2022 add the selection rect and then add tasks based on the type and if the tile type is a match
     // TODO: 02/02/2022 Some of the tasks need to be drawn above the things and others below - gl
-    // TODO: 02/02/2022 need to change how the colonists get tasks
+    // DONE: 02/02/2022 need to change how the colonists get tasks
 
     Vector2 minSelecting = new Vector2(0, 0);
     Vector2 maxSelecting = new Vector2(0, 0);
@@ -164,11 +166,11 @@ public class GameScreen implements Screen {
         this.colonists = colonists;
     }
 
-    public GameScreen(MyGdxGame game){
+    public GameScreen(MyGdxGame game, String ip){
         this.game = game;
         this.isHost = false;
         this.isMultiplayer = true;
-        connectSocket();
+        connectSocket(ip);
         createSocketListeners();
 
         Gdx.graphics.setVSync(false);
@@ -177,7 +179,11 @@ public class GameScreen implements Screen {
 
     @Override
     public void show() {
+//        MyGdxGame.initialRes = new Vector2(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         initialiseAllTextures();
+        setupResourceHashMap();
+        setupResourceButtons();
+
 
         if (isHost) {
 
@@ -208,9 +214,6 @@ public class GameScreen implements Screen {
         Gdx.gl.glClearColor(1, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-//        System.out.println(minSelecting + " :minSelecting");
-//        System.out.println(maxSelecting + " :max selecting");
-
         camera.update();
 
         batch.begin();
@@ -226,9 +229,13 @@ public class GameScreen implements Screen {
         batch.end();
 
         batchWithNoProj.begin();
+//        batchWithNoProj.setProjectionMatrix(camera.projViewMatrix);
         bottomBarButtons.drawButtons(batchWithNoProj);
         ordersButtons.drawButtons(batchWithNoProj);
+        resourceButtons.drawButtons(batchWithNoProj);
         batchWithNoProj.end();
+
+
 
 
         Gdx.gl.glEnable(GL30.GL_BLEND);
@@ -287,7 +294,7 @@ public class GameScreen implements Screen {
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
             Gdx.app.log("Multiplayer", "enabling multiplayer");
-            connectSocket();
+            connectSocket("localhost:8080");
             createSocketListeners();
             isMultiplayer = true;
         }
@@ -318,7 +325,13 @@ public class GameScreen implements Screen {
 
     @Override
     public void resize(int width, int height) {
+//        MyGdxGame.initialRes = new Vector2(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
+        System.out.println("resize old " + MyGdxGame.initialRes.x + " " + MyGdxGame.initialRes.y);
+        System.out.println("resize new" + Gdx.graphics.getWidth() + " " + Gdx.graphics.getHeight());
+
+        System.out.println("y ratio " + (Gdx.graphics.getHeight() / MyGdxGame.initialRes.y));
+        System.out.println("x ratio " + (Gdx.graphics.getWidth() / MyGdxGame.initialRes.x));
     }
 
     @Override
@@ -375,10 +388,11 @@ public class GameScreen implements Screen {
         }
     }
 
-    public void connectSocket() {
-        Scanner sc = new Scanner(System.in);
-        System.out.println("Enter IP address: ");
-        String ip = sc.nextLine();
+    public void connectSocket(String ip){
+//        Scanner sc = new Scanner(System.in);
+//        System.out.println("Enter IP address: ");
+//        String ip = sc.nextLine();
+        System.out.println("Connecting to " + ip);
         try {
             socket = IO.socket("http://" + ip);
             socket.connect();
@@ -477,7 +491,7 @@ public class GameScreen implements Screen {
 
     public void moveColonists(){
         for (Colonist c : colonists) {
-            c.moveColonist(map);
+            c.moveColonist(map, resources);
         }
     }
 
@@ -544,7 +558,7 @@ public class GameScreen implements Screen {
             int size = bottomBarButtons.buttons.size();
             Button b = bottomBarButtons.buttons.get(i);
             b.setPos((int) ((MyGdxGame.initialRes.x / 2f) / size * i), 5);
-            b.setSize((int) (MyGdxGame.initialRes.x / 2f / size), (int) (MyGdxGame.initialRes.y / 8f));
+            b.setSize((int) (MyGdxGame.initialRes.x / 2f / size), (int) (MyGdxGame.initialRes.y / 12f));
         }
     }
 
@@ -553,7 +567,7 @@ public class GameScreen implements Screen {
         ordersButtons.useWorldCoords = false;
         ordersButtons.showButtons = false;
 
-        float y = (MyGdxGame.initialRes.y / 8f) + 5;
+        float y = (MyGdxGame.initialRes.y / 12f) + 5;
         ImgButton cutDown = new ImgButton("CutDownButton", "CutDown");
         ImgButton plant = new ImgButton("PlantButton", "Plant");
         ImgButton harvest = new ImgButton("HarvestButton", "Harvest");
@@ -569,8 +583,35 @@ public class GameScreen implements Screen {
             }
 
             Button b = ordersButtons.buttons.get(i);
-            b.setPos((int) ((MyGdxGame.initialRes.x / 3f / size) * (i % 2)) + 5, (int) (y + (MyGdxGame.initialRes.y / 8f) * (row - 1)));
-            b.setSize((int) (MyGdxGame.initialRes.x / 3f / size), (int) (MyGdxGame.initialRes.y / 8f));
+            b.setPos((int) ((MyGdxGame.initialRes.x / 5f / size) * (i % 2)) + 5, (int) (y + (MyGdxGame.initialRes.y / 12f) * (row - 1)));
+            b.setSize((int) (MyGdxGame.initialRes.x / 5f / size), (int) (MyGdxGame.initialRes.y / 12f));
+        }
+    }
+
+    public void setupResourceHashMap(){
+        resources = new HashMap<>();
+        File dir = new File("core/assets/Textures/Resources");
+        String[] files = dir.list();
+        for (int i = 0; i < (files != null ? files.length : 0); i++) {
+            String file = files[i];
+            resources.put(file.split("\\.")[0], 0);
+        }
+        System.out.println(resources);
+    }
+
+    public void setupResourceButtons(){
+        resourceButtons = new ButtonCollection();
+        resourceButtons.useWorldCoords = false;
+
+        float length = MyGdxGame.initialRes.x / 50f;
+        float height = MyGdxGame.initialRes.y / 50f;
+
+        String[] resourceNames = resources.keySet().toArray(new String[0]);
+        for (int i = 0; i < resourceNames.length; i++) {
+            ImgTextButton t = new ImgTextButton(resourceNames[i] + "Button", "0", resourceNames[i]);
+            t.setPos(5, (int) (MyGdxGame.initialRes.y - (height * (i + 2))));
+            t.setSize((int) length, (int) height);
+            resourceButtons.add(t);
         }
     }
 

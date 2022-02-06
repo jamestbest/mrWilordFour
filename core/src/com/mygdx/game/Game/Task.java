@@ -1,9 +1,12 @@
 package com.mygdx.game.Game;
 
 import com.badlogic.gdx.math.Vector2;
+import com.mygdx.game.Generation.Map;
 import com.mygdx.game.Generation.Tile;
+import com.mygdx.game.Screens.GameScreen;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Task {
     public String type;
@@ -57,5 +60,19 @@ public class Task {
             }
         }
         return null;
+    }
+
+    public void completeTask(int x, int y, Map map, HashMap<String, Integer> resources) {
+        if (type.equals("Mine")){
+            map.tiles.get(x).get(y).type = "dirt";
+            resources.replace("stone", resources.get("stone") + 1);
+        }
+        else if (type.equals("CutDown")){
+            map.things.get(x).get(y).type = "";
+        }
+        else if (type.equals("Plant")){
+            map.things.get(x).get(y).type = "tree";
+            map.things.get(x).get(y).height = (int) (GameScreen.TILE_DIMS * 2);
+        }
     }
 }

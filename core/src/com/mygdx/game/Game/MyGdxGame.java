@@ -13,7 +13,7 @@ public class MyGdxGame extends Game {
 	
 	@Override
 	public void create () {
-		Gdx.graphics.setWindowedMode(1900, 1080); //must be 16:9 ratio
+		Gdx.graphics.setWindowedMode(1920, 1080); //must be 16:9 ratio
 		initialRes = new Vector2(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
 		setScreen(new MainMenu(this));

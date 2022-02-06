@@ -9,12 +9,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 public class RLE {
+    static HashMap<String, String> tileNameCode;
+
     public static String encodeTiles(Map map) {
-        HashMap<String, String> tileNameCode = new HashMap<String, String>();
-        tileNameCode.put("grass", "g");
-        tileNameCode.put("water", "w");
-        tileNameCode.put("stone", "s");
-        tileNameCode.put("dirt", "d");
+        setupTileNameCodes();
 
         String lastType = "";
         int count = 0;
@@ -40,11 +38,13 @@ public class RLE {
     }
 
     public static ArrayList<ArrayList<Tile>> decodeTiles(String input, Vector2 mapDims) {
-        HashMap<String, String> tileNameCode = new HashMap<String, String>();
-        tileNameCode.put("g", "grass");
-        tileNameCode.put("w", "water");
-        tileNameCode.put("s", "stone");
-        tileNameCode.put("d", "dirt");
+        setupTileNameCodes();
+        HashMap<String, String> reverseTileNameCode = new HashMap<String, String>();
+        String[] oldKeyset = tileNameCode.keySet().toArray(new String[0]);
+        for (int i = 0; i < tileNameCode.size(); i++) {
+            reverseTileNameCode.put(tileNameCode.get(oldKeyset[i]),  oldKeyset[i]);
+        }
+
         ArrayList<ArrayList<Tile>> output = new ArrayList<ArrayList<Tile>>();
 
         ArrayList<String> inputSplit = new ArrayList<>();
@@ -72,7 +72,7 @@ public class RLE {
                 if ((count) % mapDims.y == 0) {
                     output.add(new ArrayList<>());
                 }
-                output.get((count / (int) mapDims.y)).add(new Tile(count / (int) mapDims.y, count % (int) mapDims.y, tileNameCode.get(inputSplit.get(i).substring(0, 1))));
+                output.get((count / (int) mapDims.y)).add(new Tile(count / (int) mapDims.y, count % (int) mapDims.y, reverseTileNameCode.get(inputSplit.get(i).substring(0, 1))));
                 count++;
             }
             if (i == inputSplit.size() - 3) {
@@ -112,5 +112,13 @@ public class RLE {
         output.append(thingNameCode.get(lastType));
         output.append(count);
         return output.toString();
+    }
+
+    public static void setupTileNameCodes(){
+        tileNameCode = new HashMap<String, String>();
+        tileNameCode.put("grass", "g");
+        tileNameCode.put("water", "w");
+        tileNameCode.put("stone", "s");
+        tileNameCode.put("dirt", "d");
     }
 }

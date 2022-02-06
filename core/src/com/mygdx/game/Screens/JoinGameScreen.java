@@ -79,7 +79,7 @@ public class JoinGameScreen implements Screen {
             buttonCollection.updateButtons(cameraTwo);
 
             if(buttonCollection.pressedButtonName.equals("joinGameButton")){
-                myGdxGame.setScreen(new GameScreen(myGdxGame));
+                myGdxGame.setScreen(new GameScreen(myGdxGame, ipInputButton.text));
             }
         }
 
@@ -127,7 +127,7 @@ public class JoinGameScreen implements Screen {
     public void setupButtons(){
         buttonCollection = new ButtonCollection();
         ipInputButton = new InputButtonTwo((int) (MyGdxGame.initialRes.x * 0.1), (int) ((int) MyGdxGame.initialRes.y * 0.8)
-                , (int) (MyGdxGame.initialRes.x * 0.2), (int) (MyGdxGame.initialRes.y * 0.1), "8080",
+                , (int) (MyGdxGame.initialRes.x * 0.2), (int) (MyGdxGame.initialRes.y * 0.1), "localhost:8080",
                 "ipAddressInputButton", inputMultiplexer);
         joinGameButton = new TextButton((int) (MyGdxGame.initialRes.x * 0.9), 0, (int) (MyGdxGame.initialRes.x * 0.1), (int) (MyGdxGame.initialRes.y * 0.05), "Join Game", "joinGameButton");
         refreshMapButton = new Button((int) ((ipInputButton.x + ipInputButton.width) * 1.05), ipInputButton.y, ipInputButton.height, ipInputButton.height, "RefreshButton", "RefreshButton");

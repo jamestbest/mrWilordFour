@@ -183,9 +183,9 @@ public class Colonist {
         }
     }
 
-    public void moveColonist(Map map) {
+    public void moveColonist(Map map, HashMap<String, Integer> resources) {
         if (doingTaskAnimation){
-            doTaskAnimation(map);
+            doTaskAnimation(map, resources);
         }
         else if (movingAcrossPath) {
             moveAlongPath();
@@ -282,10 +282,17 @@ public class Colonist {
         return (float) Math.sqrt(Math.pow(x - this.x, 2) + Math.pow(y - this.y, 2));
     }
 
-    public void doTaskAnimation(Map map){
+    public void doTaskAnimation(Map map, HashMap<String, Integer> resources) {
         System.out.println("doing task animation");
+        Task task = map.tiles.get((int) currentTaskLoc.x).get((int) currentTaskLoc.y).task;
         Random random = new Random();
-        doingTaskAnimation = random.nextInt(100) <= 90;
-        map.tiles.get((int) currentTaskLoc.x).get((int) currentTaskLoc.y).task = null;
+        if (random.nextInt(100) <= 90){
+            doingTaskAnimation = true;
+        }
+        else {
+            doingTaskAnimation = false;
+            task.completeTask((int) currentTaskLoc.x, (int) currentTaskLoc.y, map, resources);
+            map.tiles.get((int) currentTaskLoc.x).get((int) currentTaskLoc.y).task = null;
+        }
     }
 }
