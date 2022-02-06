@@ -43,8 +43,8 @@ public class Colonist {
     HashMap<String, Integer> priorityFromType;
 
     boolean movingAcrossPath = false;
-    boolean completingTask = false;
-    boolean doingTaskAnimation = false;
+    public boolean completingTask = false;
+    public boolean doingTaskAnimation = false;
 
     Vector2 currentTaskLoc;
 
@@ -192,11 +192,13 @@ public class Colonist {
         } else {
             if (getNextTask(map.tiles)) {
                 movingAcrossPath = true;
+                // TODO: 04/02/2022 BUG: colonists will sometimes move randomly before going to next task
             }
             int choice = random.nextInt(10);
             if (choice <= -1) {
                 getRandomPosition(map);
             } else {
+                System.out.println("moving randomly");
                 moveRandomly(map);
             }
         }
@@ -294,5 +296,6 @@ public class Colonist {
             task.completeTask((int) currentTaskLoc.x, (int) currentTaskLoc.y, map, resources);
             map.tiles.get((int) currentTaskLoc.x).get((int) currentTaskLoc.y).task = null;
         }
+        completingTask = doingTaskAnimation;
     }
 }

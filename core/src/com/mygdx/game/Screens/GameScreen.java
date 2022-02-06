@@ -214,6 +214,15 @@ public class GameScreen implements Screen {
         Gdx.gl.glClearColor(1, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+        for (Colonist c : colonists) {
+            if (c.completingTask || c.doingTaskAnimation){
+                System.out.println(c.x + " " + c.y);
+            }
+        }
+
+//        System.out.println(minSelecting + " :minSelecting");
+//        System.out.println(maxSelecting + " :max selecting");
+
         camera.update();
 
         batch.begin();
