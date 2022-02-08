@@ -3,6 +3,8 @@ package com.mygdx.game.ui.elements;
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Vector2;
+import com.mygdx.game.Game.CameraTwo;
 
 public class NumberInput extends TextButton{
     public NumberInput(int x, int y, int width, int height, String text, String TextureGda, String name) {
@@ -58,7 +60,7 @@ public class NumberInput extends TextButton{
 
     public boolean typing = false;
 
-    public void draw(SpriteBatch batch){
+    public void draw(SpriteBatch batch, CameraTwo camera){
         batch.draw(texture, x, y, width, height);
 
         glyphLayout.setText(font, text);

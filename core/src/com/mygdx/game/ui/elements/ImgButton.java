@@ -2,6 +2,8 @@ package com.mygdx.game.ui.elements;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Vector2;
+import com.mygdx.game.Game.CameraTwo;
 
 public class ImgButton extends Button {
     String textureName;
@@ -29,8 +31,8 @@ public class ImgButton extends Button {
         texture = new Texture("Textures/ui/imgButtons/" + textureName + ".png");
     }
 
-    public void draw(SpriteBatch batch){
-        super.draw(batch);
+    public void draw(SpriteBatch batch, CameraTwo camera){
+        super.draw(batch, camera);
         batch.draw(texture, x, y, width, height);
     }
 }

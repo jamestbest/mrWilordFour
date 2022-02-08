@@ -36,8 +36,8 @@ public class Table {
         shapeRenderer = new ShapeRenderer();
     }
 
-    public void draw(SpriteBatch batch) {
-        buttonCollection.drawButtons(batch);
+    public void draw(SpriteBatch batch, CameraTwo camera) {
+        buttonCollection.drawButtons(batch, camera);
     }
 
     public boolean update(CameraTwo camera) {

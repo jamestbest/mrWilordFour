@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Vector2;
 import com.mygdx.game.Game.CameraTwo;
 import com.mygdx.game.Game.MyGdxGame;
 import com.mygdx.game.Jif.GifWithMusicPlayer;
@@ -63,8 +64,8 @@ public class MainMenu implements Screen {
         batch.begin();
         batch.draw(background, 0, 0, MyGdxGame.initialRes.x, MyGdxGame.initialRes.y);
 
-        table.draw(batch);
-        title.draw(batch);
+        table.draw(batch, camera);
+        title.draw(batch, camera);
 
         batch.end();
 

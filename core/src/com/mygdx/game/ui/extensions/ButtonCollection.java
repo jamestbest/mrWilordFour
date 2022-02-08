@@ -7,6 +7,7 @@ import com.mygdx.game.Game.CameraTwo;
 import com.mygdx.game.Game.MyGdxGame;
 import com.mygdx.game.ui.elements.Button;
 
+import javax.xml.stream.FactoryConfigurationError;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -18,19 +19,25 @@ public class ButtonCollection {
 
     public boolean showButtons = true;
     public boolean useWorldCoords = true;
+    public boolean followCamera = false;
 
     public ButtonCollection() {
-        buttons = new ArrayList<Button>();
+        buttons = new ArrayList<>();
     }
 
     public void add(Button... button) {
         buttons.addAll(Arrays.asList(button));
     }
 
-    public void drawButtons(SpriteBatch batch) {
+    public void drawButtons(SpriteBatch batch, CameraTwo camera){
         if (showButtons) {
             for (Button button : buttons) {
-                button.draw(batch);
+                if (followCamera) {
+                    button.draw(batch, camera);
+                }
+                else{
+                    button.draw(batch, camera);
+                }
             }
         }
         setAllToUnpressed();

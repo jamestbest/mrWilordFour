@@ -7,17 +7,22 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.utils.Json;
 import com.mygdx.game.Game.CameraTwo;
 import com.mygdx.game.Game.MyGdxGame;
 import com.mygdx.game.Generation.Map;
+import com.mygdx.game.Generation.MapSettings;
 import com.mygdx.game.ui.elements.Button;
 import com.mygdx.game.ui.elements.InputButtonTwo;
 import com.mygdx.game.ui.elements.TextButton;
 import com.mygdx.game.ui.extensions.ButtonCollection;
 import io.socket.client.IO;
 import io.socket.client.Socket;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 
@@ -40,6 +45,7 @@ public class JoinGameScreen implements Screen {
     SpriteBatch batch;
 
     Map map;
+    Json json = new Json();
 
     Socket socket;
 
@@ -72,7 +78,7 @@ public class JoinGameScreen implements Screen {
         batch.begin();
         map.drawMiniMap(batch, tileTextures, thingTextures);
 
-        buttonCollection.drawButtons(batch);
+        buttonCollection.drawButtons(batch, cameraTwo);
         batch.end();
 
         if(Gdx.input.isButtonPressed(0)){
@@ -86,12 +92,11 @@ public class JoinGameScreen implements Screen {
         if (Gdx.input.isButtonJustPressed(0)){
             if(buttonCollection.pressedButtonName.equals("RefreshButton")){
                 System.out.println("Refreshing");
+                map.generateBlank();
                 connectSocket();
                 createSocketListeners();
             }
         }
-
-
     }
 
     @Override
@@ -148,5 +153,28 @@ public class JoinGameScreen implements Screen {
     public void createSocketListeners() {
         socket.on("connect", args -> System.out.println("Connected to server"));
         socket.on("connect_error", args -> System.out.println("Socket connect_error"));
+
+        socket.on("loadWorldClient", args -> {
+            JSONObject data = (JSONObject) args[0];
+            try {
+//                map = json.fromJson(Map.class, data.get("map").toString());
+//                colonists = json.fromJson(ArrayList.class, data.get("colonists").toString());
+
+                ArrayList<String> packagedTiles = json.fromJson(ArrayList.class, data.get("tiles").toString());
+                int mapWidth = data.getInt("mapWidth");
+                int mapHeight = data.getInt("mapHeight");
+                int tileDims = data.getInt("tileDims");
+                GameScreen.TILES_ON_Y = mapHeight;
+                GameScreen.TILES_ON_X = mapWidth;
+                GameScreen.TILE_DIMS = tileDims;
+
+                map.settings = json.fromJson(MapSettings.class, data.get("settings").toString());
+                map.unPackageTiles(packagedTiles);
+
+                System.out.println("Loaded world");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        });
     }
 }

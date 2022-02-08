@@ -5,6 +5,8 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Vector2;
+import com.mygdx.game.Game.CameraTwo;
 import com.mygdx.game.Game.MyGdxGame;
 
 public class SliderWithLabel extends Slider {
@@ -32,7 +34,7 @@ public class SliderWithLabel extends Slider {
 
     float percentageAcross = 0f;
     
-    public void draw(SpriteBatch batch) {
+    public void draw(SpriteBatch batch, CameraTwo camera) {
         batch.end();
         float tempWidth = width * 0.75f;
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);

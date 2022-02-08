@@ -3,6 +3,8 @@ package com.mygdx.game.ui.elements;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
+import com.badlogic.gdx.math.Vector2;
+import com.mygdx.game.Game.CameraTwo;
 
 public class Slider extends TextButton{
     float maxValue = 100f;
@@ -30,7 +32,7 @@ public class Slider extends TextButton{
         this.step = step;
     }
 
-    public void draw(SpriteBatch batch){
+    public void draw(SpriteBatch batch, CameraTwo camera){
         batch.end();
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setProjectionMatrix(batch.getProjectionMatrix());

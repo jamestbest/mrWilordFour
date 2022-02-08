@@ -114,7 +114,7 @@ public class Settings implements Screen {
         batch.begin();
         batch.draw(background, 0, 0, (int) MyGdxGame.initialRes.x, (int) MyGdxGame.initialRes.y);
 
-        optionsTable.draw(batch);
+        optionsTable.draw(batch, camera);
         batch.end();
 
         if (Gdx.input.isButtonPressed(0)) {

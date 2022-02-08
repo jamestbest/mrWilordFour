@@ -235,16 +235,12 @@ public class GameScreen implements Screen {
 
         map.drawThings(batch, thingTextures, camera);
 
+        bottomBarButtons.followCamera = true;
+        bottomBarButtons.drawButtons(batch, camera);
+        ordersButtons.drawButtons(batch, camera);
+        resourceButtons.drawButtons(batch, camera);
+
         batch.end();
-
-        batchWithNoProj.begin();
-//        batchWithNoProj.setProjectionMatrix(camera.projViewMatrix);
-        bottomBarButtons.drawButtons(batchWithNoProj);
-        ordersButtons.drawButtons(batchWithNoProj);
-        resourceButtons.drawButtons(batchWithNoProj);
-        batchWithNoProj.end();
-
-
 
 
         Gdx.gl.glEnable(GL30.GL_BLEND);

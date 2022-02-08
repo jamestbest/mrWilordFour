@@ -4,6 +4,8 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Vector2;
+import com.mygdx.game.Game.CameraTwo;
 
 public class ImgTextButton extends Button{
     String text;
@@ -35,7 +37,7 @@ public class ImgTextButton extends Button{
         glyphLayout.setText(font, text);
     }
 
-    public void draw(SpriteBatch batch){
+    public void draw(SpriteBatch batch, CameraTwo camera){
         float imgDims = height / 5f * 4f;
         float imgX = x + (width - imgDims) / 2f;
         float imgY = y + (height - imgDims) / 2f;

@@ -4,6 +4,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
+import com.mygdx.game.Game.CameraTwo;
+import com.mygdx.game.Game.MyGdxGame;
 
 import java.util.Vector;
 
@@ -44,13 +46,16 @@ public class Button {
         this(0, 0, 0, 0, "BlueButton", name);
     }
 
-    public void draw(SpriteBatch batch) {
+    public void draw(SpriteBatch batch, CameraTwo camera) {
         if (visible) {
             if(pressed){
-                batch.draw(pressedTexture, x, y, width, height);
+                batch.draw(pressedTexture, x + ((camera.position.x) - (camera.width / 2f)) * camera.zoom, y + ((camera.position.y) - (camera.height / 2f)) * camera.zoom, width , height);
             }
             else{
-                batch.draw(unpressedTexture, x, y, width, height);
+                batch.draw(unpressedTexture, x + ((camera.position.x) - (camera.width / 2f * camera.zoom)) - (width * (1 - camera.zoom)),
+                        y + ((camera.position.y) - (camera.height / 2f * camera.zoom)),
+                        width * camera.zoom,
+                        height * camera.zoom);
             }
         }
     }
