@@ -47,19 +47,22 @@ public class Button {
 
     public void draw(SpriteBatch batch, boolean drawToScreen, CameraTwo camera) {
         if (visible) {
-            if(pressed){
-                batch.draw(pressedTexture, x, y, width, height);
+            if(pressed) {
+                drawPart(batch, drawToScreen, camera, pressedTexture);
             }
             else{
-                if (drawToScreen) {
-                    Vector2 temp = camera.unproject(new Vector2(x,MyGdxGame.initialRes.y - y));
-                    Vector2 tempTwo = camera.unproject(new Vector2(x + width, MyGdxGame.initialRes.y + y - height));
-                    batch.draw(unpressedTexture, temp.x, temp.y, tempTwo.x - temp.x, tempTwo.y - temp.y);
-                } else {
-                    batch.draw(unpressedTexture, x, y, width, height);
-                }
-                
+                drawPart(batch, drawToScreen, camera, unpressedTexture);
             }
+        }
+    }
+
+    public void drawPart(SpriteBatch batch, boolean drawToScreen, CameraTwo camera, Texture t) {
+        if (drawToScreen) {
+            Vector2 temp = camera.unproject(new Vector2(x, MyGdxGame.initialRes.y - y));
+            Vector2 tempTwo = camera.unproject(new Vector2(x + width, MyGdxGame.initialRes.y + y - height));
+            batch.draw(t, temp.x, temp.y, tempTwo.x - temp.x, tempTwo.y - temp.y);
+        } else {
+            batch.draw(t, x, y, width, height);
         }
     }
 

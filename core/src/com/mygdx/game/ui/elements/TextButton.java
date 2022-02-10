@@ -40,17 +40,26 @@ public class TextButton extends Button {
 
     public void draw(SpriteBatch batch, boolean drawToScreen, CameraTwo camera) {
         super.draw(batch, drawToScreen, camera);
-        drawText(batch);
+        drawText(batch, drawToScreen, camera);
     }
 
-    public void drawText(SpriteBatch batch){
+    public void drawText(SpriteBatch batch, boolean drawToScreen, CameraTwo camera){
         if (visible){
-            if (pressed){
-                font.draw(batch, text, x + (width - glyphLayout.width) / 2, y + (height + glyphLayout.height) / 2 - 2);
+            if (pressed) {
+                if (drawToScreen) {
+                    Vector2 temp = camera.unproject(new Vector2(x + (width - glyphLayout.width) / 2, MyGdxGame.initialRes.y - (y + (height + glyphLayout.height) / 2 - 2)));
+                    font.draw(batch, text, temp.x, temp.y);
+                } else {
+                    font.draw(batch, text, x + (width - glyphLayout.width) / 2, y + (height + glyphLayout.height) / 2 - 2);
+                }
             }
             else{
-                font.draw(batch, text, x + (width - glyphLayout.width) / 2, y + (height + glyphLayout.height) / 2);
-            }
+                if (drawToScreen) {
+                    Vector2 temp = camera.unproject(new Vector2(x + (width - glyphLayout.width) / 2, MyGdxGame.initialRes.y - (y + (height + glyphLayout.height) / 2)));
+                    font.draw(batch, text, temp.x, temp.y);
+                } else {
+                    font.draw(batch, text, x + (width - glyphLayout.width) / 2, y + (height + glyphLayout.height) / 2 - 2);
+                }            }
         }
     }
 
