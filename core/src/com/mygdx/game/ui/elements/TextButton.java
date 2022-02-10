@@ -38,8 +38,8 @@ public class TextButton extends Button {
         glyphLayout = new GlyphLayout(font, text);
     }
 
-    public void draw(SpriteBatch batch, CameraTwo camera) {
-        super.draw(batch, camera);
+    public void draw(SpriteBatch batch, boolean drawToScreen, CameraTwo camera) {
+        super.draw(batch, drawToScreen, camera);
         drawText(batch);
     }
 

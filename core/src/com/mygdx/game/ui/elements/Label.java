@@ -21,7 +21,7 @@ public class Label extends TextButton {
 //        autoSize();
     }
 
-    public void draw(SpriteBatch batch, CameraTwo camera){
+    public void draw(SpriteBatch batch, boolean drawToScreen, CameraTwo camera){
         font.draw(batch, text, x + (width - glyphLayout.width) / 2, y + (height + glyphLayout.height) / 2);
     }
 }

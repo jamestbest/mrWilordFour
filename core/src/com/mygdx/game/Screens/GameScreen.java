@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Json;
 import com.mygdx.game.Game.CameraTwo;
 import com.mygdx.game.Game.Colonist;
@@ -220,10 +221,12 @@ public class GameScreen implements Screen {
             }
         }
 
-//        System.out.println(minSelecting + " :minSelecting");
-//        System.out.println(maxSelecting + " :max selecting");
-
         camera.update();
+
+        camera.project(new Vector3(100, 100, 0));
+
+
+
 
         batch.begin();
         batch.setProjectionMatrix(camera.projViewMatrix);
@@ -287,6 +290,12 @@ public class GameScreen implements Screen {
                 }
             }
         }
+
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setProjectionMatrix(camera.projViewMatrix);
+        shapeRenderer.setColor(Color.BLACK);
+        shapeRenderer.rect(100,100,100,100);
+        shapeRenderer.end();
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
             Vector2 mousePos = camera.unproject(new Vector2(Gdx.input.getX(), Gdx.input.getY()));

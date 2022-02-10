@@ -4,10 +4,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.mygdx.game.Game.CameraTwo;
 import com.mygdx.game.Game.MyGdxGame;
-
-import java.util.Vector;
 
 public class Button {
     public int x;
@@ -46,16 +45,20 @@ public class Button {
         this(0, 0, 0, 0, "BlueButton", name);
     }
 
-    public void draw(SpriteBatch batch, CameraTwo camera) {
+    public void draw(SpriteBatch batch, boolean drawToScreen, CameraTwo camera) {
         if (visible) {
             if(pressed){
-                batch.draw(pressedTexture, x + ((camera.position.x) - (camera.width / 2f)) * camera.zoom, y + ((camera.position.y) - (camera.height / 2f)) * camera.zoom, width , height);
+                batch.draw(pressedTexture, x, y, width, height);
             }
             else{
-                batch.draw(unpressedTexture, x + ((camera.position.x) - (camera.width / 2f * camera.zoom)) - (width * (1 - camera.zoom)),
-                        y + ((camera.position.y) - (camera.height / 2f * camera.zoom)),
-                        width * camera.zoom,
-                        height * camera.zoom);
+                if (drawToScreen) {
+                    Vector2 temp = camera.unproject(new Vector2(x,MyGdxGame.initialRes.y - y));
+                    Vector2 tempTwo = camera.unproject(new Vector2(x + width, MyGdxGame.initialRes.y + y - height));
+                    batch.draw(unpressedTexture, temp.x, temp.y, tempTwo.x - temp.x, tempTwo.y - temp.y);
+                } else {
+                    batch.draw(unpressedTexture, x, y, width, height);
+                }
+                
             }
         }
     }

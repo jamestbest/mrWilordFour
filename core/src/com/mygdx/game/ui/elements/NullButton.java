@@ -9,7 +9,7 @@ public class NullButton extends Button {
         super("nullButton");
     }
 
-    public void draw(SpriteBatch batch, CameraTwo camera) {
+    public void draw(SpriteBatch batch, boolean drawToScreen, CameraTwo camera) {
         // do nothing
     }
 

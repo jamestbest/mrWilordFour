@@ -23,8 +23,8 @@ public class NumberInputWithSides extends NumberInput{
     Texture plus = new Texture("Textures/ui/buttons/sidePlus.png");
     Texture minus = new Texture("Textures/ui/buttons/sideMinus.png");
 
-    public void draw(SpriteBatch batch, CameraTwo camera){
-        super.draw(batch, camera);
+    public void draw(SpriteBatch batch, boolean drawToScreen, CameraTwo camera){
+        super.draw(batch, drawToScreen, camera);
         batch.draw(plus, x + (width * 1.1f), y, width, height);
         batch.draw(minus, x - (width * 1.1f), y, width, height);
     }

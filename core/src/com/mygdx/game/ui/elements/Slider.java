@@ -32,7 +32,7 @@ public class Slider extends TextButton{
         this.step = step;
     }
 
-    public void draw(SpriteBatch batch, CameraTwo camera){
+    public void draw(SpriteBatch batch, boolean drawToScreen, CameraTwo camera){
         batch.end();
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setProjectionMatrix(batch.getProjectionMatrix());

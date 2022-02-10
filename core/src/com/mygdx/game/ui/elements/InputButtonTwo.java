@@ -117,7 +117,7 @@ public class InputButtonTwo extends TextButton{
         inputMultiplexer.addProcessor(inputProcessor);
     }
 
-    public void draw(SpriteBatch batch, CameraTwo camera){
+    public void draw(SpriteBatch batch, boolean drawToScreen, CameraTwo camera){
         batch.draw(texture, x, y, width, height);
 
         String temp = text.substring(startDrawPos, endDrawPos);

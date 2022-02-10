@@ -28,7 +28,7 @@ public class ToggleButton extends Button{
         unToggledTexture = new Texture("Textures/ui/buttons/SwitchOff" + type + ".png");
     }
 
-    public void draw(SpriteBatch batch, CameraTwo camera){
+    public void draw(SpriteBatch batch, boolean drawToScreen, CameraTwo camera){
         batch.draw(toggled ? toggledTexture : unToggledTexture, x, y, width, height);
     }
 

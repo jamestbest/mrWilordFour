@@ -37,7 +37,7 @@ public class ImgTextButton extends Button{
         glyphLayout.setText(font, text);
     }
 
-    public void draw(SpriteBatch batch, CameraTwo camera){
+    public void draw(SpriteBatch batch, boolean drawToScreen, CameraTwo camera){
         float imgDims = height / 5f * 4f;
         float imgX = x + (width - imgDims) / 2f;
         float imgY = y + (height - imgDims) / 2f;

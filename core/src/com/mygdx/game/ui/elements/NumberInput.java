@@ -60,7 +60,7 @@ public class NumberInput extends TextButton{
 
     public boolean typing = false;
 
-    public void draw(SpriteBatch batch, CameraTwo camera){
+    public void draw(SpriteBatch batch, boolean drawToScreen, CameraTwo camera){
         batch.draw(texture, x, y, width, height);
 
         glyphLayout.setText(font, text);

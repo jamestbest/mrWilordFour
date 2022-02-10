@@ -33,10 +33,10 @@ public class ButtonCollection {
         if (showButtons) {
             for (Button button : buttons) {
                 if (followCamera) {
-                    button.draw(batch, camera);
+                    button.draw(batch, true, camera);
                 }
                 else{
-                    button.draw(batch, camera);
+                    button.draw(batch, false, camera);
                 }
             }
         }

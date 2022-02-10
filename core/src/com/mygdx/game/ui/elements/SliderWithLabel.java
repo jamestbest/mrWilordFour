@@ -34,7 +34,7 @@ public class SliderWithLabel extends Slider {
 
     float percentageAcross = 0f;
     
-    public void draw(SpriteBatch batch, CameraTwo camera) {
+    public void draw(SpriteBatch batch, boolean drawToScreen, CameraTwo camera) {
         batch.end();
         float tempWidth = width * 0.75f;
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);

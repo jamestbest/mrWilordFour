@@ -2,6 +2,7 @@ package com.mygdx.game.Game;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
@@ -88,6 +89,17 @@ public class CameraTwo {
         coords.y += position.y;
 
         return coords;
+    }
+
+    public Vector2 project(Vector3 coords){
+        coords.prj(projViewMatrix);
+        coords.x = (coords.x + 1) * width;
+        coords.y = (coords.y + 1) * height;
+        coords.x /= 2f;
+        coords.y /= 2f;
+        System.out.println(coords);
+
+        return new Vector2(coords.x, coords.y);
     }
 
     public static Vector2 testProj(Vector2 coords, float screenWidth, float screenHeight, float viewportWidth, float viewportHeight){
