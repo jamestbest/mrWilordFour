@@ -57,32 +57,32 @@ public class Settings implements Screen {
         camera = new CameraTwo();
         camera.allowMovement = false;
 
-        optionsTable = new Table(0, 0, (int) MyGdxGame.initialRes.x, (int) MyGdxGame.initialRes.y);
+        optionsTable = new Table(0, 0, (int) Gdx.graphics.getWidth(), (int) Gdx.graphics.getHeight());
 
-        volumeSlider = new SliderWithLabel(0, 0, (int) MyGdxGame.initialRes.x, (int) MyGdxGame.initialRes.y,"VolumeSlider");
-        muteToggle = new ToggleButton(0, 0, (int) MyGdxGame.initialRes.x, (int) MyGdxGame.initialRes.y,"MuteToggle");
-        placeholderLabel = new Label(0, 0, (int) MyGdxGame.initialRes.x, (int) MyGdxGame.initialRes.y, "PlaceholderLabel", "Placeholder");
-        loopToggle = new ToggleButton(0, 0, (int) MyGdxGame.initialRes.x, (int) MyGdxGame.initialRes.y,"LoopToggle");
-        placeholderTwoLabel = new Label(0, 0, (int) MyGdxGame.initialRes.x, (int) MyGdxGame.initialRes.y, "PlaceholderTwoLabel", "Placeholder");
+        volumeSlider = new SliderWithLabel(0, 0,  0,  0,"VolumeSlider");
+        muteToggle = new ToggleButton(0, 0,  0,  0,"MuteToggle");
+        placeholderLabel = new Label(0, 0,  0,  0, "PlaceholderLabel", "Placeholder");
+        loopToggle = new ToggleButton(0, 0,  0,  0,"LoopToggle");
+        placeholderTwoLabel = new Label(0, 0,  0,  0, "PlaceholderTwoLabel", "Placeholder");
 
-        fPSToggle = new ToggleButton(0, 0, (int) MyGdxGame.initialRes.x, (int) MyGdxGame.initialRes.y,"FPSToggle");
-        fPSSlider = new SliderWithLabel(0, 0, (int) MyGdxGame.initialRes.x, (int) MyGdxGame.initialRes.y,"FPSSlider");
-        vSyncToggle = new ToggleButton(0, 0, (int) MyGdxGame.initialRes.x, (int) MyGdxGame.initialRes.y,"VsyncToggle");
+        fPSToggle = new ToggleButton(0, 0,  0,  0,"FPSToggle");
+        fPSSlider = new SliderWithLabel(0, 0,  0,  0,"FPSSlider");
+        vSyncToggle = new ToggleButton(0, 0,  0,  0,"VsyncToggle");
 
-        placeholderThreeLabel = new Label(0, 0, (int) MyGdxGame.initialRes.x, (int) MyGdxGame.initialRes.y, "PlaceholderThreeLabel", "Placeholder");
-        setTitleInputButton = new InputButtonTwo(0, 0, (int) MyGdxGame.initialRes.x, (int) MyGdxGame.initialRes.y, MyGdxGame.title, "SetTitleInputButton", inputMultiplexer);
+        placeholderThreeLabel = new Label(0, 0,  0,  0, "PlaceholderThreeLabel", "Placeholder");
+        setTitleInputButton = new InputButtonTwo(0, 0,  0,  0, MyGdxGame.title, "SetTitleInputButton", inputMultiplexer);
 
-        volumeLabel = new Label(0, 0, (int) MyGdxGame.initialRes.x, (int) MyGdxGame.initialRes.y, "VolumeLabel", "Volume: ");
-        muteLabel = new Label(0, 0, (int) MyGdxGame.initialRes.x, (int) MyGdxGame.initialRes.y, "MuteLabel", "Mute: ");
-        currenSongLabel = new Label(0, 0, (int) MyGdxGame.initialRes.x, (int) MyGdxGame.initialRes.y, "CurrenSongLabel", "Current Song: ");
-        loopLabel = new Label(0, 0, (int) MyGdxGame.initialRes.x, (int) MyGdxGame.initialRes.y, "LoopLabel", "Loop: ");
-        removeSongLabel = new Label(0, 0, (int) MyGdxGame.initialRes.x, (int) MyGdxGame.initialRes.y, "RemoveSongLabel", "Remove Song: ");
+        volumeLabel = new Label(0, 0,  0,  0, "VolumeLabel", "Volume: ");
+        muteLabel = new Label(0, 0,  0,  0, "MuteLabel", "Mute: ");
+        currenSongLabel = new Label(0, 0,  0,  0, "CurrenSongLabel", "Current Song: ");
+        loopLabel = new Label(0, 0,  0,  0, "LoopLabel", "Loop: ");
+        removeSongLabel = new Label(0, 0,  0,  0, "RemoveSongLabel", "Remove Song: ");
 
-        fPSCounterLabel = new Label(0, 0, (int) MyGdxGame.initialRes.x, (int) MyGdxGame.initialRes.y, "FPSCounterLabel", "FPS: ");
-        maxFPSLabel = new Label(0, 0, (int) MyGdxGame.initialRes.x, (int) MyGdxGame.initialRes.y, "MaxFPSLabel", "Max FPS: ");
-        vsyncLabel = new Label(0, 0, (int) MyGdxGame.initialRes.x, (int) MyGdxGame.initialRes.y, "VsyncLabel", "Vsync: ");
+        fPSCounterLabel = new Label(0, 0,  0,  0, "FPSCounterLabel", "FPS: ");
+        maxFPSLabel = new Label(0, 0,  0,  0, "MaxFPSLabel", "Max FPS: ");
+        vsyncLabel = new Label(0, 0,  0,  0, "VsyncLabel", "Vsync: ");
 
-        titleLabel = new Label(0, 0, (int) MyGdxGame.initialRes.x, (int) MyGdxGame.initialRes.y, "TitleLabel", "Title: ");
+        titleLabel = new Label(0, 0,  0,  0, "TitleLabel", "Title: ");
 
         optionsTable.add(volumeLabel, volumeSlider, fPSCounterLabel, fPSToggle);
         optionsTable.row();
@@ -112,9 +112,9 @@ public class Settings implements Screen {
         camera.update();
 
         batch.begin();
-        batch.draw(background, 0, 0, (int) MyGdxGame.initialRes.x, (int) MyGdxGame.initialRes.y);
+        batch.draw(background, 0, 0, (int) Gdx.graphics.getWidth(), (int) Gdx.graphics.getHeight());
 
-        optionsTable.draw(batch, camera);
+        optionsTable.draw(batch);
         batch.end();
 
         if (Gdx.input.isButtonPressed(0)) {

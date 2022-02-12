@@ -264,6 +264,16 @@ public class Map {
         }
     }
 
+    public void changeThingType(int x, int y, String type){
+        if (isWithinBounds(x, y)){
+            Thing temp = things.get(x).get(y);
+            temp.type = type;
+            Tile tempTile = tiles.get(x).get(y);
+            tempTile.canSpawnOn = tileInformationHashMap.get(type).canSpawnOn;
+            tempTile.canWalkOn = tileInformationHashMap.get(type).canWalkOn;
+        }
+    }
+
     public boolean isWithinBounds(int newX, int newY){
         return newX >= 0 && newX < GameScreen.TILES_ON_X && newY >= 0 && newY < GameScreen.TILES_ON_Y;
     }

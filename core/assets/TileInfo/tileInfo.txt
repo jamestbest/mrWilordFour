@@ -23,4 +23,9 @@
             type:water,
             canWalkOn:true
         },
+    tree:
+        {
+            type:tree,
+            canWalkOn:true
+        },
 }

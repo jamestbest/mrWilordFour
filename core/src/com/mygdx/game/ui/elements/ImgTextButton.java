@@ -11,6 +11,8 @@ public class ImgTextButton extends Button{
     String text;
     Texture img;
 
+    public String imgName;
+
     BitmapFont font;
     GlyphLayout glyphLayout;
 
@@ -27,6 +29,7 @@ public class ImgTextButton extends Button{
     public ImgTextButton(String name, String text, String imgName) {
         super(name);
         this.text = text;
+        this.imgName = imgName;
         this.img = new Texture("Textures/Resources/" + imgName + ".png");
         setup();
     }

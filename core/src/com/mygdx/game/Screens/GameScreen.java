@@ -222,11 +222,7 @@ public class GameScreen implements Screen {
         }
 
         camera.update();
-
-        camera.project(new Vector3(100, 100, 0));
-
-
-
+        updateResourceButtons();
 
         batch.begin();
         batch.setProjectionMatrix(camera.projViewMatrix);
@@ -294,12 +290,6 @@ public class GameScreen implements Screen {
                 }
             }
         }
-
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setProjectionMatrix(camera.projViewMatrix);
-        shapeRenderer.setColor(Color.BLACK);
-        shapeRenderer.rect(100,100,100,100);
-        shapeRenderer.end();
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
             Vector2 mousePos = camera.unproject(new Vector2(Gdx.input.getX(), Gdx.input.getY()));
@@ -711,6 +701,13 @@ public class GameScreen implements Screen {
         for (File file : files) {
             Texture t = new Texture(file.getPath());
             actionSymbols.put(file.getName().split("\\.")[0], t);
+        }
+    }
+
+    public void updateResourceButtons(){
+        for (Button button : resourceButtons.buttons) {
+            ImgTextButton b = (ImgTextButton) button;
+            b.updateText(resources.get(b.imgName).toString());
         }
     }
 }

@@ -64,7 +64,7 @@ public class MainMenu implements Screen {
         batch.begin();
         batch.draw(background, 0, 0, MyGdxGame.initialRes.x, MyGdxGame.initialRes.y);
 
-        table.draw(batch, camera);
+        table.draw(batch);
         title.draw(batch);
 
         batch.end();

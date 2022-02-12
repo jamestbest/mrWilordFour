@@ -97,7 +97,6 @@ public class CameraTwo {
         coords.y = (coords.y + 1) * height;
         coords.x /= 2f;
         coords.y /= 2f;
-        System.out.println(coords);
 
         return new Vector2(coords.x, coords.y);
     }
