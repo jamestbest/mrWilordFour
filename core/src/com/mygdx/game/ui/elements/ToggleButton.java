@@ -3,8 +3,6 @@ package com.mygdx.game.ui.elements;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.Vector2;
-import com.mygdx.game.Game.CameraTwo;
 
 public class ToggleButton extends Button{
     public ToggleButton(int x, int y, int width, int height, String name, String type) {
@@ -28,7 +26,7 @@ public class ToggleButton extends Button{
         unToggledTexture = new Texture("Textures/ui/buttons/SwitchOff" + type + ".png");
     }
 
-    public void draw(SpriteBatch batch, boolean drawToScreen, CameraTwo camera){
+    public void draw(SpriteBatch batch){
         batch.draw(toggled ? toggledTexture : unToggledTexture, x, y, width, height);
     }
 

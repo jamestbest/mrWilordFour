@@ -5,8 +5,6 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.Vector2;
-import com.mygdx.game.Game.CameraTwo;
 import com.mygdx.game.Game.MyGdxGame;
 
 public class TextButton extends Button {
@@ -38,28 +36,19 @@ public class TextButton extends Button {
         glyphLayout = new GlyphLayout(font, text);
     }
 
-    public void draw(SpriteBatch batch, boolean drawToScreen, CameraTwo camera) {
-        super.draw(batch, drawToScreen, camera);
-        drawText(batch, drawToScreen, camera);
+    public void draw(SpriteBatch batch) {
+        super.draw(batch);
+        drawText(batch);
     }
 
-    public void drawText(SpriteBatch batch, boolean drawToScreen, CameraTwo camera){
+    public void drawText(SpriteBatch batch){
         if (visible){
-            if (pressed) {
-                if (drawToScreen) {
-                    Vector2 temp = camera.unproject(new Vector2(x + (width - glyphLayout.width) / 2, MyGdxGame.initialRes.y - (y + (height + glyphLayout.height) / 2 - 2)));
-                    font.draw(batch, text, temp.x, temp.y);
-                } else {
-                    font.draw(batch, text, x + (width - glyphLayout.width) / 2, y + (height + glyphLayout.height) / 2 - 2);
-                }
+            if (pressed){
+                font.draw(batch, text, x + (width - glyphLayout.width) / 2, y + (height + glyphLayout.height) / 2 - 2);
             }
             else{
-                if (drawToScreen) {
-                    Vector2 temp = camera.unproject(new Vector2(x + (width - glyphLayout.width) / 2, MyGdxGame.initialRes.y - (y + (height + glyphLayout.height) / 2)));
-                    font.draw(batch, text, temp.x, temp.y);
-                } else {
-                    font.draw(batch, text, x + (width - glyphLayout.width) / 2, y + (height + glyphLayout.height) / 2 - 2);
-                }            }
+                font.draw(batch, text, x + (width - glyphLayout.width) / 2, y + (height + glyphLayout.height) / 2);
+            }
         }
     }
 

@@ -78,7 +78,7 @@ public class JoinGameScreen implements Screen {
         batch.begin();
         map.drawMiniMap(batch, tileTextures, thingTextures);
 
-        buttonCollection.drawButtons(batch, cameraTwo);
+        buttonCollection.drawButtons(batch);
         batch.end();
 
         if(Gdx.input.isButtonPressed(0)){

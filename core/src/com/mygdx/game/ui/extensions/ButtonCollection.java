@@ -7,7 +7,6 @@ import com.mygdx.game.Game.CameraTwo;
 import com.mygdx.game.Game.MyGdxGame;
 import com.mygdx.game.ui.elements.Button;
 
-import javax.xml.stream.FactoryConfigurationError;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -29,15 +28,10 @@ public class ButtonCollection {
         buttons.addAll(Arrays.asList(button));
     }
 
-    public void drawButtons(SpriteBatch batch, CameraTwo camera){
+    public void drawButtons(SpriteBatch batch) {
         if (showButtons) {
             for (Button button : buttons) {
-                if (followCamera) {
-                    button.draw(batch, true, camera);
-                }
-                else{
-                    button.draw(batch, false, camera);
-                }
+                button.draw(batch);
             }
         }
         setAllToUnpressed();

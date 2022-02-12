@@ -3,8 +3,6 @@ package com.mygdx.game.ui.elements;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.Vector2;
-import com.mygdx.game.Game.CameraTwo;
 
 public class Label extends TextButton {
     String text;
@@ -21,7 +19,7 @@ public class Label extends TextButton {
 //        autoSize();
     }
 
-    public void draw(SpriteBatch batch, boolean drawToScreen, CameraTwo camera){
+    public void draw(SpriteBatch batch){
         font.draw(batch, text, x + (width - glyphLayout.width) / 2, y + (height + glyphLayout.height) / 2);
     }
 }

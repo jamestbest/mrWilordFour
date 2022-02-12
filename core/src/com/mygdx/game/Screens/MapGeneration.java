@@ -146,7 +146,7 @@ public class MapGeneration implements Screen {
         batch.setProjectionMatrix(camera.projViewMatrix);
         labelTable.draw(batch, camera);
         buttonTable.draw(batch, camera);
-        extraUI.drawButtons(batch, camera);
+        extraUI.drawButtons(batch);
         batch.end();
 
         if(!typing){

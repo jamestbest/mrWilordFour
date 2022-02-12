@@ -31,8 +31,8 @@ public class ImgButton extends Button {
         texture = new Texture("Textures/ui/imgButtons/" + textureName + ".png");
     }
 
-    public void draw(SpriteBatch batch, boolean drawToScreen, CameraTwo camera){
-        super.draw(batch, drawToScreen, camera);
+    public void draw(SpriteBatch batch){
+        super.draw(batch);
         batch.draw(texture, x, y, width, height);
     }
 }

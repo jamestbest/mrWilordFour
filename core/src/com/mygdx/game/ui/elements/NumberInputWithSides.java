@@ -4,8 +4,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.Vector2;
-import com.mygdx.game.Game.CameraTwo;
 import org.w3c.dom.Text;
 
 public class NumberInputWithSides extends NumberInput{
@@ -23,8 +21,8 @@ public class NumberInputWithSides extends NumberInput{
     Texture plus = new Texture("Textures/ui/buttons/sidePlus.png");
     Texture minus = new Texture("Textures/ui/buttons/sideMinus.png");
 
-    public void draw(SpriteBatch batch, boolean drawToScreen, CameraTwo camera){
-        super.draw(batch, drawToScreen, camera);
+    public void draw(SpriteBatch batch){
+        super.draw(batch);
         batch.draw(plus, x + (width * 1.1f), y, width, height);
         batch.draw(minus, x - (width * 1.1f), y, width, height);
     }

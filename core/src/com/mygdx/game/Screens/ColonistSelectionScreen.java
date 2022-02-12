@@ -126,7 +126,7 @@ public class ColonistSelectionScreen implements Screen {
 
         batch.begin();
         batch.setProjectionMatrix(camera.projViewMatrix);
-        buttonCollection.drawButtons(batch, camera);
+        buttonCollection.drawButtons(batch);
         batch.end();
 
         if (Gdx.input.isButtonPressed(0)){

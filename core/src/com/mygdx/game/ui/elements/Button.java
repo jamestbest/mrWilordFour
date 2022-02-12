@@ -4,9 +4,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
-import com.mygdx.game.Game.CameraTwo;
-import com.mygdx.game.Game.MyGdxGame;
+
+import java.util.Vector;
 
 public class Button {
     public int x;
@@ -45,24 +44,14 @@ public class Button {
         this(0, 0, 0, 0, "BlueButton", name);
     }
 
-    public void draw(SpriteBatch batch, boolean drawToScreen, CameraTwo camera) {
+    public void draw(SpriteBatch batch) {
         if (visible) {
-            if(pressed) {
-                drawPart(batch, drawToScreen, camera, pressedTexture);
+            if(pressed){
+                batch.draw(pressedTexture, x, y, width, height);
             }
             else{
-                drawPart(batch, drawToScreen, camera, unpressedTexture);
+                batch.draw(unpressedTexture, x, y, width, height);
             }
-        }
-    }
-
-    public void drawPart(SpriteBatch batch, boolean drawToScreen, CameraTwo camera, Texture t) {
-        if (drawToScreen) {
-            Vector2 temp = camera.unproject(new Vector2(x, MyGdxGame.initialRes.y - y));
-            Vector2 tempTwo = camera.unproject(new Vector2(x + width, MyGdxGame.initialRes.y + y - height));
-            batch.draw(t, temp.x, temp.y, tempTwo.x - temp.x, tempTwo.y - temp.y);
-        } else {
-            batch.draw(t, x, y, width, height);
         }
     }
 

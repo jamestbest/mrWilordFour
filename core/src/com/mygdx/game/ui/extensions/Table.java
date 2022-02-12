@@ -37,7 +37,7 @@ public class Table {
     }
 
     public void draw(SpriteBatch batch, CameraTwo camera) {
-        buttonCollection.drawButtons(batch, camera);
+        buttonCollection.drawButtons(batch);
     }
 
     public boolean update(CameraTwo camera) {
