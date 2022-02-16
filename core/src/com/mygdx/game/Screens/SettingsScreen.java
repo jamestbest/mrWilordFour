@@ -76,7 +76,7 @@ public class SettingsScreen implements Screen {
         addSongLabel = new Label( "addSongLabel", "add custom song");
         addSongButton = new ImgOnlyButton("addSongButton", "uploadButton");
 
-        currentSongDropDown.setDropDowns(getSelectableSongs());
+        currentSongDropDown.setDropDowns(getSelectableSongs(), game);
 
         fPSToggle = new ToggleButton("FPSToggle");
         fPSSlider = new SliderWithLabel("FPSSlider", 144, 30, 1, 60);
@@ -144,7 +144,10 @@ public class SettingsScreen implements Screen {
                 case "FPSToggle" -> game.fpsCounter = (fPSToggle.toggled);
                 case "VsyncToggle" -> Gdx.graphics.setVSync(vSyncToggle.toggled);
                 case "LoopToggle" -> game.loop = (loopToggle.toggled);
-                case "SetTitleInputButton" -> MyGdxGame.title = setTitleInputButton.text;
+                case "SetTitleInputButton" -> {
+                    updateTitle(setTitleInputButton.text);
+
+                }
                 case "VolumeSlider" -> {
                     game.volume = volumeSlider.value;
                     game.updateMusicInfo();
@@ -159,7 +162,7 @@ public class SettingsScreen implements Screen {
                 case "addSongButton" -> {
                     String fileName = getCustomSongLocation();
                     addCustomSong(fileName);
-                    currentSongDropDown.setDropDowns(getSelectableSongs());
+                    currentSongDropDown.setDropDowns(getSelectableSongs(), game);
                 }
             }
         }
@@ -231,5 +234,10 @@ public class SettingsScreen implements Screen {
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         fileChooser.showOpenDialog(null);
         return Objects.equals(String.valueOf(fileChooser.getSelectedFile()), "null") ? null : String.valueOf(fileChooser.getSelectedFile());
+    }
+
+    public void updateTitle(String title){
+        MyGdxGame.title = title;
+        Gdx.graphics.setTitle(MyGdxGame.title);
     }
 }

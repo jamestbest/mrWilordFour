@@ -29,8 +29,6 @@ import java.util.Scanner;
 public class JoinGameScreen implements Screen {
     MyGdxGame myGdxGame;
 
-    String ipAddress = "";
-
     InputButtonTwo ipInputButton;
     TextButton joinGameButton;
     Button refreshMapButton;

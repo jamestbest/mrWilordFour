@@ -6,6 +6,7 @@ import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.mygdx.game.Game.MyGdxGame;
 
 import java.util.ArrayList;
 
@@ -92,15 +93,6 @@ public class DropdownButton extends TextButton{
         pressedTexture = new Texture("Textures/ui/buttons/dropDownButtonPressedGrey.png");
         super.setup();
         dropDowns = new ArrayList<>();
-        dropDowns.add("asdf");
-        dropDowns.add("2");
-        dropDowns.add("3");
-        dropDowns.add("4");
-        dropDowns.add("5");
-        dropDowns.add("6");
-        dropDowns.add("7");
-        dropDowns.add("8");
-        dropDowns.add("9");
     }
 
     public boolean checkIfPressed(int x, int y){
@@ -147,8 +139,9 @@ public class DropdownButton extends TextButton{
         return dropDowns.get(selectedPosition);
     }
 
-    public void setDropDowns(ArrayList<String> dropDowns){
+    public void setDropDowns(ArrayList<String> dropDowns, MyGdxGame game){
         this.dropDowns = dropDowns;
+        this.selectedPosition = dropDowns.indexOf(game.songPlaying);
     }
 
     public void setSize(int width, int height){
