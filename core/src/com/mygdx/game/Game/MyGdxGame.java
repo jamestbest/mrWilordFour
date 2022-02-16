@@ -14,9 +14,8 @@ public class MyGdxGame extends Game {
 	public static String fontName = "Arial";
 	public static String title = "mR. Wilord";
 
-	public ArrayList<String> songs;
 	public String songPlaying = "Moving on.mp3";
-	public boolean mute;
+	public boolean mute = true;
 	public boolean loop = false;
 	public float volume = 50;
 

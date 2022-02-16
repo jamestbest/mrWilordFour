@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
+import com.mygdx.game.Game.MyGdxGame;
 
 import java.util.Vector;
 
@@ -85,7 +86,7 @@ public class Button {
     }
 
     public void centre(int offsetY){
-        x = (Gdx.graphics.getWidth() - width) / 2;
-        y = (Gdx.graphics.getHeight() - height) / 2 + offsetY;
+        x = (int) ((MyGdxGame.initialRes.x - width) / 2);
+        y = (int) ((MyGdxGame.initialRes.y - height) / 2 + offsetY);
     }
 }

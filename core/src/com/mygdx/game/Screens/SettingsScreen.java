@@ -5,8 +5,12 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.viewport.StretchViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 import com.mygdx.game.Game.CameraTwo;
 import com.mygdx.game.Game.MyGdxGame;
 import com.mygdx.game.ui.elements.*;
@@ -54,6 +58,7 @@ public class SettingsScreen implements Screen {
 
     SpriteBatch batch;
     CameraTwo camera;
+    Viewport viewport;
 
     Texture background = new Texture("Textures/Backgrounds/optionsMenu.jpg");
 
@@ -67,7 +72,9 @@ public class SettingsScreen implements Screen {
         camera = new CameraTwo();
         camera.allowMovement = false;
 
-        optionsTable = new Table(0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        viewport = new StretchViewport(MyGdxGame.initialRes.x, MyGdxGame.initialRes.y);
+
+        optionsTable = new Table(0, 0, (int) MyGdxGame.initialRes.x, (int) MyGdxGame.initialRes.y);
         volumeSlider = new SliderWithLabel("VolumeSlider");
         volumeSlider.setValue(game.volume);
         muteToggle = new ToggleButton("MuteToggle");
@@ -168,13 +175,14 @@ public class SettingsScreen implements Screen {
         }
 
         if (Gdx.input.isKeyPressed(Input.Keys.ESCAPE)) {
+            MyGdxGame.initialRes = new Vector2(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
             game.setScreen(new MainMenu(game));
         }
     }
 
     @Override
     public void resize(int width, int height) {
-
+        viewport.update(width, height);
     }
 
     @Override

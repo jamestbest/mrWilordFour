@@ -180,7 +180,6 @@ public class GameScreen implements Screen {
 
     @Override
     public void show() {
-//        MyGdxGame.initialRes = new Vector2(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         initialiseAllTextures();
         setupResourceHashMap();
         setupResourceButtons();
@@ -324,6 +323,7 @@ public class GameScreen implements Screen {
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
+            MyGdxGame.initialRes = new Vector2(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
             game.setScreen(new MainMenu(game));
         }
     }
@@ -337,13 +337,7 @@ public class GameScreen implements Screen {
 
     @Override
     public void resize(int width, int height) {
-//        MyGdxGame.initialRes = new Vector2(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
-        System.out.println("resize old " + MyGdxGame.initialRes.x + " " + MyGdxGame.initialRes.y);
-        System.out.println("resize new" + Gdx.graphics.getWidth() + " " + Gdx.graphics.getHeight());
-
-        System.out.println("y ratio " + (Gdx.graphics.getHeight() / MyGdxGame.initialRes.y));
-        System.out.println("x ratio " + (Gdx.graphics.getWidth() / MyGdxGame.initialRes.x));
     }
 
     @Override

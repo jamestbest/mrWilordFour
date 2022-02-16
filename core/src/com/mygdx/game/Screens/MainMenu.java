@@ -70,6 +70,8 @@ public class MainMenu implements Screen {
         Gdx.gl.glClearColor(1, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+        camera.update();
+
         batch.begin();
         batch.draw(background, 0, 0, MyGdxGame.initialRes.x, MyGdxGame.initialRes.y);
 
@@ -88,7 +90,7 @@ public class MainMenu implements Screen {
             table.update(camera);
             int x = Gdx.input.getX();
             int y = Gdx.input.getY();
-            y = Gdx.graphics.getHeight() - y;
+            y = (int) (MyGdxGame.initialRes.y - y);
             test.checkIfPressed(x, y);
         }
         if (table.buttonCollection.lastPressedButtonName.equals(NewGame.name)){
@@ -156,13 +158,14 @@ public class MainMenu implements Screen {
         Exit = new TextButton(0,0,10,10,"Exit", "Exit");
 
         title = new Label(0,0,100,50,"Title", "mR. Wilord");
-        title.centre(Gdx.graphics.getHeight() / 10 * 3);
+        title.centre((int) (MyGdxGame.initialRes.y / 10 * 3));
         title.setFontColor(Color.BLUE);
         title.setFontScale(2f);
     }
 
     public void setupTable(){
-        table = new Table(Gdx.graphics.getWidth() / 3,Gdx.graphics.getHeight() / 10 * 2, Gdx.graphics.getWidth() / 3, Gdx.graphics.getHeight() / 10 * 4);
+        table = new Table((int) (MyGdxGame.initialRes.x / 3), (int) (MyGdxGame.initialRes.y / 10 * 2),
+                (int) (MyGdxGame.initialRes.x / 3), (int) (MyGdxGame.initialRes.y / 10 * 4));
         table.add(NewGame);
         table.row();
         table.add(LoadGame);
