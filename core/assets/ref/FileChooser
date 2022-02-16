@@ -1,0 +1,16 @@
+JFileChooser fileChooser = new JFileChooser();
+FileFilter filter = new FileNameExtensionFilter("MP3 File","mp3");
+fileChooser.setAcceptAllFileFilterUsed(false);
+fileChooser.setFileFilter(filter);
+fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+String a = String.valueOf(fileChooser.showOpenDialog(null));
+System.out.println(a);
+System.out.println(fileChooser.getSelectedFile());
+
+File source = new File(String.valueOf(fileChooser.getSelectedFile()));
+File dest = new File("C:\\Users\\jamescoward\\Desktop\\Java\\MrWilordFour\\core\\assets\\test\\test3.txt");
+try {
+    Files.copy(source.toPath(), dest.toPath());
+} catch (IOException e) {
+    e.printStackTrace();
+}

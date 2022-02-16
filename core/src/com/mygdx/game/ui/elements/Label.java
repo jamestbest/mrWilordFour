@@ -19,7 +19,13 @@ public class Label extends TextButton {
 //        autoSize();
     }
 
-    public void draw(SpriteBatch batch){
-        font.draw(batch, text, x + (width - glyphLayout.width) / 2, y + (height + glyphLayout.height) / 2);
+    public Label(String name, String text) {
+        this(0, 0, 0, 0, name, text);
+    }
+
+    public void draw(SpriteBatch batch, int drawLayer){
+        if (drawLayer == this.drawLayer){
+            font.draw(batch, text, x + (width - glyphLayout.width) / 2, y + (height + glyphLayout.height) / 2);
+        }
     }
 }

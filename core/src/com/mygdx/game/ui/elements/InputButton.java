@@ -67,29 +67,31 @@ public class InputButton extends TextButton{
 
     }
 
-    public void draw(SpriteBatch batch){
-        batch.draw(texture, x, y, width, height);
-        StringBuilder temp = new StringBuilder();
-        for (int i = startPos; i < endPos; i++) {
-            temp.append(text.charAt(i));
+    public void draw(SpriteBatch batch, int drawLayer){
+        if (drawLayer == this.drawLayer){
+            batch.draw(texture, x, y, width, height);
+            StringBuilder temp = new StringBuilder();
+            for (int i = startPos; i < endPos; i++) {
+                temp.append(text.charAt(i));
+            }
+            glyphLayout.setText(font, temp.toString());
+            font.draw(batch, glyphLayout, x + width/2f - glyphLayout.width/2, y + height/2f + glyphLayout.height/2);
+            batch.end();
+
+
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+            float tempWidth = glyphLayout.width;
+            glyphLayout.setText(font, text.substring(startPos, currentPos));
+            float x = glyphLayout.width;
+            float heightOffset = 0.6f;
+            shapeRenderer.rect(x + this.x + ((width - tempWidth) / 2) + 5, y + (height * ((1 - heightOffset) / 2)), 5, height * heightOffset);
+            shapeRenderer.end();
+
+            System.out.println(text + " " + startPos + " " + endPos + " " + currentPos);
+            updateLine();
+
+            batch.begin();
         }
-        glyphLayout.setText(font, temp.toString());
-        font.draw(batch, glyphLayout, x + width/2f - glyphLayout.width/2, y + height/2f + glyphLayout.height/2);
-        batch.end();
-
-
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        float tempWidth = glyphLayout.width;
-        glyphLayout.setText(font, text.substring(startPos, currentPos));
-        float x = glyphLayout.width;
-        float heightOffset = 0.6f;
-        shapeRenderer.rect(x + this.x + ((width - tempWidth) / 2) + 5, y + (height * ((1 - heightOffset) / 2)), 5, height * heightOffset);
-        shapeRenderer.end();
-
-        System.out.println(text + " " + startPos + " " + endPos + " " + currentPos);
-        updateLine();
-
-        batch.begin();
     }
 
 

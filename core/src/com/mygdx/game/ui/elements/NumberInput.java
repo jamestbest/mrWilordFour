@@ -58,16 +58,18 @@ public class NumberInput extends TextButton{
 
     public boolean typing = false;
 
-    public void draw(SpriteBatch batch){
-        batch.draw(texture, x, y, width, height);
+    public void draw(SpriteBatch batch, int drawLayer){
+        if (drawLayer == this.drawLayer) {
+            batch.draw(texture, x, y, width, height);
 
-        glyphLayout.setText(font, text);
-        font.draw(batch, glyphLayout, x + (width - glyphLayout.width) / 2, y + (height + glyphLayout.height) / 2);
+            glyphLayout.setText(font, text);
+            font.draw(batch, glyphLayout, x + (width - glyphLayout.width) / 2, y + (height + glyphLayout.height) / 2);
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
-            typing = false;
-            if (text.length() == 0) {
-                text = String.valueOf(minValue);
+            if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
+                typing = false;
+                if (text.length() == 0) {
+                    text = String.valueOf(minValue);
+                }
             }
         }
     }

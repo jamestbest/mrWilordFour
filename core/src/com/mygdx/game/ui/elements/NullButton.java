@@ -8,7 +8,7 @@ public class NullButton extends Button {
         super("nullButton");
     }
 
-    public void draw(SpriteBatch batch) {
+    public void draw(SpriteBatch batch, int drawLayer) {
         // do nothing
     }
 

@@ -9,6 +9,7 @@ public class Slider extends TextButton{
     float minValue = 0f;
     public float value;
     float step = 1f;
+    float percentageAcross = 0f;
 
     ShapeRenderer shapeRenderer;
 
@@ -30,24 +31,25 @@ public class Slider extends TextButton{
         this.step = step;
     }
 
-    public void draw(SpriteBatch batch){
-        batch.end();
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setProjectionMatrix(batch.getProjectionMatrix());
-        shapeRenderer.setColor(0.416f, 0.431f, 0.459f, 1);
-        shapeRenderer.rect(x, y, width, height);
-        shapeRenderer.setColor(0.349f,0.361f,0.38f,1);
-        shapeRenderer.rect(x, y, width * (value / maxValue), height);
-        shapeRenderer.circle(x + width * (value / maxValue), y + height / 2f, height / 7f * 5f);
-        shapeRenderer.end();
-        batch.begin();
+    public void draw(SpriteBatch batch, int drawLayer){
+        if (drawLayer == this.drawLayer) {
+            batch.end();
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+            shapeRenderer.setProjectionMatrix(batch.getProjectionMatrix());
+            shapeRenderer.setColor(0.416f, 0.431f, 0.459f, 1);
+            shapeRenderer.rect(x, y, width, height);
+            shapeRenderer.setColor(0.349f,0.361f,0.38f,1);
+            shapeRenderer.rect(x, y, width * (value / maxValue), height);
+            shapeRenderer.circle(x + width * (value / maxValue), y + height / 2f, height / 7f * 5f);
+            shapeRenderer.end();
+            batch.begin();
+        }
     }
 
     public boolean checkIfPressed(int x, int y){
         int extraSpace = (int) (width / 5f);
         if(x > this.x - width && x < this.x + this.width + extraSpace && y > this.y - extraSpace && y < this.y + this.height + extraSpace){
             value = (x - this.x) / (float)width * maxValue;
-            System.out.println(value);
             if (value < minValue) value = minValue;
             if (value > maxValue) value = maxValue;
             return true;
@@ -58,5 +60,10 @@ public class Slider extends TextButton{
     public void setSize(int width, int height){
         this.width = width / 3 * 2;
         this.height = height / 10;
+    }
+
+    public void setValue(float value){
+        this.value = value;
+        percentageAcross = (value - minValue) / (maxValue - minValue);
     }
 }

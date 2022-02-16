@@ -15,8 +15,12 @@ public class ToggleButton extends Button{
         this(x, y, width, height, name, "");
     }
 
+    public ToggleButton(String name){
+        this(0, 0, 0, 0, name);
+    }
+
     String type;
-    public boolean toggled = true;
+    public boolean toggled = false;
 
     Texture toggledTexture;
     Texture unToggledTexture;
@@ -26,8 +30,10 @@ public class ToggleButton extends Button{
         unToggledTexture = new Texture("Textures/ui/buttons/SwitchOff" + type + ".png");
     }
 
-    public void draw(SpriteBatch batch){
-        batch.draw(toggled ? toggledTexture : unToggledTexture, x, y, width, height);
+    public void draw(SpriteBatch batch, int drawLayer){
+        if (drawLayer == this.drawLayer) {
+            batch.draw(toggled ? toggledTexture : unToggledTexture, x, y, width, height);
+        }
     }
 
     public boolean checkIfPressed(int x, int y){

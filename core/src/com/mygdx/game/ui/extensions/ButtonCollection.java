@@ -30,8 +30,10 @@ public class ButtonCollection {
 
     public void drawButtons(SpriteBatch batch) {
         if (showButtons) {
-            for (Button button : buttons) {
-                button.draw(batch);
+            for (int i = 0; i < 3; i++) {
+                for (Button button : buttons) {
+                    button.draw(batch, i);
+                }
             }
         }
         setAllToUnpressed();

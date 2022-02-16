@@ -24,6 +24,8 @@ public class Button {
 
     public String name;
 
+    public int drawLayer = 0;
+
     public Button(int x, int y, int width, int height, String Gda, String name) {
         this.x = x;
         this.y = y;
@@ -44,13 +46,15 @@ public class Button {
         this(0, 0, 0, 0, "BlueButton", name);
     }
 
-    public void draw(SpriteBatch batch) {
-        if (visible) {
-            if(pressed){
-                batch.draw(pressedTexture, x, y, width, height);
-            }
-            else{
-                batch.draw(unpressedTexture, x, y, width, height);
+    public void draw(SpriteBatch batch, int drawLayer) {
+        if(drawLayer == this.drawLayer){
+            if (visible) {
+                if(pressed){
+                    batch.draw(pressedTexture, x, y, width, height);
+                }
+                else{
+                    batch.draw(unpressedTexture, x, y, width, height);
+                }
             }
         }
     }

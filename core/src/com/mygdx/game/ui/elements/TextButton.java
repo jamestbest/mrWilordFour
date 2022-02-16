@@ -36,9 +36,11 @@ public class TextButton extends Button {
         glyphLayout = new GlyphLayout(font, text);
     }
 
-    public void draw(SpriteBatch batch) {
-        super.draw(batch);
-        drawText(batch);
+    public void draw(SpriteBatch batch, int drawLayer) {
+        if (drawLayer == this.drawLayer) {
+            super.draw(batch, drawLayer);
+            drawText(batch);
+        }
     }
 
     public void drawText(SpriteBatch batch){

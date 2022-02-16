@@ -40,14 +40,14 @@ public class ImgTextButton extends Button{
         glyphLayout.setText(font, text);
     }
 
-    public void draw(SpriteBatch batch){
-        float imgDims = height / 5f * 4f;
-        float imgX = x + (width - imgDims) / 2f;
-        float imgY = y + (height - imgDims) / 2f;
-
-        batch.draw(img, imgX, imgY, imgDims, imgDims);
-
-        font.draw(batch, glyphLayout, (int) (imgX + (imgDims * 1.1)), y + height - (height / 5f));
+    public void draw(SpriteBatch batch, int drawLayer){
+        if (drawLayer == this.drawLayer) {
+            float imgDims = height / 5f * 4f;
+            float imgX = x + (width - imgDims) / 2f;
+            float imgY = y + (height - imgDims) / 2f;
+            batch.draw(img, imgX, imgY, imgDims, imgDims);
+            font.draw(batch, glyphLayout, (int) (imgX + (imgDims * 1.1)), y + height - (height / 5f));
+        }
     }
 
     public void updateText(String text){

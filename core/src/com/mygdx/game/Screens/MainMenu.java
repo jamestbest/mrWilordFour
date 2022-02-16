@@ -1,16 +1,17 @@
 package com.mygdx.game.Screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.Vector2;
 import com.mygdx.game.Game.CameraTwo;
 import com.mygdx.game.Game.MyGdxGame;
 import com.mygdx.game.Jif.GifWithMusicPlayer;
+import com.mygdx.game.ui.elements.DropdownButton;
 import com.mygdx.game.ui.elements.Label;
 import com.mygdx.game.ui.elements.TextButton;
 import com.mygdx.game.ui.extensions.Table;
@@ -28,6 +29,8 @@ public class MainMenu implements Screen {
     TextButton Settings;
     TextButton Exit;
 
+    DropdownButton test;
+
     Label title;
 
     Table table;
@@ -39,6 +42,8 @@ public class MainMenu implements Screen {
     GifWithMusicPlayer GWMP;
 
     boolean playGif = false;
+
+    InputMultiplexer inputMultiplexer = new InputMultiplexer();
 
     public MainMenu(MyGdxGame game) {
         myGdxGame = game;
@@ -54,6 +59,10 @@ public class MainMenu implements Screen {
 
         setUpUI();
         setupTable();
+
+        test = new DropdownButton(100, 400, 200, 75, "test", "test1", inputMultiplexer);
+
+        Gdx.input.setInputProcessor(inputMultiplexer);
     }
 
     @Override
@@ -65,7 +74,9 @@ public class MainMenu implements Screen {
         batch.draw(background, 0, 0, MyGdxGame.initialRes.x, MyGdxGame.initialRes.y);
 
         table.draw(batch);
-        title.draw(batch);
+        title.draw(batch, 0);
+
+        test.draw(batch, 0);
 
         batch.end();
 
@@ -75,6 +86,10 @@ public class MainMenu implements Screen {
 
         if (Gdx.input.isButtonPressed(0)) {
             table.update(camera);
+            int x = Gdx.input.getX();
+            int y = Gdx.input.getY();
+            y = Gdx.graphics.getHeight() - y;
+            test.checkIfPressed(x, y);
         }
         if (table.buttonCollection.lastPressedButtonName.equals(NewGame.name)){
             if (!Gdx.input.isButtonPressed(0)) {
@@ -98,7 +113,7 @@ public class MainMenu implements Screen {
         }
         if (table.buttonCollection.lastPressedButtonName.equals(Settings.name)){
             if (!Gdx.input.isButtonPressed(0)) {
-                myGdxGame.setScreen(new Settings(myGdxGame));
+                myGdxGame.setScreen(new SettingsScreen(myGdxGame));
             }
         }
         if (table.buttonCollection.lastPressedButtonName.equals(Exit.name)){

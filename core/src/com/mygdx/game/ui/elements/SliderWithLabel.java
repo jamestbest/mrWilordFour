@@ -23,6 +23,16 @@ public class SliderWithLabel extends Slider {
         setup(startValue);
     }
 
+    public SliderWithLabel(String name) {
+        this(0, 0, 0, 0, name);
+        setup();
+    }
+
+    public SliderWithLabel(String name, float max, float min, float stop, int startValue) {
+        this(0, 0, 0, 0, name, max, min, stop, startValue);
+        setup(startValue);
+    }
+
     public void setup(int startValue){
         font = new BitmapFont(Gdx.files.internal("Fonts/" + MyGdxGame.fontName + ".fnt"));
         glyphLayout = new GlyphLayout();
@@ -30,26 +40,26 @@ public class SliderWithLabel extends Slider {
         percentageAcross = (value - minValue) / (maxValue - minValue);
     }
 
-    float percentageAcross = 0f;
-    
-    public void draw(SpriteBatch batch) {
-        batch.end();
-        float tempWidth = width * 0.75f;
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setProjectionMatrix(batch.getProjectionMatrix());
-        shapeRenderer.setColor(0.416f, 0.431f, 0.459f, 1);
-        shapeRenderer.rect(x, y, tempWidth, height);
-        shapeRenderer.setColor(0.349f,0.361f,0.38f,1);
-        shapeRenderer.rect(x, y, tempWidth * percentageAcross, height);
-        shapeRenderer.circle(x + tempWidth * percentageAcross, y + height / 2f, height / 7f * 5f);
-        shapeRenderer.end();
-        batch.begin();
+    public void draw(SpriteBatch batch, int drawLayer) {
+        if (drawLayer == this.drawLayer) {
+            batch.end();
+            float tempWidth = width * 0.75f;
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+            shapeRenderer.setProjectionMatrix(batch.getProjectionMatrix());
+            shapeRenderer.setColor(0.416f, 0.431f, 0.459f, 1);
+            shapeRenderer.rect(x, y, tempWidth, height);
+            shapeRenderer.setColor(0.349f,0.361f,0.38f,1);
+            shapeRenderer.rect(x, y, tempWidth * percentageAcross, height);
+            shapeRenderer.circle(x + tempWidth * percentageAcross, y + height / 2f, height / 7f * 5f);
+            shapeRenderer.end();
+            batch.begin();
 
-        glyphLayout.setText(font, String.valueOf((int)value));
-        font.draw(batch, glyphLayout, x + tempWidth * 1.1f, y + (height + glyphLayout.height) / 2f);
+            glyphLayout.setText(font, String.valueOf((int)value));
+            font.draw(batch, glyphLayout, x + tempWidth * 1.1f, y + (height + glyphLayout.height) / 2f);
 
-        batch.end();
-        batch.begin();
+            batch.end();
+            batch.begin();
+        }
     }
     
     public boolean checkIfPressed(int x, int y){

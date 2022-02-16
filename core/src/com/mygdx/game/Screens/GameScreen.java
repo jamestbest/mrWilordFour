@@ -322,6 +322,10 @@ public class GameScreen implements Screen {
         if (Gdx.input.isKeyJustPressed(Input.Keys.T)){
             System.out.println(colonists.get(0).getNextTask(map.tiles));
         }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
+            game.setScreen(new MainMenu(game));
+        }
     }
 
     public void update(){ //happens at a rate determined by the gameSpeed
