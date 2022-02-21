@@ -22,6 +22,8 @@ public class MyGdxGame extends Game {
 	public int fpsCap = 60;
 	public boolean fpsCounter = true;
 
+	public boolean vsyncEnabled = false;
+
 	public Music music;
 	
 	@Override
@@ -31,7 +33,8 @@ public class MyGdxGame extends Game {
 
 		music = Gdx.audio.newMusic(Gdx.files.internal("Music/" + songPlaying));
 		music.setLooping(loop);
-		music.setVolume(volume / 100f);
+		if (!mute) music.setVolume(volume / 100f);
+		else music.setVolume(0);
 		music.play();
 
 		setScreen(new MainMenu(this));
@@ -43,6 +46,7 @@ public class MyGdxGame extends Game {
 	}
 
 	public void changeSong(){
+		System.out.println("changing song to" + songPlaying +  " with mute " + mute + " and volume " + volume);
 		music.stop();
 		music = Gdx.audio.newMusic(Gdx.files.internal("Music/" + songPlaying));
 		music.setLooping(loop);

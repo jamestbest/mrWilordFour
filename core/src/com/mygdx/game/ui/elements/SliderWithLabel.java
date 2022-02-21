@@ -37,6 +37,7 @@ public class SliderWithLabel extends Slider {
         font = new BitmapFont(Gdx.files.internal("Fonts/" + MyGdxGame.fontName + ".fnt"));
         glyphLayout = new GlyphLayout();
         value = startValue;
+        text = String.valueOf((int)value);
         percentageAcross = (value - minValue) / (maxValue - minValue);
     }
 
@@ -54,7 +55,7 @@ public class SliderWithLabel extends Slider {
             shapeRenderer.end();
             batch.begin();
 
-            glyphLayout.setText(font, String.valueOf((int)value));
+            glyphLayout.setText(font, text);
             font.draw(batch, glyphLayout, x + tempWidth * 1.1f, y + (height + glyphLayout.height) / 2f);
 
             batch.end();
@@ -72,6 +73,7 @@ public class SliderWithLabel extends Slider {
             if (percentageAcross > 1) percentageAcross = 1;
 
             value = percentageAcross * (maxValue - minValue) + minValue;
+            text = String.valueOf((int)value);
             return true;
         }
         return false;

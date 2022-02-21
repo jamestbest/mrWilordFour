@@ -6,6 +6,7 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -29,6 +30,7 @@ import io.socket.client.Socket;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -161,8 +163,8 @@ public class GameScreen implements Screen {
         this.isHost = true;
         this.map = map;
 
-        Gdx.graphics.setVSync(false);
-        Gdx.graphics.setForegroundFPS(Integer.MAX_VALUE);
+        Gdx.graphics.setForegroundFPS(game.fpsCap);
+        Gdx.graphics.setVSync(game.vsyncEnabled);
 
         this.colonists = colonists;
     }
@@ -174,8 +176,8 @@ public class GameScreen implements Screen {
         connectSocket(ip);
         createSocketListeners();
 
-        Gdx.graphics.setVSync(false);
-        Gdx.graphics.setForegroundFPS(Integer.MAX_VALUE);
+        Gdx.graphics.setForegroundFPS(game.fpsCap);
+        Gdx.graphics.setVSync(game.vsyncEnabled);
     }
 
     @Override
@@ -241,8 +243,6 @@ public class GameScreen implements Screen {
         ordersButtons.drawButtons(batchWithNoProj);
         resourceButtons.drawButtons(batchWithNoProj);
         batchWithNoProj.end();
-
-
 
 
         Gdx.gl.glEnable(GL30.GL_BLEND);

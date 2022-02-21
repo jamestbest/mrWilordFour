@@ -31,10 +31,10 @@ public class InputButtonTwo extends TextButton{
 
     ShapeRenderer shapeRenderer;
 
-    float totalWaitTime = 0.2f;
+    float totalWaitTime = 0.08f;
     float waitTimer = 0;
 
-    float lineTotalWaitTime = 0.8f;
+    float lineTotalWaitTime = 2.4f;
     float lineWaitTimer = 0;
 
     public boolean typing = false;

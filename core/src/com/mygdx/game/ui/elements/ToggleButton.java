@@ -15,8 +15,13 @@ public class ToggleButton extends Button{
         this(x, y, width, height, name, "");
     }
 
-    public ToggleButton(String name){
+    public ToggleButton(String name) {
         this(0, 0, 0, 0, name);
+    }
+
+    public ToggleButton(String name, boolean startValue){
+        this(0, 0, 0, 0, name);
+        toggled = startValue;
     }
 
     String type;

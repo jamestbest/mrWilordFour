@@ -64,6 +64,7 @@ public class Slider extends TextButton{
 
     public void setValue(float value){
         this.value = value;
+        text = String.valueOf((int)value);
         percentageAcross = (value - minValue) / (maxValue - minValue);
     }
 }

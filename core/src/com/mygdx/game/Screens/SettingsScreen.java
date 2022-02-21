@@ -14,11 +14,13 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.mygdx.game.Game.CameraTwo;
 import com.mygdx.game.Game.MyGdxGame;
 import com.mygdx.game.ui.elements.*;
+import com.mygdx.game.ui.elements.Label;
 import com.mygdx.game.ui.extensions.Table;
 
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -64,6 +66,9 @@ public class SettingsScreen implements Screen {
 
     MyGdxGame game;
 
+    int RRBeforeVS = -1;
+    int fpsBeforeSwitchingToUnCapped = 145;
+
     public SettingsScreen(MyGdxGame game){
         this.game = game;
 
@@ -77,17 +82,17 @@ public class SettingsScreen implements Screen {
         optionsTable = new Table(0, 0, (int) MyGdxGame.initialRes.x, (int) MyGdxGame.initialRes.y);
         volumeSlider = new SliderWithLabel("VolumeSlider");
         volumeSlider.setValue(game.volume);
-        muteToggle = new ToggleButton("MuteToggle");
+        muteToggle = new ToggleButton("MuteToggle", game.mute);
         currentSongDropDown = new DropdownButton("currentSongDropDown", inputMultiplexer);
-        loopToggle = new ToggleButton("LoopToggle");
+        loopToggle = new ToggleButton("LoopToggle", game.loop);
         addSongLabel = new Label( "addSongLabel", "add custom song");
         addSongButton = new ImgOnlyButton("addSongButton", "uploadButton");
 
         currentSongDropDown.setDropDowns(getSelectableSongs(), game);
 
-        fPSToggle = new ToggleButton("FPSToggle");
-        fPSSlider = new SliderWithLabel("FPSSlider", 144, 30, 1, 60);
-        vSyncToggle = new ToggleButton("VsyncToggle");
+        fPSToggle = new ToggleButton("FPSToggle", game.fpsCounter);
+        fPSSlider = new SliderWithLabel("FPSSlider", 145, 30, 1, game.fpsCap);
+        vSyncToggle = new ToggleButton("VsyncToggle", game.vsyncEnabled);
 
         placeholderThreeLabel = new Label( "PlaceholderThreeLabel", "Placeholder");
         setTitleInputButton = new InputButtonTwo(0, 0,  0,  0, MyGdxGame.title, "SetTitleInputButton", inputMultiplexer);
@@ -149,17 +154,28 @@ public class SettingsScreen implements Screen {
                     game.updateMusicInfo();
                 }
                 case "FPSToggle" -> game.fpsCounter = (fPSToggle.toggled);
-                case "VsyncToggle" -> Gdx.graphics.setVSync(vSyncToggle.toggled);
+                case "VsyncToggle" -> {
+                    game.vsyncEnabled = (vSyncToggle.toggled);
+                    Gdx.graphics.setVSync(vSyncToggle.toggled);
+                    if (!game.vsyncEnabled) {
+                        revertToOldFPS();
+                    }
+                    else {
+                        setFPSToMonitorRR();
+                    }
+                }
                 case "LoopToggle" -> game.loop = (loopToggle.toggled);
                 case "SetTitleInputButton" -> {
                     updateTitle(setTitleInputButton.text);
-
                 }
                 case "VolumeSlider" -> {
                     game.volume = volumeSlider.value;
                     game.updateMusicInfo();
                 }
-                case "FPSSlider" -> game.fpsCap = (int) fPSSlider.value;
+                case "FPSSlider" -> {
+                    game.fpsCap = (int) fPSSlider.value;
+                    handleMaxFps();
+                }
                 case "currentSongDropDown" -> {
                     if (currentSongDropDown.newItemSelected){
                         game.songPlaying = currentSongDropDown.getSelectedItem();
@@ -172,6 +188,10 @@ public class SettingsScreen implements Screen {
                     currentSongDropDown.setDropDowns(getSelectableSongs(), game);
                 }
             }
+        }
+
+        if (setTitleInputButton.typing){
+            updateTitle(setTitleInputButton.text);
         }
 
         if (Gdx.input.isKeyPressed(Input.Keys.ESCAPE)) {
@@ -247,5 +267,30 @@ public class SettingsScreen implements Screen {
     public void updateTitle(String title){
         MyGdxGame.title = title;
         Gdx.graphics.setTitle(MyGdxGame.title);
+    }
+
+    public void setFPSToMonitorRR() {
+        System.out.println("Setting FPS to monitor refresh rate");
+        GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        GraphicsDevice gs = ge.getDefaultScreenDevice();
+        DisplayMode dm = gs.getDisplayMode();
+        int refreshRate = dm.getRefreshRate();
+
+        RRBeforeVS = game.fpsCap;
+        game.fpsCap = refreshRate;
+        fPSSlider.setValue(refreshRate);
+    }
+
+    public void revertToOldFPS(){
+        System.out.println("Reverting to old FPS " + RRBeforeVS);
+        game.fpsCap = RRBeforeVS;
+        fPSSlider.setValue(RRBeforeVS);
+    }
+
+    public void handleMaxFps(){
+        if (game.fpsCap >= fpsBeforeSwitchingToUnCapped){
+            game.fpsCap = Integer.MAX_VALUE;
+            fPSSlider.setText("no cap");
+        }
     }
 }

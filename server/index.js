@@ -5,7 +5,6 @@ const io = require('socket.io')(server, {
   cors: true,
   allowEIO3: true,
   pingTimeout: 200000
-
 });
 const port = process.env.PORT || 8080;
 

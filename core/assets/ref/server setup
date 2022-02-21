@@ -1,0 +1,9 @@
+use intelliJ ultimate for cmd line run index.js located in server/index.js
+// run in cmd: node index.js
+
+launch desktopLauncher and create a new game, enable multiplayer
+launch desktopLauncher again and join game created by first player
+enter the ip address or localhost port it will display a copy of the world and information
+
+use "set DEBUG=*" in the cmd in the server dir to see all debug messages
+this must be done before the server is started and does not work in intelliJ ultimate

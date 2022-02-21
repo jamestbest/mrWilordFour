@@ -1,6 +1,7 @@
 package com.mygdx.game.Screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
@@ -57,6 +58,7 @@ public class JoinGameScreen implements Screen {
 
         inputMultiplexer = new InputMultiplexer();
         cameraTwo = new CameraTwo();
+        cameraTwo.allowMovement = false;
 
         map = new Map((int) ((int) MyGdxGame.initialRes.y / 10 * 6.8),
                 (int) ((int) MyGdxGame.initialRes.x  - (MyGdxGame.initialRes.y / 10 * 7)),
@@ -72,8 +74,10 @@ public class JoinGameScreen implements Screen {
     public void render(float delta) {
         Gdx.gl.glClearColor(1, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        cameraTwo.update();
 
         batch.begin();
+        batch.setProjectionMatrix(cameraTwo.projViewMatrix);
         map.drawMiniMap(batch, tileTextures, thingTextures);
 
         buttonCollection.drawButtons(batch);
@@ -94,6 +98,10 @@ public class JoinGameScreen implements Screen {
                 connectSocket();
                 createSocketListeners();
             }
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
+            myGdxGame.setScreen(new MainMenu(myGdxGame));
         }
     }
 
