@@ -11,17 +11,17 @@ public class ToggleButton extends Button{
         setup();
     }
 
-    public ToggleButton(int x, int y, int width, int height, String name){
+    public ToggleButton(int x, int y, int width, int height, String name, boolean startValue){
         this(x, y, width, height, name, "");
+        toggled = startValue;
     }
 
     public ToggleButton(String name) {
-        this(0, 0, 0, 0, name);
+        this(0, 0, 0, 0, name, false);
     }
 
     public ToggleButton(String name, boolean startValue){
-        this(0, 0, 0, 0, name);
-        toggled = startValue;
+        this(0, 0, 0, 0, name, startValue);
     }
 
     String type;

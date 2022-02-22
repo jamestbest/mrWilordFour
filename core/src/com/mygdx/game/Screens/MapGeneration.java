@@ -93,8 +93,8 @@ public class MapGeneration implements Screen {
         height = (int) (height / 8f); // divide by the number of buttons
 
         seedInput = new InputButtonTwo(0, 0, (int) (width * 0.9f), (int) (height * 0.7f), seed, "seedInput", inputMultiplexer);
-        riverToggle = new ToggleButton(0, 0, (int) (width * 0.4f), (int) (height * 1.4), "riverToggle");
-        dimsInput = new NumberInputWithSides(0, 0, (int) (width * 0.30f), (int) (height * 0.5f), "test4", "widthInput", inputMultiplexer, 1, 250);
+        riverToggle = new ToggleButton(0, 0, (int) (width * 0.4f), (int) (height * 1.4), "riverToggle", true);
+        dimsInput = new NumberInputWithSides(0, 0, (int) (width * 0.30f), (int) (height * 0.5f), "test4", "widthInput", inputMultiplexer, 1, 500, 250);
         freqSlider = new SliderWithLabel(0, 0, (int) (width * 0.9f), (int) (height * 0.2), "freqSlider", 7, 1, 1, 3);
         riverBendSlider = new SliderWithLabel(0, 0, (int) (width * 0.9f), (int) (height * 0.2f), "riverBendSlider", 100, 0, 1, 50);
         treeDensitySlider = new SliderWithLabel(0, 0, (int) (width * 0.9f), (int) (height * 0.2f), "treeDensitySlider", 50, 0, 1, 5);

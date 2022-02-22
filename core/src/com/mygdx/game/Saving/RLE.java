@@ -37,9 +37,9 @@ public class RLE {
         return output.toString();
     }
 
-    public static ArrayList<ArrayList<Tile>> decodeTiles(String input, Vector2 mapDims) {
+    public static ArrayList<ArrayList<Tile>> decodeTiles(String input, int mapDims) {
         setupTileNameCodes();
-        HashMap<String, String> reverseTileNameCode = new HashMap<String, String>();
+        HashMap<String, String> reverseTileNameCode = new HashMap<>();
         String[] oldKeyset = tileNameCode.keySet().toArray(new String[0]);
         for (int i = 0; i < tileNameCode.size(); i++) {
             reverseTileNameCode.put(tileNameCode.get(oldKeyset[i]),  oldKeyset[i]);
@@ -69,10 +69,10 @@ public class RLE {
             lineCount++;
             for (int j = 0; j < Integer.parseInt(inputSplit.get(i).substring(1)); j++) {
                 temp = inputSplit.get(i);
-                if ((count) % mapDims.y == 0) {
+                if ((count) % mapDims == 0) {
                     output.add(new ArrayList<>());
                 }
-                output.get((count / (int) mapDims.y)).add(new Tile(count / (int) mapDims.y, count % (int) mapDims.y, reverseTileNameCode.get(inputSplit.get(i).substring(0, 1))));
+                output.get((count / mapDims)).add(new Tile(count / mapDims, count % mapDims, reverseTileNameCode.get(inputSplit.get(i).substring(0, 1))));
                 count++;
             }
             if (i == inputSplit.size() - 3) {

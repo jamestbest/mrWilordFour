@@ -47,8 +47,7 @@ public class Slider extends TextButton{
     }
 
     public boolean checkIfPressed(int x, int y){
-        int extraSpace = (int) (width / 5f);
-        if(x > this.x - width && x < this.x + this.width + extraSpace && y > this.y - extraSpace && y < this.y + this.height + extraSpace){
+        if(x > this.x - width && x < this.x + this.width && y > this.y && y < this.y + this.height){
             value = (x - this.x) / (float)width * maxValue;
             if (value < minValue) value = minValue;
             if (value > maxValue) value = maxValue;
