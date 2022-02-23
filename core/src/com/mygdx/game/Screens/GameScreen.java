@@ -6,12 +6,10 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.*;
-import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Json;
 import com.mygdx.game.Game.CameraTwo;
 import com.mygdx.game.Game.Colonist;
@@ -19,7 +17,6 @@ import com.mygdx.game.Game.MyGdxGame;
 import com.mygdx.game.Game.Task;
 import com.mygdx.game.Generation.Map;
 import com.mygdx.game.Generation.MapSettings;
-import com.mygdx.game.Generation.Tile;
 import com.mygdx.game.Saving.RLE;
 import com.mygdx.game.ui.elements.Button;
 import com.mygdx.game.ui.elements.ImgButton;
@@ -31,7 +28,6 @@ import io.socket.client.Socket;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -40,7 +36,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Scanner;
 
 public class GameScreen implements Screen {
     public static int TILES_ON_X = 250;
@@ -466,9 +461,7 @@ public class GameScreen implements Screen {
             }
         });
 
-        socket.on("testTwo", args -> {
-            System.out.println("testTwo: " + args[0]);
-        });
+        socket.on("testTwo", args -> System.out.println("testTwo: " + args[0]));
 
 
         socket.on("loadColonists", args -> {
