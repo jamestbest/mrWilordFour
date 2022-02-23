@@ -548,8 +548,8 @@ public class GameScreen implements Screen {
     public void setupBBB(){
         bottomBarButtons = new ButtonCollection();
         bottomBarButtons.useWorldCoords = false;
-        TextButton orders = new TextButton(0,0,0,0, "Orders", "OrdersButton");
-        TextButton building = new TextButton(0,0,0,0, "Building", "BuildingButton");
+        TextButton orders = new TextButton("Orders", "OrdersButton");
+        TextButton building = new TextButton("Building", "BuildingButton");
 
         bottomBarButtons.add(orders, building);
 
@@ -627,10 +627,7 @@ public class GameScreen implements Screen {
     }
 
     public boolean canUseOrderOnType(String order, String tileType, String thingType){
-        if (orderTypes.get(order).contains(tileType) || orderTypes.get(order).contains(thingType)){
-            return true;
-        }
-        return false;
+        return orderTypes.get(order).contains(tileType) || orderTypes.get(order).contains(thingType);
     }
 
     public void setCustomCursor(String name){

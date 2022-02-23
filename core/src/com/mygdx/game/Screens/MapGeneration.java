@@ -106,13 +106,13 @@ public class MapGeneration implements Screen {
         continueButton.translate(-continueButton.width * 1.5f, continueButton.height * 0.5f);
         extraUI.add(continueButton);
 
-        SeedLabel = new Label(0, 0, 0, 0, "seedLabel", "Seed: ");
-        ToggleRiverLabel = new Label(0, 0, 0, 0, "toggleRiverLabel", "Toggle River: ");
-        dimsLabel = new Label(0, 0, 0, 0, "widthLabel", "Dims: ");
-        FrequencyLabel = new Label(0, 0, 0, 0, "frequencyLabel", "Frequency: ");
-        RiverBendLabel = new Label(0, 0, 0, 0, "riverBendLabel", "River Bend: ");
-        TreeDensityLabel = new Label(0, 0, 0, 0, "treeDensityLabel", "Tree Density: ");
-        RefreshLabel = new Label(0, 0, 0, 0, "refreshLabel", "Refresh Map: ");
+        SeedLabel = new Label("seedLabel", "Seed: ");
+        ToggleRiverLabel = new Label("toggleRiverLabel", "Toggle River: ");
+        dimsLabel = new Label("widthLabel", "Dims: ");
+        FrequencyLabel = new Label("frequencyLabel", "Frequency: ");
+        RiverBendLabel = new Label("riverBendLabel", "River Bend: ");
+        TreeDensityLabel = new Label("treeDensityLabel", "Tree Density: ");
+        RefreshLabel = new Label("refreshLabel", "Refresh Map: ");
 
         labelTable.addAllWithRows(SeedLabel, ToggleRiverLabel, dimsLabel, FrequencyLabel, RiverBendLabel, TreeDensityLabel, RefreshLabel);
         labelTable.sort();

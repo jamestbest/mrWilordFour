@@ -29,6 +29,10 @@ public class TextButton extends Button {
         this(x, y, width, height, text,"BlueButton", name);
     }
 
+    public TextButton(String text, String name) {
+        this(0,0,0,0, text,"BlueButton", name);
+    }
+
     public void setup(){
         font = new BitmapFont(Gdx.files.internal("Fonts/" + MyGdxGame.fontName + ".fnt"));
         font.setColor(fontColor);
