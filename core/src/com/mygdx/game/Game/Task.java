@@ -66,13 +66,21 @@ public class Task {
         switch (type) {
             case "Mine" -> {
                 map.changeTileType(x, y, "dirt");
-                resources.replace("stone", resources.get("stone") + 1);
+                addToResource("stone", 1, resources);
             }
-            case "CutDown" -> map.things.get(x).get(y).type = "";
+            case "CutDown" -> {
+                map.things.get(x).get(y).type = "";
+                addToResource("wood", 1, resources);
+            }
             case "Plant" -> {
                 map.changeThingType(x, y, "tree");
                 map.things.get(x).get(y).height = (int) (GameScreen.TILE_DIMS * 2);
+                addToResource("wood", -1, resources);
             }
         }
+    }
+
+    public void addToResource(String res, int addition, HashMap<String, Integer> resources){
+        resources.replace(res, resources.get(res) + addition);
     }
 }

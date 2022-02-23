@@ -55,10 +55,6 @@ public class GifWithMusicPlayer {
         this.numberOfImages = temp.length;
     }
 
-    public void start(){
-
-    }
-
     public void render(){
         if (!ended) {
             deltaTime += Gdx.graphics.getDeltaTime();
