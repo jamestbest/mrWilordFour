@@ -16,6 +16,7 @@ import com.badlogic.gdx.utils.Json;
 import com.mygdx.game.Game.CameraTwo;
 import com.mygdx.game.Game.Colonist;
 import com.mygdx.game.Game.MyGdxGame;
+import com.mygdx.game.Game.Task;
 import com.mygdx.game.Generation.Map;
 import com.mygdx.game.Generation.MapSettings;
 import com.mygdx.game.Generation.Tile;
@@ -674,7 +675,15 @@ public class GameScreen implements Screen {
         for (int i = minx; i < maxx; i++) {
             for (int j = miny; j < maxy; j++) {
                 if (canUseOrderOnType(taskType, map.tiles.get(i).get(j).type, map.things.get(i).get(j).type)){
-                    map.tiles.get(i).get(j).setTask(taskType);
+                    Task t = map.tiles.get(i).get(j).task;
+                    if (t != null){
+                        if (!map.tiles.get(i).get(j).task.reserved){
+                            map.tiles.get(i).get(j).setTask(taskType);
+                        }
+                    }
+                    else{
+                        map.tiles.get(i).get(j).setTask(taskType);
+                    }
                 }
             }
         }
