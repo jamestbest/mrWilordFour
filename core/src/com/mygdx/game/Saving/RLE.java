@@ -2,6 +2,7 @@ package com.mygdx.game.Saving;
 
 import com.badlogic.gdx.math.Vector2;
 import com.mygdx.game.Generation.Map;
+import com.mygdx.game.Generation.Thing;
 import com.mygdx.game.Generation.Tile;
 
 import java.util.ArrayList;
@@ -64,8 +65,6 @@ public class RLE {
         int lineCount = 0;
         String temp = "";
         for (int i = 0; i < inputSplit.size(); i++) {
-            System.out.println(count);
-
             lineCount++;
             for (int j = 0; j < Integer.parseInt(inputSplit.get(i).substring(1)); j++) {
                 temp = inputSplit.get(i);
@@ -112,6 +111,11 @@ public class RLE {
         output.append(thingNameCode.get(lastType));
         output.append(count);
         return output.toString();
+    }
+
+    public static ArrayList<ArrayList<Thing>> decodeThings(String input) {
+
+        return null;
     }
 
     public static void setupTileNameCodes(){

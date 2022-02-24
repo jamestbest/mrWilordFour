@@ -78,9 +78,9 @@ public class Map {
 
     public void generateStone(){
         for(int i = 0; i < GameScreen.TILES_ON_X; i++) {
-            for (int j = 0; j < GameScreen.TILES_ON_Y; j++) {
+            for (int j = 0; j < GameScreen.TILES_ON_X; j++) {
                 double temp = Noise2D.noise((((float) i / GameScreen.TILES_ON_X) * settings.perlinFrequency) + addition,
-                        (((float) j / GameScreen.TILES_ON_Y) * settings.perlinFrequency) + addition, 255);
+                        (((float) j / GameScreen.TILES_ON_X) * settings.perlinFrequency) + addition, 255);
                 if (temp > 0.65f) {
                     Tile tile = new Tile(i, j, "stone");
                     tile.canSpawnOn = false;
@@ -95,9 +95,9 @@ public class Map {
     public void generateGrass(){
         for(int i = 0; i < GameScreen.TILES_ON_X; i++) {
             tiles.add(new ArrayList<>());
-            for (int j = 0; j < GameScreen.TILES_ON_Y; j++) {
+            for (int j = 0; j < GameScreen.TILES_ON_X; j++) {
                 float temp = (float) Noise2D.noise((((float) i / GameScreen.TILES_ON_X) * 40) + addition,
-                        (((float) j / GameScreen.TILES_ON_Y) * 40) + addition, 255);
+                        (((float) j / GameScreen.TILES_ON_X) * 40) + addition, 255);
                 Tile tile;
                 if (temp > 0.55f) {
                     tile = new Tile(i, j, "grass");
@@ -125,7 +125,7 @@ public class Map {
         for(int i = 0; i < GameScreen.TILES_ON_X; i++){
             tiles.add(new ArrayList<>());
             things.add(new ArrayList<>());
-            for(int j = 0; j < GameScreen.TILES_ON_Y; j++){
+            for(int j = 0; j < GameScreen.TILES_ON_X; j++){
                 tiles.get(i).add(new Tile(i, j, "dirt"));
                 things.get(i).add(new Thing(i, j, (int) GameScreen.TILE_DIMS, (int) GameScreen.TILE_DIMS, "", (int) GameScreen.TILE_DIMS));
             }
@@ -137,7 +137,7 @@ public class Map {
         int startY = (int)(Math.highest (((camera.position.y - (camera.height * camera.zoom)/2f) / GameScreen.TILE_DIMS) - 5, 0));
 
         int endX = (int)(Math.lowest((camera.width * camera.zoom / GameScreen.TILE_DIMS) + startX + 10, GameScreen.TILES_ON_X));
-        int endY = (int)(Math.lowest((camera.height * camera.zoom / GameScreen.TILE_DIMS) + startY + 10, GameScreen.TILES_ON_Y));
+        int endY = (int)(Math.lowest((camera.height * camera.zoom / GameScreen.TILE_DIMS) + startY + 10, GameScreen.TILES_ON_X));
 
         Texture temp;
         String[] types = tileTextures.keySet().toArray(new String[0]);
@@ -159,7 +159,7 @@ public class Map {
         int startY = (int)(Math.highest (((camera.position.y - (camera.height * camera.zoom)/2f) / GameScreen.TILE_DIMS) - 5, 0));
 
         int endX = (int)(Math.lowest((camera.width * camera.zoom / GameScreen.TILE_DIMS) + startX + 10, GameScreen.TILES_ON_X));
-        int endY = (int)(Math.lowest((camera.height * camera.zoom / GameScreen.TILE_DIMS) + startY + 10, GameScreen.TILES_ON_Y));
+        int endY = (int)(Math.lowest((camera.height * camera.zoom / GameScreen.TILE_DIMS) + startY + 10, GameScreen.TILES_ON_X));
         for(int i = startX; i < endX; i++) {
             for (int j = endY - 1; j > startY; j--) {
                 if (!things.get(i).get(j).type.equals("")) {
@@ -171,10 +171,10 @@ public class Map {
     }
 
     public void drawMiniMap(SpriteBatch batch, HashMap<String, Texture> textures, HashMap<String, TextureAtlas> thingTextures){
-        float miniMapDims = drawHeight / (float) GameScreen.TILES_ON_Y;
+        float miniMapDims = drawHeight / (float) GameScreen.TILES_ON_X;
         
         for (int i = 0; i < GameScreen.TILES_ON_X; i++) {
-            for (int j = 0; j < GameScreen.TILES_ON_Y; j++) {
+            for (int j = 0; j < GameScreen.TILES_ON_X; j++) {
                 batch.draw(textures.get(tiles.get(i).get(j).type), i * miniMapDims + x, j * miniMapDims + y, miniMapDims, miniMapDims);
 
                 if (!things.get(i).get(j).type.equals("")) {
@@ -203,7 +203,7 @@ public class Map {
             if (i + 1 < path.size()) {
                 if (path.get(i + 1).y == temp.y) {
                     for (int j = 0; j < 2; j++) {
-                        if (temp.y + j < GameScreen.TILES_ON_Y){
+                        if (temp.y + j < GameScreen.TILES_ON_X){
                             Tile tempTile = tiles.get((int) temp.x).get((int) (temp.y + j));
                             tempTile.type = "water";
                             tempTile.canSpawnOn = false;
@@ -231,18 +231,18 @@ public class Map {
         while(!tiles.get(sx).get(0).canSpawnOn){
             sx = rand.nextInt(GameScreen.TILES_ON_X);
         }
-        while(!tiles.get(ex).get(GameScreen.TILES_ON_Y - 1).canSpawnOn){
+        while(!tiles.get(ex).get(GameScreen.TILES_ON_X - 1).canSpawnOn){
             ex = rand.nextInt(GameScreen.TILES_ON_X);
         }
         riverLocs.add(new Vector2(sx, 0));
-        riverLocs.add(new Vector2(ex, GameScreen.TILES_ON_Y - 1));
+        riverLocs.add(new Vector2(ex, GameScreen.TILES_ON_X - 1));
     }
 
     public void generateTrees(){
         Random random = new Random();
         for(int i = 0; i < GameScreen.TILES_ON_X; i++){
             things.add(new ArrayList<>());
-            for(int j = 0; j < GameScreen.TILES_ON_Y; j++){
+            for(int j = 0; j < GameScreen.TILES_ON_X; j++){
                 if(random.nextInt(100) < settings.treeFreq && tiles.get(i).get(j).canSpawnOn){
                     Thing temp = new Thing(i, j, (int) GameScreen.TILE_DIMS, (int) GameScreen.TILE_DIMS * 2, "tree", (int) GameScreen.TILE_DIMS);
                     things.get(i).add(temp);
@@ -275,7 +275,7 @@ public class Map {
     }
 
     public boolean isWithinBounds(int newX, int newY){
-        return newX >= 0 && newX < GameScreen.TILES_ON_X && newY >= 0 && newY < GameScreen.TILES_ON_Y;
+        return newX >= 0 && newX < GameScreen.TILES_ON_X && newY >= 0 && newY < GameScreen.TILES_ON_X;
     }
 
     public static void setTileInfoHashMap(){
@@ -287,7 +287,7 @@ public class Map {
     public ArrayList<String> packageTiles(){
         ArrayList<String> output = new ArrayList<>();
         for (int i = 0; i < GameScreen.TILES_ON_X; i++) {
-            for (int j = 0; j < GameScreen.TILES_ON_Y; j++) {
+            for (int j = 0; j < GameScreen.TILES_ON_X; j++) {
                 output.add(tiles.get(i).get(j).type);
             }
         }
@@ -299,8 +299,8 @@ public class Map {
         ArrayList<ArrayList<Tile>> tempArray = new ArrayList<>();
         for (int i = 0; i < GameScreen.TILES_ON_X; i++) {
             tempArray.add(new ArrayList<>());
-            for (int j = 0; j < GameScreen.TILES_ON_Y; j++) {
-                Tile temp = new Tile(i, j, input.get(i * GameScreen.TILES_ON_Y + j));
+            for (int j = 0; j < GameScreen.TILES_ON_X; j++) {
+                Tile temp = new Tile(i, j, input.get(i * GameScreen.TILES_ON_X + j));
                 temp.canSpawnOn = tileInformationHashMap.get(temp.type).canSpawnOn;
                 temp.canWalkOn = tileInformationHashMap.get(temp.type).canWalkOn;
                 tempArray.get(i).add(temp);

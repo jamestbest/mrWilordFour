@@ -165,7 +165,7 @@ public class MapGeneration implements Screen {
         if (buttonTable.buttonCollection.pressedButtonName.equals("RefreshButton") && Gdx.input.isButtonJustPressed(0)){
             map.settings.seed = seedInput.text;
             GameScreen.TILES_ON_X = Integer.parseInt(dimsInput.text);
-            GameScreen.TILES_ON_Y = Integer.parseInt(dimsInput.text);
+            GameScreen.TILES_ON_X = Integer.parseInt(dimsInput.text);
             map.settings.perlinFrequency = (int) freqSlider.value;
             map.settings.riverBend = (int) riverBendSlider.value * 50;
             map.settings.treeFreq = (int) treeDensitySlider.value;

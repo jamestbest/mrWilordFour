@@ -238,7 +238,7 @@ public class Colonist {
         Vector2 bestTask = null;
 
         for (int i = 0; i < GameScreen.TILES_ON_X; i++) {
-            for (int j = 0; j < GameScreen.TILES_ON_Y; j++) {
+            for (int j = 0; j < GameScreen.TILES_ON_X; j++) {
                 Task task = tiles.get(i).get(j).task;
                 if (task != null){
                     boolean canGetToTask = task.getNeighbour(tiles, i, j) != null || tiles.get(i).get(j).canWalkOn;
@@ -251,7 +251,7 @@ public class Colonist {
         }
 
         for (int i = 0; i < GameScreen.TILES_ON_X; i++) {
-            for (int j = 0; j < GameScreen.TILES_ON_Y; j++) {
+            for (int j = 0; j < GameScreen.TILES_ON_X; j++) {
                 Task task = tiles.get(i).get(j).task;
                 if (task != null) {
                     boolean canGetToTask = task.getNeighbour(tiles, i, j) != null || tiles.get(i).get(j).canWalkOn;

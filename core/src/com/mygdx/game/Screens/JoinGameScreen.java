@@ -170,7 +170,7 @@ public class JoinGameScreen implements Screen {
                 int mapWidth = data.getInt("mapWidth");
                 int mapHeight = data.getInt("mapHeight");
                 int tileDims = data.getInt("tileDims");
-                GameScreen.TILES_ON_Y = mapHeight;
+                GameScreen.TILES_ON_X = mapHeight;
                 GameScreen.TILES_ON_X = mapWidth;
                 GameScreen.TILE_DIMS = tileDims;
 

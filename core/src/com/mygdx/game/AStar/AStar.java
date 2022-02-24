@@ -16,10 +16,10 @@ public class AStar {
         grid = new ArrayList<>();
         for (int i = 0; i < GameScreen.TILES_ON_X; i++) {
             grid.add(new ArrayList<>());
-            for (int j = 0; j < GameScreen.TILES_ON_Y; j++) {
+            for (int j = 0; j < GameScreen.TILES_ON_X; j++) {
                 Node temp = new Node(i, j);
                 temp.HMP = (float) Noise2D.noise((i / (float) GameScreen.TILES_ON_X) * freq + addition,
-                        (j / (float) GameScreen.TILES_ON_Y) * freq + addition, 255);
+                        (j / (float) GameScreen.TILES_ON_X) * freq + addition, 255);
                 temp.HMP *= riverBend;
                 temp.accessible = map.get(i).get(j).canSpawnOn;
                 temp.setDistance(end);
@@ -37,7 +37,7 @@ public class AStar {
         grid = new ArrayList<>();
         for (int i = 0; i < GameScreen.TILES_ON_X; i++) {
             grid.add(new ArrayList<>());
-            for (int j = 0; j < GameScreen.TILES_ON_Y; j++) {
+            for (int j = 0; j < GameScreen.TILES_ON_X; j++) {
                 Node temp = new Node(i, j);
                 temp.HMP = 0;
                 temp.accessible = map.get(i).get(j).canWalkOn;

@@ -29,8 +29,6 @@ public class MainMenu implements Screen {
     TextButton Settings;
     TextButton Exit;
 
-    DropdownButton test;
-
     Label title;
 
     Table table;
@@ -60,8 +58,6 @@ public class MainMenu implements Screen {
         setUpUI();
         setupTable();
 
-        test = new DropdownButton(100, 400, 200, 75, "test", "test1", inputMultiplexer);
-
         Gdx.input.setInputProcessor(inputMultiplexer);
     }
 
@@ -78,8 +74,6 @@ public class MainMenu implements Screen {
         table.draw(batch);
         title.draw(batch, 0);
 
-        test.draw(batch, 0);
-
         batch.end();
 
         if (playGif) {
@@ -88,10 +82,6 @@ public class MainMenu implements Screen {
 
         if (Gdx.input.isButtonPressed(0)) {
             table.update(camera);
-            int x = Gdx.input.getX();
-            int y = Gdx.input.getY();
-            y = (int) (MyGdxGame.initialRes.y - y);
-            test.checkIfPressed(x, y);
         }
         if (table.buttonCollection.lastPressedButtonName.equals(NewGame.name)){
             if (!Gdx.input.isButtonPressed(0)) {
