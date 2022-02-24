@@ -11,7 +11,7 @@ import java.util.ArrayList;
 public class MyGdxGame extends Game {
 	public static Vector2 initialRes;
 
-	public static String fontName = "Arial";
+	public static String fontName = "Comic Sans";
 	public static String title = "mR. Wilord";
 
 	public String songPlaying = "Moving on.mp3";

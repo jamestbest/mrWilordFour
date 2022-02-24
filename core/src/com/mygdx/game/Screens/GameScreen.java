@@ -647,13 +647,13 @@ public class GameScreen implements Screen {
         resourceButtons = new ButtonCollection();
         resourceButtons.useWorldCoords = false;
 
-        float length = MyGdxGame.initialRes.x / 25f;
-        float height = MyGdxGame.initialRes.y / 25f;
+        float length = Gdx.graphics.getWidth() / 50f;
+        float height = Gdx.graphics.getHeight() / 50f;
 
         String[] resourceNames = resources.keySet().toArray(new String[0]);
         for (int i = 0; i < resourceNames.length; i++) {
             ImgTextButton t = new ImgTextButton(resourceNames[i] + "Button", "0", resourceNames[i]);
-            t.setPos(5, (int) (MyGdxGame.initialRes.y - (height * (i + 2))));
+            t.setPos(5, (int) (Gdx.graphics.getHeight() - (height * (i + 2))));
             t.setSize((int) length, (int) height);
             resourceButtons.add(t);
         }
