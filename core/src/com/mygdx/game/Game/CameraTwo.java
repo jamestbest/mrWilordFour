@@ -25,6 +25,9 @@ public class CameraTwo {
 
     public boolean allowMovement = true;
 
+    float counter = 0.01f;
+    float counterMax = 0.01f;
+
     public CameraTwo(int width, int height, Vector3 position) {
         this.position = position;
 
@@ -57,7 +60,9 @@ public class CameraTwo {
         viewMatrix.idt();
         viewMatrix.setToLookAt(position, new Vector3(position).add(new Vector3(0,0,-1)),  new Vector3(0.0f, 1.0f, 0.0f));
         projViewMatrix.set(projectionMatrix).mul(viewMatrix);
-        if (allowMovement) {
+        counter -= Gdx.graphics.getDeltaTime();
+        if (allowMovement && counter <= 0) {
+            counter = counterMax;
             updatePosition();
         }
     }
@@ -114,7 +119,7 @@ public class CameraTwo {
             temp = GameScreen.TILE_DIMS;
         }
         temp *= zoom;
-        temp /= 10;
+        temp /= 5;
 
         if ((Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP)) && position.y < maxPoint.y) {
             position.y += temp;

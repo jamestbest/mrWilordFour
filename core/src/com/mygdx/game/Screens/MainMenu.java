@@ -11,7 +11,6 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.mygdx.game.Game.CameraTwo;
 import com.mygdx.game.Game.MyGdxGame;
 import com.mygdx.game.Jif.GifWithMusicPlayer;
-import com.mygdx.game.ui.elements.DropdownButton;
 import com.mygdx.game.ui.elements.Label;
 import com.mygdx.game.ui.elements.TextButton;
 import com.mygdx.game.ui.extensions.Table;
@@ -35,7 +34,7 @@ public class MainMenu implements Screen {
 
     CameraTwo camera;
 
-    MyGdxGame myGdxGame;
+    MyGdxGame game;
 
     GifWithMusicPlayer GWMP;
 
@@ -44,7 +43,7 @@ public class MainMenu implements Screen {
     InputMultiplexer inputMultiplexer = new InputMultiplexer();
 
     public MainMenu(MyGdxGame game) {
-        myGdxGame = game;
+        this.game = game;
     }
 
     @Override
@@ -83,29 +82,29 @@ public class MainMenu implements Screen {
         if (Gdx.input.isButtonPressed(0)) {
             table.update(camera);
         }
+
         if (table.buttonCollection.lastPressedButtonName.equals(NewGame.name)){
             if (!Gdx.input.isButtonPressed(0)) {
-                myGdxGame.setScreen(new MapGeneration(myGdxGame));
+                game.setScreen(new MapGeneration(game));
             }
         }
         if (table.buttonCollection.lastPressedButtonName.equals(LoadGame.name)){
-            if (!Gdx.input.isButtonPressed(0)) {
-                if (!playGif) {
-                    GWMP = new GifWithMusicPlayer("Globama", "Globama", "mp3");
-                    playGif = true;
-                }
-
-            }
+//            if (!Gdx.input.isButtonPressed(0)) {
+//                if (!playGif) {
+//                    GWMP = new GifWithMusicPlayer("Globama", "Globama", "mp3");
+//                    playGif = true;
+//                }
+//            }
+            game.setScreen(new LoadSaveScreen(game));
         }
         if (table.buttonCollection.lastPressedButtonName.equals(JoinGame.name)){
             if (!Gdx.input.isButtonPressed(0)) {
-//                myGdxGame.setScreen(new GameScreen(myGdxGame));
-                myGdxGame.setScreen(new JoinGameScreen(myGdxGame));
+                game.setScreen(new JoinGameScreen(game));
             }
         }
         if (table.buttonCollection.lastPressedButtonName.equals(Settings.name)){
             if (!Gdx.input.isButtonPressed(0)) {
-                myGdxGame.setScreen(new SettingsScreen(myGdxGame, false));
+                game.setScreen(new SettingsScreen(game, false));
             }
         }
         if (table.buttonCollection.lastPressedButtonName.equals(Exit.name)){

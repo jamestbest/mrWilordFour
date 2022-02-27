@@ -1,5 +1,7 @@
-use intelliJ ultimate for cmd line run index.js located in server/index.js
-// run in cmd: node index.js
+use intelliJ ultimate or cmd line, run index.js located in server/index.js
+//to run in cmd:
+// cd to server folder
+// run: node index.js
 
 launch desktopLauncher and create a new game, enable multiplayer
 launch desktopLauncher again and join game created by first player

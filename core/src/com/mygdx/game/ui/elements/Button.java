@@ -21,6 +21,7 @@ public class Button {
     Texture unpressedTexture;
 
     public boolean pressed;
+    public boolean selected;
     public boolean visible = true;
 
     public String name;
@@ -80,9 +81,19 @@ public class Button {
         this.y = y;
     }
 
+    public void setPos(float x, float y){
+        this.x = (int) x;
+        this.y = (int) y;
+    }
+
     public void setSize(int width, int height){
         this.width = width;
         this.height = height;
+    }
+
+    public void setSize(float width, float height){
+        this.width = (int) width;
+        this.height = (int) height;
     }
 
     public void centre(int offsetY){

@@ -23,8 +23,8 @@ public class Colonist {
     public int x;
     public int y;
 
-    int nextX;
-    int nextY;
+    public int nextX;
+    public int nextY;
 
     public int health;
     public HashMap<String, Integer> skills;
@@ -40,7 +40,7 @@ public class Colonist {
 
     static Random random = new Random();
 
-    ArrayList<Vector2> pathToComplete = new ArrayList<>();
+    public ArrayList<Vector2> pathToComplete = new ArrayList<>();
 
     HashMap<String, Integer> priorityFromType;
 
@@ -50,10 +50,12 @@ public class Colonist {
 
     Vector2 currentTaskLoc;
 
-    float timer = 0f;
+    public float timer = 0f;
     float timerMax = 1f;
 
     int randomMoveRadius = 25;
+
+    public int colonistID;
 
     public Colonist() {
         this.health = 100;

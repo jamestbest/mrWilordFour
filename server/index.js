@@ -32,11 +32,14 @@ io.on('connection', function(socket){
   socket.on("updateColonists", function(data){
     players[0].emit("updateColonists", data)
     console.log("updateColonists")
+    console.log(data)
+
   })
 
-  socket.on("getUpdated Colonist", function(data){
-    socket.broadcast.emit("getUpdated Colonist", data)
+  socket.on("getUpdatedColonists", function(data){
+    socket.broadcast.emit("getUpdatedColonists", data)
     console.log("getUpdated Colonist")
+    console.log(data)
   })
 
   socket.on("connect_error", (err) => {

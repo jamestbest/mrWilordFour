@@ -8,7 +8,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import java.io.File;
 
 public class GifWithMusicPlayer {
-    int pointer = 0;
+    int pointer = 1;
     int numberOfImages = 0;
     String gDA;
     String musicExtension;
@@ -40,6 +40,7 @@ public class GifWithMusicPlayer {
         music.play();
 
         drawing = new Texture(Gdx.files.internal("core/assets/GifResources/" + gDA + "/" + gDA + "_" + "000" + ".jpg"));
+//        drawing = new Texture(Gdx.files.internal("core/assets/GifResources/" + gDA + "/" + gDA + " (" + "1" + ").jpg"));
 
         batch = new SpriteBatch();
     }
@@ -71,6 +72,7 @@ public class GifWithMusicPlayer {
                     tempStr += pointer;
                 }
 
+//                drawing = new Texture(Gdx.files.internal("core/assets/GifResources/" + gDA + "/" + gDA + " (" + tempStr + ").jpg"));
                 drawing = new Texture(Gdx.files.internal("core/assets/GifResources/" + gDA + "/" + gDA + "_" + tempStr + ".jpg"));
                 if (pointer < numberOfImages - 1) {
                     pointer++;

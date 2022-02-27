@@ -166,6 +166,7 @@ public class GameScreen implements Screen {
     };
 
     public GameScreen(MyGdxGame game, ArrayList<Colonist> colonists, Map map) {
+        setup();
         this.game = game;
         game.currentGameScreen = this;
         this.isHost = true;
@@ -178,6 +179,7 @@ public class GameScreen implements Screen {
     }
 
     public GameScreen(MyGdxGame game, String ip){
+        setup();
         this.game = game;
         game.currentGameScreen = this;
         this.isHost = false;
@@ -189,14 +191,14 @@ public class GameScreen implements Screen {
         Gdx.graphics.setVSync(game.vsyncEnabled);
     }
 
-    @Override
-    public void show() {
+    public void setup(){
         initialiseAllTextures();
         setupResourceHashMap();
         setupResourceButtons();
 
-        if (isHost) {
 
+        if (isHost) {
+            setColonistIDs();
         }
         else {
             MapSettings mapSettings = new MapSettings(seed);
@@ -224,13 +226,16 @@ public class GameScreen implements Screen {
     }
 
     @Override
+    public void show() {
+        Gdx.input.setInputProcessor(gameInputProcessor);
+    }
+
+    @Override
     public void render(float delta) {
         Gdx.gl.glClearColor(1, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         camera.allowMovement = !paused;
-
-        System.out.println(paused + " " + gameSpeed);
 
         camera.update();
         updateResourceButtons();
@@ -281,10 +286,15 @@ public class GameScreen implements Screen {
             Gdx.gl.glDisable(GL30.GL_BLEND);
         }
 
+        System.out.println(paused);
+
         counter += delta * gameSpeed;
         if (counter > counterMax) {
             update();
             counter = 0f;
+        }
+        if (counter > counterMax / 2) {
+            updateDouble();
         }
 
         Gdx.graphics.setTitle(MyGdxGame.title + "     FPS: " + (Gdx.graphics.getFramesPerSecond()));
@@ -329,6 +339,7 @@ public class GameScreen implements Screen {
                     case "OptionsButton" -> game.setScreen(new SettingsScreen(game, true));
                     case "SaveButton" -> saveGame("save12");
 //                    case "LoadButton" -> ;
+                    case "mainMenuButton" -> game.setScreen(game.mainMenu);
                     case "ExitButton" -> Gdx.app.exit();
                 }
             }
@@ -384,12 +395,22 @@ public class GameScreen implements Screen {
 
     public void update(){ //happens at a rate determined by the gameSpeed
         moveColonists();
-        if (!isHost){
-            socket.emit("updateColonists");
+        if (isHost && isMultiplayer){
+//            socket.emit("updateColonists");
+            try {
+                sendColonistMovement();
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
+
         batch.begin();
 
         batch.end();
+    }
+
+    public void updateDouble(){
+
     }
 
     public void setPause(boolean pause){
@@ -500,21 +521,21 @@ public class GameScreen implements Screen {
             }
         });
 
-        socket.on("updateColonists", args -> {
-            try {
-                JSONObject data = new JSONObject();
-                data.put("colonists", json.toJson(colonists));
-                socket.emit("getUpdatedColonists", data);
-            }
-            catch (Exception e) {
-                System.out.println("Error in creating colonist json");
-            }
-        });
+//        socket.on("updateColonists", args -> {
+//            try {
+//                JSONObject data = new JSONObject();
+//                data.put("colonists", json.toJson(colonists));
+//                socket.emit("getUpdatedColonists", data);
+//            }
+//            catch (Exception e) {
+//                System.out.println("Error in creating colonist json");
+//            }
+//        });
 
         socket.on("getUpdatedColonists", args -> {
             try {
                 JSONObject data = (JSONObject) args[0];
-                colonists = json.fromJson(ArrayList.class, data.getString("colonists"));
+                getColonistMovement(data);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -536,6 +557,7 @@ public class GameScreen implements Screen {
             try {
 //                map = json.fromJson(Map.class, data.get("map").toString());
                 colonists = json.fromJson(ArrayList.class, data.get("colonists").toString());
+                setColonistIDs();
 
                 ArrayList<String> packagedTiles = json.fromJson(ArrayList.class, data.get("tiles").toString());
                 int mapWidth = data.getInt("mapWidth");
@@ -549,6 +571,7 @@ public class GameScreen implements Screen {
 
                 this.resources = json.fromJson(HashMap.class, data.get("resources").toString());
 
+                game.currentGameScreen = this;
                 System.out.println("Loaded world" + colonists.size());
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -728,9 +751,10 @@ public class GameScreen implements Screen {
         TextButton optionsButton = new TextButton("Options", "OptionsButton");
         TextButton saveButton = new TextButton("Save", "SaveButton");
         TextButton loadButton = new TextButton("Load", "LoadButton");
+        TextButton mainMenuButton = new TextButton("Main Menu", "MainMenuButton");
         TextButton exitButton = new TextButton("Exit", "ExitButton");
 
-        optionsButtons.add(exitButton, loadButton, saveButton, optionsButton, resumeButton);
+        optionsButtons.add(exitButton, mainMenuButton, loadButton, saveButton, optionsButton, resumeButton);
         float buttonWidth = MyGdxGame.initialRes.x / 5f;
         float buttonHeight = MyGdxGame.initialRes.y / 12f;
 
@@ -860,6 +884,44 @@ public class GameScreen implements Screen {
         for (Button button : resourceButtons.buttons) {
             ImgTextButton b = (ImgTextButton) button;
             b.updateText(resources.get(b.imgName).toString());
+        }
+    }
+
+    public void setColonistIDs(){
+        for (int i = 0; i < colonists.size(); i++) {
+            Colonist c = colonists.get(i);
+            c.colonistID = i;
+        }
+    }
+
+    public void sendColonistMovement() throws JSONException {
+        Json json = new Json();
+        JSONObject obj = new JSONObject();
+        for (Colonist c : colonists
+             ) {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("x", c.x);
+            jsonObject.put("y", c.y);
+            jsonObject.put("nextX", c.nextX);
+            jsonObject.put("nextY", c.nextY);
+            jsonObject.put("timer", c.timer);
+//            jsonObject.put("pathToComplete", json.toJson(c.pathToComplete));
+            obj.put(String.valueOf(c.colonistID), jsonObject);
+        }
+        socket.emit("getUpdatedColonists", obj);
+    }
+
+    public void getColonistMovement(JSONObject jsonObject) throws JSONException {
+        Json json = new Json();
+
+        for (Colonist c : colonists) {
+            JSONObject colonistInput = jsonObject.getJSONObject(String.valueOf(c.colonistID));
+            c.x = colonistInput.getInt("x");
+            c.y = colonistInput.getInt("y");
+            c.nextX = colonistInput.getInt("nextX");
+            c.nextY = colonistInput.getInt("nextY");
+            c.timer = colonistInput.getInt("timer");
+//            c.pathToComplete = json.fromJson(ArrayList.class, Vector2.class, colonistInput.getString("pathToComplete"));
         }
     }
 }

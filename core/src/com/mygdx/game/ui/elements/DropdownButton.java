@@ -31,9 +31,10 @@ public class DropdownButton extends TextButton{
     ArrayList<String> dropDowns;
     int selectedPosition = 0;
 
-    int startPos = 3;
-    int endPos = 8;
-    int numBoxesShown = 5;
+    int startPos = 0;
+    public int numBoxesShown = 5;
+    public int endPos = numBoxesShown + startPos;
+
 
     int hoverPos = -1;
 
@@ -139,12 +140,21 @@ public class DropdownButton extends TextButton{
         return dropDowns.get(selectedPosition);
     }
 
-    public void setDropDowns(ArrayList<String> dropDowns, MyGdxGame game){
+    public void setDropDownsForMusic(ArrayList<String> dropDowns, MyGdxGame game){
         this.dropDowns = dropDowns;
         this.selectedPosition = dropDowns.indexOf(game.songPlaying);
     }
 
+    public void setDropDowns(ArrayList<String> dropDowns){
+        this.dropDowns = dropDowns;
+    }
+
     public void setSize(int width, int height){
+        this.width = (int) (width * 0.9);
+        this.height = (int) (height * 0.4f);
+    }
+
+    public void setSize(float width, float height){
         this.width = (int) (width * 0.9);
         this.height = (int) (height * 0.4f);
     }

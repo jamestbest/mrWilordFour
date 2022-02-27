@@ -53,6 +53,8 @@ public class ButtonCollection {
             }
             for (Button button : buttons) {
                 if (button.checkIfPressed(x, y)) {
+                    setAllToUnSelected();
+                    button.selected = true;
                     pressedButtonName = button.name;
                     lastPressedButtonName = button.name;
                     return true;
@@ -66,6 +68,12 @@ public class ButtonCollection {
         for (Button button : buttons) {
             button.pressed = false;
             pressedButtonName = "";
+        }
+    }
+
+    public void setAllToUnSelected(){
+        for (Button button : buttons) {
+            button.selected = false;
         }
     }
 }

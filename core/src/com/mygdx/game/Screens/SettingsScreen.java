@@ -5,7 +5,6 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
@@ -28,6 +27,8 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 public class SettingsScreen implements Screen {
+
+    // TODO: 27/02/2022 add the font drop down box
     Table optionsTable;
 
     Label volumeLabel;
@@ -91,7 +92,7 @@ public class SettingsScreen implements Screen {
         addSongLabel = new Label( "addSongLabel", "add custom song");
         addSongButton = new ImgOnlyButton("addSongButton", "uploadButton");
 
-        currentSongDropDown.setDropDowns(getSelectableSongs(), game);
+        currentSongDropDown.setDropDownsForMusic(getSelectableSongs(), game);
 
         fPSToggle = new ToggleButton("FPSToggle", game.fpsCounter);
         fPSSlider = new SliderWithLabel("FPSSlider", 145, 30, 1, game.fpsCap);
@@ -180,6 +181,7 @@ public class SettingsScreen implements Screen {
                 }
                 case "FPSSlider" -> {
                     game.fpsCap = (int) fPSSlider.value;
+                    Gdx.graphics.setForegroundFPS(game.fpsCap);
                     handleMaxFps();
                 }
                 case "currentSongDropDown" -> {
@@ -191,7 +193,7 @@ public class SettingsScreen implements Screen {
                 case "addSongButton" -> {
                     String fileName = getCustomSongLocation();
                     addCustomSong(fileName);
-                    currentSongDropDown.setDropDowns(getSelectableSongs(), game);
+                    currentSongDropDown.setDropDownsForMusic(getSelectableSongs(), game);
                 }
             }
         }
@@ -301,6 +303,7 @@ public class SettingsScreen implements Screen {
     public void handleMaxFps(){
         if (game.fpsCap >= fpsBeforeSwitchingToUnCapped){
             game.fpsCap = Integer.MAX_VALUE;
+            Gdx.graphics.setForegroundFPS(game.fpsCap);
             fPSSlider.setText("no cap");
         }
     }
