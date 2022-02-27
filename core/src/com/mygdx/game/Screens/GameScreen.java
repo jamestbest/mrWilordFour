@@ -31,7 +31,6 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -47,6 +46,7 @@ public class GameScreen implements Screen {
     SpriteBatch batch;
     SpriteBatch batchWithNoProj;
     ShapeRenderer shapeRenderer;
+    ShapeRenderer shapeRendererWithNoProj;
 
     CameraTwo camera;
     Vector2 moveOrigin = new Vector2(0, 0);
@@ -70,12 +70,15 @@ public class GameScreen implements Screen {
 
     float counter = 0f;
     float counterMax = 1f;
+
     public static float gameSpeed = 2f; //game speed
+    public float lastGameSpeed = gameSpeed;
 
     ButtonCollection bottomBarButtons;
     ButtonCollection ordersButtons;
     ButtonCollection buildingButtons;
     ButtonCollection resourceButtons;
+    ButtonCollection optionsButtons;
 
     HashMap<String, ArrayList<String>> orderTypes;
     HashMap<String, Integer> resources;
@@ -84,9 +87,11 @@ public class GameScreen implements Screen {
 
     boolean cancelSelection;
 
-    // DONE: 30/01/2022 add the selection rect and then add tasks based on the type and if the tile type is a match
+    boolean paused;
+
+    // FIXED: 30/01/2022 add the selection rect and then add tasks based on the type and if the tile type is a match
     // TODO: 02/02/2022 Some of the tasks need to be drawn above the things and others below - gl
-    // DONE: 02/02/2022 need to change how the colonists get tasks
+    // FIXED: 02/02/2022 need to change how the colonists get tasks
 
     Vector2 minSelecting = new Vector2(0, 0);
     Vector2 maxSelecting = new Vector2(0, 0);
@@ -109,9 +114,11 @@ public class GameScreen implements Screen {
 
         @Override
         public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-            moveOrigin = camera.unproject(new Vector2(screenX, screenY));
-            minSelecting = camera.unproject(new Vector2(screenX, screenY));
-            maxSelecting = minSelecting;
+            if (!paused) {
+                moveOrigin = camera.unproject(new Vector2(screenX, screenY));
+                minSelecting = camera.unproject(new Vector2(screenX, screenY));
+                maxSelecting = minSelecting;
+            }
             return false;
         }
 
@@ -126,11 +133,11 @@ public class GameScreen implements Screen {
 
         @Override
         public boolean touchDragged(int screenX, int screenY, int pointer) {
-            if (Gdx.input.isButtonPressed(1)){
+            if (Gdx.input.isButtonPressed(1) && !paused) {
                 Vector2 temp = camera.unproject(new Vector2(screenX, screenY));
                 camera.move(moveOrigin.x - temp.x, moveOrigin.y - temp.y);
             }
-            if (Gdx.input.isButtonPressed(0)){
+            if (Gdx.input.isButtonPressed(0) && !paused) {
                 maxSelecting = camera.unproject(new Vector2(screenX, screenY));
                 if (cancelSelection){
                     minSelecting = maxSelecting;
@@ -148,16 +155,19 @@ public class GameScreen implements Screen {
         public boolean scrolled(float amountX, float amountY) {
             //this moves the camera making sure that the tile that the mouse is over is always under the mouse when scrolling
             //allow you to scroll into a position - see ref/cameraZoom.png
-            Vector2 startPos = camera.unproject(new Vector2(Gdx.input.getX(), Gdx.input.getY()));
-            camera.handleZoom(amountY);
-            Vector2 endPos = camera.unproject(new Vector2(Gdx.input.getX(), Gdx.input.getY()));
-            camera.move(startPos.x - endPos.x, startPos.y - endPos.y);
+            if (!paused) {
+                Vector2 startPos = camera.unproject(new Vector2(Gdx.input.getX(), Gdx.input.getY()));
+                camera.handleZoom(amountY);
+                Vector2 endPos = camera.unproject(new Vector2(Gdx.input.getX(), Gdx.input.getY()));
+                camera.move(startPos.x - endPos.x, startPos.y - endPos.y);
+            }
             return false;
         }
     };
 
     public GameScreen(MyGdxGame game, ArrayList<Colonist> colonists, Map map) {
         this.game = game;
+        game.currentGameScreen = this;
         this.isHost = true;
         this.map = map;
 
@@ -169,6 +179,7 @@ public class GameScreen implements Screen {
 
     public GameScreen(MyGdxGame game, String ip){
         this.game = game;
+        game.currentGameScreen = this;
         this.isHost = false;
         this.isMultiplayer = true;
         connectSocket(ip);
@@ -184,7 +195,6 @@ public class GameScreen implements Screen {
         setupResourceHashMap();
         setupResourceButtons();
 
-
         if (isHost) {
 
         }
@@ -198,11 +208,15 @@ public class GameScreen implements Screen {
 
         setupBBB();
         setupOrdersButtons();
+        setupOptionsButtons();
         setupOrderTypes();
+
+        optionsButtons.showButtons = paused;
 
         batch = new SpriteBatch();
         batchWithNoProj = new SpriteBatch();
         shapeRenderer = new ShapeRenderer();
+        shapeRendererWithNoProj = new ShapeRenderer();
         camera = new CameraTwo();
         camera.setMinMax(new Vector2(0,0), new Vector2(GameScreen.TILES_ON_X * TILE_DIMS, GameScreen.TILES_ON_X * TILE_DIMS));
 
@@ -214,11 +228,9 @@ public class GameScreen implements Screen {
         Gdx.gl.glClearColor(1, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        for (Colonist c : colonists) {
-            if (c.completingTask || c.doingTaskAnimation){
-                System.out.println(c.x + " " + c.y);
-            }
-        }
+        camera.allowMovement = !paused;
+
+        System.out.println(paused + " " + gameSpeed);
 
         camera.update();
         updateResourceButtons();
@@ -240,19 +252,34 @@ public class GameScreen implements Screen {
         bottomBarButtons.drawButtons(batchWithNoProj);
         ordersButtons.drawButtons(batchWithNoProj);
         resourceButtons.drawButtons(batchWithNoProj);
+
+        batchWithNoProj.end();
+        if (paused) {
+            Gdx.gl.glEnable(GL30.GL_BLEND);
+            Gdx.gl.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
+            shapeRendererWithNoProj.begin(ShapeRenderer.ShapeType.Filled);
+            shapeRendererWithNoProj.setColor(160 / 255f, 160 / 255f, 160 / 255f, 0.8f);
+            shapeRendererWithNoProj.rect(0, 0, MyGdxGame.initialRes.x, MyGdxGame.initialRes.y);
+            shapeRendererWithNoProj.end();
+            Gdx.gl.glDisable(GL30.GL_BLEND);
+        }
+        batchWithNoProj.begin();
+
+        optionsButtons.drawButtons(batchWithNoProj);
         batchWithNoProj.end();
 
-
-        Gdx.gl.glEnable(GL30.GL_BLEND);
-        Gdx.gl.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setProjectionMatrix(camera.projViewMatrix);
-        shapeRenderer.setColor(0, 0, 1, 0.5f);
-        for (Colonist colonist : colonists) {
-            colonist.drawPathOutline(shapeRenderer);
+        if (!paused) {
+            Gdx.gl.glEnable(GL30.GL_BLEND);
+            Gdx.gl.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+            shapeRenderer.setProjectionMatrix(camera.projViewMatrix);
+            shapeRenderer.setColor(0, 0, 1, 0.5f);
+            for (Colonist colonist : colonists) {
+                colonist.drawPathOutline(shapeRenderer);
+            }
+            shapeRenderer.end();
+            Gdx.gl.glDisable(GL30.GL_BLEND);
         }
-        shapeRenderer.end();
-        Gdx.gl.glDisable(GL30.GL_BLEND);
 
         counter += delta * gameSpeed;
         if (counter > counterMax) {
@@ -263,29 +290,49 @@ public class GameScreen implements Screen {
         Gdx.graphics.setTitle(MyGdxGame.title + "     FPS: " + (Gdx.graphics.getFramesPerSecond()));
 
         if (Gdx.input.isButtonPressed(0)) {
-            if (!(bottomBarButtons.updateButtons(camera) || ordersButtons.updateButtons(camera))){
-                drawSelectionScreen(shapeRenderer, camera);
+            if (!paused){
+                if (!(bottomBarButtons.updateButtons(camera) || ordersButtons.updateButtons(camera))){
+                    drawSelectionScreen(shapeRenderer, camera);
+                }
+                else {
+                    cancelSelection = true;
+                }
             }
             else {
-                cancelSelection = true;
+                optionsButtons.updateButtons(camera);
             }
         }
 
         if (Gdx.input.isButtonJustPressed(0)){
-            if (bottomBarButtons.updateButtons(camera)){
-                if (bottomBarButtons.pressedButtonName.equals("OrdersButton")){
-                    ordersButtons.showButtons = !ordersButtons.showButtons;
+            if (!paused) {
+                if (bottomBarButtons.updateButtons(camera)) {
+                    if (bottomBarButtons.pressedButtonName.equals("OrdersButton")) {
+                        ordersButtons.showButtons = !ordersButtons.showButtons;
+                    }
                 }
-            }
 
-            if (ordersButtons.updateButtons(camera)){
-                switch (ordersButtons.pressedButtonName) {
-                    case "MineButton" -> taskTypeSelected = "Mine";
-                    case "CutDownButton" -> taskTypeSelected = "CutDown";
-                    case "PlantButton" -> taskTypeSelected = "Plant";
-                    case "HarvestButton" -> taskTypeSelected = "Harvest";
+                if (ordersButtons.updateButtons(camera)) {
+                    switch (ordersButtons.pressedButtonName) {
+                        case "MineButton" -> taskTypeSelected = "Mine";
+                        case "CutDownButton" -> taskTypeSelected = "CutDown";
+                        case "PlantButton" -> taskTypeSelected = "Plant";
+                        case "HarvestButton" -> taskTypeSelected = "Harvest";
+                    }
                 }
             }
+            if (optionsButtons.updateButtons(camera)){
+                switch (optionsButtons.pressedButtonName) {
+                    case "ResumeButton" -> {
+                        optionsButtons.showButtons = false;
+                        setPause(false);
+                    }
+                    case "OptionsButton" -> game.setScreen(new SettingsScreen(game, true));
+                    case "SaveButton" -> saveGame("save12");
+//                    case "LoadButton" -> ;
+                    case "ExitButton" -> Gdx.app.exit();
+                }
+            }
+            System.out.println(optionsButtons.showButtons);
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
@@ -301,6 +348,7 @@ public class GameScreen implements Screen {
             Gdx.app.log("Multiplayer", "enabling multiplayer");
             connectSocket("localhost:8080");
             createSocketListeners();
+            socket.emit("joinRoom", "test1");
             isMultiplayer = true;
         }
 
@@ -329,16 +377,30 @@ public class GameScreen implements Screen {
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
-            MyGdxGame.initialRes = new Vector2(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-            game.setScreen(new MainMenu(game));
+            optionsButtons.showButtons = !optionsButtons.showButtons;
+            setPause(optionsButtons.showButtons);
         }
     }
 
     public void update(){ //happens at a rate determined by the gameSpeed
         moveColonists();
+        if (!isHost){
+            socket.emit("updateColonists");
+        }
         batch.begin();
 
         batch.end();
+    }
+
+    public void setPause(boolean pause){
+        if (pause){
+            lastGameSpeed = gameSpeed;
+            gameSpeed = 0f;
+        }
+        else {
+            gameSpeed = lastGameSpeed;
+        }
+        paused = pause;
     }
 
     @Override
@@ -429,11 +491,32 @@ public class GameScreen implements Screen {
                 data.put("tileDims", GameScreen.TILE_DIMS);
                 data.put("colonists", json.toJson(colonists));
                 data.put("settings", json.toJson(map.settings));
+                data.put("resources", json.toJson(resources));
 
                 socket.emit("loadWorld", data);
             }
             catch (Exception e) {
                 System.out.println("Error in creating map json");
+            }
+        });
+
+        socket.on("updateColonists", args -> {
+            try {
+                JSONObject data = new JSONObject();
+                data.put("colonists", json.toJson(colonists));
+                socket.emit("getUpdatedColonists", data);
+            }
+            catch (Exception e) {
+                System.out.println("Error in creating colonist json");
+            }
+        });
+
+        socket.on("getUpdatedColonists", args -> {
+            try {
+                JSONObject data = (JSONObject) args[0];
+                colonists = json.fromJson(ArrayList.class, data.getString("colonists"));
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
         });
 
@@ -463,6 +546,8 @@ public class GameScreen implements Screen {
 
                 map.settings = json.fromJson(MapSettings.class, data.get("settings").toString());
                 map.unPackageTiles(packagedTiles);
+
+                this.resources = json.fromJson(HashMap.class, data.get("resources").toString());
 
                 System.out.println("Loaded world" + colonists.size());
             } catch (JSONException e) {
@@ -499,8 +584,10 @@ public class GameScreen implements Screen {
     }
 
     public void moveColonists(){
-        for (Colonist c : colonists) {
-            c.moveColonist(map, resources);
+        if (isHost) {
+            for (Colonist c : colonists) {
+                c.moveColonist(map, resources);
+            }
         }
     }
 
@@ -629,6 +716,30 @@ public class GameScreen implements Screen {
             Button b = ordersButtons.buttons.get(i);
             b.setPos((int) ((MyGdxGame.initialRes.x / 5f / size) * (i % 2)) + 5, (int) (y + (MyGdxGame.initialRes.y / 12f) * (row - 1)));
             b.setSize((int) (MyGdxGame.initialRes.x / 5f / size), (int) (MyGdxGame.initialRes.y / 12f));
+        }
+    }
+
+    public void setupOptionsButtons(){
+        optionsButtons = new ButtonCollection();
+        optionsButtons.useWorldCoords = false;
+        optionsButtons.showButtons = false;
+
+        TextButton resumeButton = new TextButton("Resume", "ResumeButton");
+        TextButton optionsButton = new TextButton("Options", "OptionsButton");
+        TextButton saveButton = new TextButton("Save", "SaveButton");
+        TextButton loadButton = new TextButton("Load", "LoadButton");
+        TextButton exitButton = new TextButton("Exit", "ExitButton");
+
+        optionsButtons.add(exitButton, loadButton, saveButton, optionsButton, resumeButton);
+        float buttonWidth = MyGdxGame.initialRes.x / 5f;
+        float buttonHeight = MyGdxGame.initialRes.y / 12f;
+
+        float x = (MyGdxGame.initialRes.x / 2f) - (buttonWidth / 2f);
+        float y = (MyGdxGame.initialRes.y / 12f) * 3;
+        for (int i = 0; i < optionsButtons.buttons.size(); i++) {
+            Button b = optionsButtons.buttons.get(i);
+            b.setSize((int) buttonWidth, (int) buttonHeight);
+            b.setPos((int) x, (int) (y + (i * buttonHeight)));
         }
     }
 

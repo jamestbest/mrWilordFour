@@ -29,6 +29,16 @@ io.on('connection', function(socket){
   socket.emit("socketID", {id: socket.id})
   socket.broadcast.emit("newPlayer")
 
+  socket.on("updateColonists", function(data){
+    players[0].emit("updateColonists", data)
+    console.log("updateColonists")
+  })
+
+  socket.on("getUpdated Colonist", function(data){
+    socket.broadcast.emit("getUpdated Colonist", data)
+    console.log("getUpdated Colonist")
+  })
+
   socket.on("connect_error", (err) => {
     console.log(`connect_error due to ${err.message}`);
   });
@@ -52,6 +62,7 @@ io.on('connection', function(socket){
 
   socket.on("joinRoom", function(data){
     socket.join(data)
+    console.log(io.sockets.adapter.rooms)
     console.log(io.sockets.adapter.rooms.get(data));
     console.log(data)
   })

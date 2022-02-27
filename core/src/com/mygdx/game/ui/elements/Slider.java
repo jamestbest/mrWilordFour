@@ -39,8 +39,10 @@ public class Slider extends TextButton{
             shapeRenderer.setColor(0.416f, 0.431f, 0.459f, 1);
             shapeRenderer.rect(x, y, width, height);
             shapeRenderer.setColor(0.349f,0.361f,0.38f,1);
-            shapeRenderer.rect(x, y, width * (value / maxValue), height);
-            shapeRenderer.circle(x + width * (value / maxValue), y + height / 2f, height / 7f * 5f);
+            float percent = value / maxValue;
+            if (percent > 1) percent = 1;
+            shapeRenderer.rect(x, y, width * (percent), height);
+            shapeRenderer.circle(x + width * (percent), y + height / 2f, height / 7f * 5f);
             shapeRenderer.end();
             batch.begin();
         }

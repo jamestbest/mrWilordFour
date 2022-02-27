@@ -69,8 +69,11 @@ public class SettingsScreen implements Screen {
     int RRBeforeVS = -1;
     int fpsBeforeSwitchingToUnCapped = 145;
 
-    public SettingsScreen(MyGdxGame game){
+    boolean fromGame;
+
+    public SettingsScreen(MyGdxGame game, boolean fromGame){
         this.game = game;
+        this.fromGame = fromGame;
 
         inputMultiplexer = new InputMultiplexer();
         batch = new SpriteBatch();
@@ -92,6 +95,9 @@ public class SettingsScreen implements Screen {
 
         fPSToggle = new ToggleButton("FPSToggle", game.fpsCounter);
         fPSSlider = new SliderWithLabel("FPSSlider", 145, 30, 1, game.fpsCap);
+        if (game.fpsCap == Integer.MAX_VALUE){
+            handleMaxFps();
+        }
         vSyncToggle = new ToggleButton("VsyncToggle", game.vsyncEnabled);
 
         placeholderThreeLabel = new Label( "PlaceholderThreeLabel", "Placeholder");
@@ -196,7 +202,12 @@ public class SettingsScreen implements Screen {
 
         if (Gdx.input.isKeyPressed(Input.Keys.ESCAPE)) {
             MyGdxGame.initialRes = new Vector2(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-            game.setScreen(new MainMenu(game));
+            if (fromGame) {
+                game.setScreen(game.currentGameScreen);
+            }
+            else {
+                game.setScreen(game.mainMenu);
+            }
         }
     }
 

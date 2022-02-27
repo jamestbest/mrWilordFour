@@ -105,7 +105,7 @@ public class MainMenu implements Screen {
         }
         if (table.buttonCollection.lastPressedButtonName.equals(Settings.name)){
             if (!Gdx.input.isButtonPressed(0)) {
-                myGdxGame.setScreen(new SettingsScreen(myGdxGame));
+                myGdxGame.setScreen(new SettingsScreen(myGdxGame, false));
             }
         }
         if (table.buttonCollection.lastPressedButtonName.equals(Exit.name)){

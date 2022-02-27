@@ -4,7 +4,9 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.math.Vector2;
+import com.mygdx.game.Screens.GameScreen;
 import com.mygdx.game.Screens.MainMenu;
+import com.mygdx.game.Screens.SettingsScreen;
 
 import java.util.ArrayList;
 
@@ -25,6 +27,9 @@ public class MyGdxGame extends Game {
 	public boolean vsyncEnabled = false;
 
 	public Music music;
+
+	public MainMenu mainMenu;
+	public GameScreen currentGameScreen;
 	
 	@Override
 	public void create () {
@@ -37,7 +42,11 @@ public class MyGdxGame extends Game {
 		else music.setVolume(0);
 		music.play();
 
-		setScreen(new MainMenu(this));
+		mainMenu = new MainMenu(this);
+
+		Gdx.graphics.setTitle(title);
+
+		setScreen(this.mainMenu);
 	}
 	
 	@Override

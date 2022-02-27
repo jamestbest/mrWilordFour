@@ -1,8 +1,10 @@
 package com.mygdx.game.Game;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.mygdx.game.AStar.AStar;
@@ -111,6 +113,10 @@ public class Colonist {
         batch.draw(clothes.get(clotheName).findRegion(direction), (x + ((nextX - x) * timer)) * tileDims, (y + ((nextY - y) * timer)) * tileDims, tileDims, tileDims);
     }
 
+    public void draw(SpriteBatch batch, float tileDims, TextureRegion texture, int x, int y) {
+        batch.draw(texture, x, y, tileDims, tileDims);
+    }
+
     public void moveRandomly(Map map) {
         int randomX = random.nextInt(3) - 1;
         int randomY = random.nextInt(3) - 1;
@@ -192,14 +198,16 @@ public class Colonist {
         } else {
             if (getNextTask(map.tiles)) {
                 movingAcrossPath = true;
-                // TODO: 04/02/2022 BUG: colonists will sometimes move randomly before going to next task
+                // FIXED: 04/02/2022 BUG: colonists will sometimes move randomly before going to next task
             }
-            int choice = random.nextInt(10);
-            if (choice <= -1) {
-                getRandomPosition(map);
-            } else {
-                System.out.println("moving randomly");
-                moveRandomly(map);
+            else {
+                int choice = random.nextInt(10);
+                if (choice <= 3) {
+                    getRandomPosition(map);
+                } else {
+                    System.out.println("moving randomly");
+                    moveRandomly(map);
+                }
             }
         }
     }
