@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Vector2;
 import com.mygdx.game.Game.CameraTwo;
 import com.mygdx.game.Game.MyGdxGame;
 import com.mygdx.game.Jif.GifWithMusicPlayer;
@@ -48,6 +49,7 @@ public class MainMenu implements Screen {
 
     @Override
     public void show() {
+        MyGdxGame.initialRes = new Vector2(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         background = new Texture("Textures/Backgrounds/MainMenu.jpg");
         camera = new CameraTwo();
 

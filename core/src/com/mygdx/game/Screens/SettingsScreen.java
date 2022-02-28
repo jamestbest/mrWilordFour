@@ -46,6 +46,7 @@ public class SettingsScreen implements Screen {
     SliderWithLabel volumeSlider;
     ToggleButton muteToggle;
     DropdownButton currentSongDropDown;
+    DropdownButton fontDropDown;
     ToggleButton loopToggle;
     Label addSongLabel;
     ImgOnlyButton addSongButton;
@@ -54,7 +55,7 @@ public class SettingsScreen implements Screen {
     SliderWithLabel fPSSlider;
     ToggleButton vSyncToggle;
 
-    Label placeholderThreeLabel;
+    Label fontLabel;
     InputButtonTwo setTitleInputButton;
 
     InputMultiplexer inputMultiplexer;
@@ -73,6 +74,7 @@ public class SettingsScreen implements Screen {
     boolean fromGame;
 
     public SettingsScreen(MyGdxGame game, boolean fromGame){
+        MyGdxGame.initialRes = new Vector2(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         this.game = game;
         this.fromGame = fromGame;
 
@@ -88,11 +90,14 @@ public class SettingsScreen implements Screen {
         volumeSlider.setValue(game.volume);
         muteToggle = new ToggleButton("MuteToggle", game.mute);
         currentSongDropDown = new DropdownButton("currentSongDropDown", inputMultiplexer);
+        fontDropDown = new DropdownButton("fontDropDown", inputMultiplexer);
         loopToggle = new ToggleButton("LoopToggle", game.loop);
         addSongLabel = new Label( "addSongLabel", "add custom song");
         addSongButton = new ImgOnlyButton("addSongButton", "uploadButton");
 
         currentSongDropDown.setDropDownsForMusic(getSelectableSongs(), game);
+        fontDropDown.setDropDownsForFont(getSelectableFonts());
+        fontDropDown.drawDown = false;
 
         fPSToggle = new ToggleButton("FPSToggle", game.fpsCounter);
         fPSSlider = new SliderWithLabel("FPSSlider", 145, 30, 1, game.fpsCap);
@@ -101,7 +106,7 @@ public class SettingsScreen implements Screen {
         }
         vSyncToggle = new ToggleButton("VsyncToggle", game.vsyncEnabled);
 
-        placeholderThreeLabel = new Label( "PlaceholderThreeLabel", "Placeholder");
+        fontLabel = new Label( "FontLabel", "Font: ");
         setTitleInputButton = new InputButtonTwo(0, 0,  0,  0, MyGdxGame.title, "SetTitleInputButton", inputMultiplexer);
 
         volumeLabel = new Label("VolumeLabel", "Volume: ");
@@ -124,7 +129,7 @@ public class SettingsScreen implements Screen {
         optionsTable.row();
         optionsTable.add(loopLabel ,loopToggle, titleLabel, setTitleInputButton);
         optionsTable.row();
-        optionsTable.add(addSongLabel, addSongButton, placeholderThreeLabel);
+        optionsTable.add(addSongLabel, addSongButton, fontLabel, fontDropDown);
 
         optionsTable.sort();
 
@@ -245,10 +250,23 @@ public class SettingsScreen implements Screen {
         assert files != null;
         for (String file : files) {
             if (file.endsWith(".mp3")) {
-                songs.add(file);
+                songs.add(file.split("\\.")[0]);
             }
         }
         return songs;
+    }
+
+    public ArrayList<String> getSelectableFonts(){
+        File dir = new File("core/assets/Fonts");
+        String[] files = dir.list();
+        ArrayList<String> fonts = new ArrayList<String>();
+        assert files != null;
+        for (String file : files) {
+            if (file.endsWith(".fnt")) {
+                fonts.add(file.split("\\.")[0]);
+            }
+        }
+        return fonts;
     }
 
     public void addCustomSong(String fileName){

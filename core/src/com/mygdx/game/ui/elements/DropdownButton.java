@@ -35,6 +35,7 @@ public class DropdownButton extends TextButton{
     public int numBoxesShown = 5;
     public int endPos = numBoxesShown + startPos;
 
+    public boolean drawDown = true;
 
     int hoverPos = -1;
 
@@ -68,14 +69,30 @@ public class DropdownButton extends TextButton{
             if (isToggled){
                 for (int i = startPos; i < endPos; i++){
                     if ((i - startPos) == hoverPos){
-                        batch.draw(pressedTexture, x, y - (((i - startPos)) * height), width, height);
+                        if (drawDown){
+                            batch.draw(pressedTexture, x, y - (((i - startPos)) * height), width, height);
+                        }
+                        else {
+                            batch.draw(pressedTexture, x, y + (((i - startPos)) * height), width, height);
+                        }
                     }
                     else{
-                        batch.draw(unpressedTexture, x, y - (((i - startPos)) * height), width, height);
+                        if (drawDown){
+                            batch.draw(unpressedTexture, x, y - (((i - startPos)) * height), width, height);
+                        }
+                        else {
+                            batch.draw(unpressedTexture, x, y + (((i - startPos)) * height), width, height);
+                        }
                     }
                     glyphLayout.setText(font, dropDowns.get(i));
                     int xPos = (int) (x + (width / 2) - (glyphLayout.width / 2));
-                    int yPos = (int) ((y + height) - (height * ((i - startPos))) - (height / 2) + glyphLayout.height / 2f);
+                    int yPos = 0;
+                    if (drawDown){
+                        yPos = (int) ((y + height) - (height * ((i - startPos))) - (height / 2) + glyphLayout.height / 2f);
+                    }
+                    else {
+                        yPos = (int) ((y + height) + (height * ((i - startPos))) - (height / 2) + glyphLayout.height / 2f);
+                    }
                     font.draw(batch, glyphLayout, xPos, yPos);
                 }
             }
@@ -97,11 +114,29 @@ public class DropdownButton extends TextButton{
     }
 
     public boolean checkIfPressed(int x, int y){
+        System.out.println(dropDowns);
         if (visible){
             if (isToggled){
-                if (x > this.x && x < this.x + this.width && y > (this.y - (height * (numBoxesShown - 1))) && y < this.y + this.height){
+                float yPos = 0;
+                float nextY = 0;
+                if (drawDown){
+                    yPos = (this.y - (height * (numBoxesShown - 1)));
+                    nextY = (this.y + this.height);
+                }
+                else {
+                    yPos = this.y;
+                    nextY = (this.y + (height * (numBoxesShown)));
+                }
+                if (x > this.x && x < this.x + this.width && y > yPos && y < nextY){
                     if (Gdx.input.isButtonJustPressed(0)){
-                        int temp = numBoxesShown - (y - (this.y - (height * (numBoxesShown - 1)))) / height + startPos - 1;
+                        int temp;
+                        if (drawDown){
+                            temp = (numBoxesShown - (int) ((y - yPos) / height)) + startPos - 1;
+                        }
+                        else {
+                            temp = (numBoxesShown - (int) ((y - yPos) / height)) + startPos - 1;
+                        }
+
                         if (temp != selectedPosition){
                             selectedPosition = temp;
                             newItemSelected = true;
@@ -143,6 +178,11 @@ public class DropdownButton extends TextButton{
     public void setDropDownsForMusic(ArrayList<String> dropDowns, MyGdxGame game){
         this.dropDowns = dropDowns;
         this.selectedPosition = dropDowns.indexOf(game.songPlaying);
+    }
+
+    public void setDropDownsForFont(ArrayList<String> dropDowns){
+        this.dropDowns = dropDowns;
+        this.selectedPosition = dropDowns.indexOf(MyGdxGame.fontName);
     }
 
     public void setDropDowns(ArrayList<String> dropDowns){

@@ -13,10 +13,10 @@ import java.util.ArrayList;
 public class MyGdxGame extends Game {
 	public static Vector2 initialRes;
 
-	public static String fontName = "Comic Sans";
+	public static String fontName = "Fortnite";
 	public static String title = "mR. Wilord";
 
-	public String songPlaying = "Moving on.mp3";
+	public String songPlaying = "Moving on";
 	public boolean mute = true;
 	public boolean loop = false;
 	public float volume = 50;
@@ -36,7 +36,7 @@ public class MyGdxGame extends Game {
 		Gdx.graphics.setWindowedMode(1920, 1080); //must be 16:9 ratio
 		initialRes = new Vector2(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 
-		music = Gdx.audio.newMusic(Gdx.files.internal("Music/" + songPlaying));
+		music = Gdx.audio.newMusic(Gdx.files.internal("Music/" + songPlaying + ".mp3"));
 		music.setLooping(loop);
 		if (!mute) music.setVolume(volume / 100f);
 		else music.setVolume(0);
@@ -57,7 +57,7 @@ public class MyGdxGame extends Game {
 	public void changeSong(){
 		System.out.println("changing song to" + songPlaying +  " with mute " + mute + " and volume " + volume);
 		music.stop();
-		music = Gdx.audio.newMusic(Gdx.files.internal("Music/" + songPlaying));
+		music = Gdx.audio.newMusic(Gdx.files.internal("Music/" + songPlaying + ".mp3"));
 		music.setLooping(loop);
 		if (!mute) music.setVolume(volume / 100f);
 		else music.setVolume(0);

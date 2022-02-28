@@ -42,11 +42,13 @@ public class BoxedTextButton extends Button {
             batch.end();
 
             shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+            shapeRenderer.setProjectionMatrix(batch.getProjectionMatrix());
             shapeRenderer.setColor(color);
             shapeRenderer.rect(x, y, width, height);
             shapeRenderer.end();
 
             shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+            shapeRenderer.setProjectionMatrix(batch.getProjectionMatrix());
             if (selected) {
                 shapeRenderer.setColor(Color.BLUE);
             }

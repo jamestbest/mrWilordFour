@@ -84,6 +84,7 @@ public class LoadSaveScreen implements Screen {
         cameraTwo.update();
 
         batch.begin();
+        batch.setProjectionMatrix(cameraTwo.projViewMatrix);
         saveNameButtons.drawButtons(batch);
         batch.end();
 

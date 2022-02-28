@@ -166,6 +166,7 @@ public class GameScreen implements Screen {
     };
 
     public GameScreen(MyGdxGame game, ArrayList<Colonist> colonists, Map map) {
+        MyGdxGame.initialRes = new Vector2(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         setup();
         this.game = game;
         game.currentGameScreen = this;
@@ -179,6 +180,7 @@ public class GameScreen implements Screen {
     }
 
     public GameScreen(MyGdxGame game, String ip){
+        MyGdxGame.initialRes = new Vector2(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         setup();
         this.game = game;
         game.currentGameScreen = this;
@@ -286,8 +288,6 @@ public class GameScreen implements Screen {
             Gdx.gl.glDisable(GL30.GL_BLEND);
         }
 
-        System.out.println(paused);
-
         counter += delta * gameSpeed;
         if (counter > counterMax) {
             update();
@@ -339,7 +339,7 @@ public class GameScreen implements Screen {
                     case "OptionsButton" -> game.setScreen(new SettingsScreen(game, true));
                     case "SaveButton" -> saveGame("save12");
 //                    case "LoadButton" -> ;
-                    case "mainMenuButton" -> game.setScreen(game.mainMenu);
+                    case "MainMenuButton" -> game.setScreen(game.mainMenu);
                     case "ExitButton" -> Gdx.app.exit();
                 }
             }
@@ -426,7 +426,7 @@ public class GameScreen implements Screen {
 
     @Override
     public void resize(int width, int height) {
-
+        setupOptionsButtons();
     }
 
     @Override
@@ -664,7 +664,7 @@ public class GameScreen implements Screen {
             FileReader fr = new FileReader(file);
             BufferedReader br = new BufferedReader(fr);
             String[] save = new String[6]; //needs to be the size equal to the number of lines in the save file
-            int count = 1;
+            int count = 0;
             String temp = br.readLine();
             while (temp != null){
                 System.out.println(temp);
@@ -681,18 +681,24 @@ public class GameScreen implements Screen {
                 switch (s.split(" ")[0]) {
                     case "date:":
                         String loadedDate = s.split(" ")[1];
+                        break;
                     case "tiles:":
                         String loadedTiles = s.split(" ")[1];
                         map.tiles = RLE.decodeTiles(loadedTiles, Integer.parseInt(mapDims));
+                        break;
                     case "things:":
                         String loadedThings = s.split(" ")[1];
-                        map.things = RLE.decodeThings(loadedThings);
+                        map.things = RLE.decodeThings(loadedThings, Integer.parseInt(mapDims));
+                        break;
                     case "colonists:":
                         String loadedColonists = s.split(" ")[1];
+                        break;
                     case "mapInfo:":
                         String loadedMapInfo = s.split(" ")[1];
+                        break;
                     case "mapDims:":
                         mapDims = s.split(" ")[1];
+                        break;
                 }
             }
         }catch(Exception e){
@@ -754,6 +760,7 @@ public class GameScreen implements Screen {
         TextButton mainMenuButton = new TextButton("Main Menu", "MainMenuButton");
         TextButton exitButton = new TextButton("Exit", "ExitButton");
 
+        optionsButtons.buttons.clear();
         optionsButtons.add(exitButton, mainMenuButton, loadButton, saveButton, optionsButton, resumeButton);
         float buttonWidth = MyGdxGame.initialRes.x / 5f;
         float buttonHeight = MyGdxGame.initialRes.y / 12f;
@@ -782,13 +789,13 @@ public class GameScreen implements Screen {
         resourceButtons = new ButtonCollection();
         resourceButtons.useWorldCoords = false;
 
-        float length = Gdx.graphics.getWidth() / 50f;
-        float height = Gdx.graphics.getHeight() / 50f;
+        float length = MyGdxGame.initialRes.x / 50f;
+        float height = MyGdxGame.initialRes.y / 50f;
 
         String[] resourceNames = resources.keySet().toArray(new String[0]);
         for (int i = 0; i < resourceNames.length; i++) {
             ImgTextButton t = new ImgTextButton(resourceNames[i] + "Button", "0", resourceNames[i]);
-            t.setPos(5, (int) (Gdx.graphics.getHeight() - (height * (i + 2))));
+            t.setPos(5, (int) (MyGdxGame.initialRes.y - (height * (i + 2))));
             t.setSize((int) length, (int) height);
             resourceButtons.add(t);
         }
@@ -923,5 +930,12 @@ public class GameScreen implements Screen {
             c.timer = colonistInput.getInt("timer");
 //            c.pathToComplete = json.fromJson(ArrayList.class, Vector2.class, colonistInput.getString("pathToComplete"));
         }
+    }
+
+    public static Vector2 getMultiplierFromThings(String s){
+        return switch (s) {
+            case "tree" -> new Vector2(1,2);
+            default -> new Vector2(1,1);
+        };
     }
 }
