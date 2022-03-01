@@ -44,21 +44,14 @@ public class Noise2D {
     }
 
     public static double dotProduct(int gradVector, double x, double y){
-        Vector2 temp = new Vector2();
-        switch (gradVector % 4){
-            case 0:
-                temp = new Vector2(1,1);
-                break;
-            case 1:
-                temp = new Vector2(-1,1);
-                break;
-            case 2:
-                temp = new Vector2(1,-1);
-                break;
-            case 3:
-                temp = new Vector2(-1,-1);
-                break;
-        }
+        new Vector2();
+        Vector2 temp = switch (gradVector % 4) {
+            case 0 -> new Vector2(1, 1);
+            case 1 -> new Vector2(-1, 1);
+            case 2 -> new Vector2(1, -1);
+            case 3 -> new Vector2(-1, -1);
+            default -> new Vector2();
+        };
         return ((temp.x * x) + (temp.y * y));
     }
 

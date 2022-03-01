@@ -32,14 +32,19 @@ public class LoadSaveScreen2 implements Screen {
         @Override
         public boolean scrolled(float amountX, float amountY) {
             System.out.println(amountY);
+            System.out.println(saveNames);
             if(amountY > 0){
-                if (startIndex + numberShown < saveNames.size() - 1){
+                System.out.println("attempting to increase start index");
+                if (startIndex + numberShown < saveNames.size()){
+                    System.out.println("increasing start index");
                     startIndex++;
                     updateSaveButtons();
                 }
             }
             else if(amountY < 0){
+                System.out.println("attempting to decrease start index");
                 if (startIndex > 0){
+                    System.out.println("decreasing start index");
                     startIndex--;
                     updateSaveButtons();
                 }
@@ -119,11 +124,18 @@ public class LoadSaveScreen2 implements Screen {
         int buttonWidth = (int) (MyGdxGame.initialRes.x / 5);
         int buttonHeight = (int) (MyGdxGame.initialRes.y / 10);
 
+        int offset = 5;
+
         for (int i = startIndex; i < startIndex + numberShown; i++) {
+            String text = "";
             if (i < saveNames.size()) {
-                BoxedTextButton b = new BoxedTextButton(x, y + (buttonHeight * i) + (5 * i), buttonWidth, buttonHeight, i + "", saveNames.get(i));
-                buttonCollection.add(b);
+                text = saveNames.get(i);
             }
+            int height = (int) (MyGdxGame.initialRes.y / 10 * 8) + (offset * (numberShown / 2));
+            BoxedTextButton b = new BoxedTextButton(x, height - (buttonHeight * i) - (offset * i),
+                    buttonWidth, buttonHeight, i + "", text);
+            buttonCollection.add(b);
+
         }
     }
 
@@ -131,10 +143,12 @@ public class LoadSaveScreen2 implements Screen {
         for (int i = startIndex; i < startIndex + numberShown; i++) {
             if (i < saveNames.size()) {
                 System.out.println(i);
-                BoxedTextButton b = (BoxedTextButton) buttonCollection.buttons.get(i);
+                BoxedTextButton b = (BoxedTextButton) buttonCollection.buttons.get(i - startIndex);
                 b.setText(saveNames.get(i));
             }
         }
+        buttonCollection.setAllToUnpressed();
+        buttonCollection.setAllToUnSelected();
     }
 
     public void setupSaveNames(){
