@@ -18,7 +18,6 @@ public class Task {
     }
 
     public Vector2 getNeighbour (ArrayList<ArrayList<Tile>> tileMap, int x, int y) {
-        Vector2 output = null;
         if (x + 1 < tileMap.size()){
             if (tileMap.get(x + 1).get(y).canWalkOn) {
                 return new Vector2(x + 1, y);

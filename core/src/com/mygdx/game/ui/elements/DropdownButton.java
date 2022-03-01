@@ -114,7 +114,6 @@ public class DropdownButton extends TextButton{
     }
 
     public boolean checkIfPressed(int x, int y){
-        System.out.println(dropDowns);
         if (visible){
             if (isToggled){
                 float yPos = 0;

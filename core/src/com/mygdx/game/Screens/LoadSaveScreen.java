@@ -38,16 +38,17 @@ public class LoadSaveScreen implements Screen {
         @Override
         public boolean scrolled(float amountX, float amountY) {
             if (amountY > 0) {
-                if (startIndex + numberShown < saveNames.length) {
-                    startIndex += 1;
-                    updateSaveNameButtons();
-                }
-            }
-            else {
                 if (startIndex > 0) {
                     startIndex -= 1;
                     updateSaveNameButtons();
                 }
+            }
+            else {
+                if (startIndex + numberShown < saveNames.length) {
+                    startIndex += 1;
+                    updateSaveNameButtons();
+                }
+
             }
             return false;
         }

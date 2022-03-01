@@ -17,12 +17,10 @@ public class BoxedTextButton extends Button {
 
     ShapeRenderer shapeRenderer;
 
-    public BoxedTextButton(int x, int y, int width, int height, String Gda, String name) {
-        super(x, y, width, height, Gda, name);
-    }
-
-    public BoxedTextButton(int x, int y, int width, int height, String name) {
+    public BoxedTextButton(int x, int y, int width, int height, String name, String text) {
         super(x, y, width, height, name);
+        this.text = text;
+        setup();
     }
 
     public BoxedTextButton(String name, String text) {
@@ -35,6 +33,7 @@ public class BoxedTextButton extends Button {
         glyphLayout = new GlyphLayout();
         font = new BitmapFont(Gdx.files.internal("Fonts/" + MyGdxGame.fontName + ".fnt"));
         shapeRenderer = new ShapeRenderer();
+        glyphLayout.setText(font, text);
     }
 
     public void draw(SpriteBatch batch, int drawLayer){
@@ -59,7 +58,6 @@ public class BoxedTextButton extends Button {
             shapeRenderer.end();
 
             batch.begin();
-            glyphLayout.setText(font, text);
             font.draw(batch, glyphLayout, x + (width - glyphLayout.width) / 2, y + (height + glyphLayout.height) / 2);
         }
     }
@@ -70,5 +68,10 @@ public class BoxedTextButton extends Button {
             return true;
         }
         return false;
+    }
+
+    public void setText(String text){
+        this.text = text;
+        glyphLayout.setText(font, text);
     }
 }

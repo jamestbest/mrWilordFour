@@ -167,30 +167,33 @@ public class GameScreen implements Screen {
 
     public GameScreen(MyGdxGame game, ArrayList<Colonist> colonists, Map map) {
         MyGdxGame.initialRes = new Vector2(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        setup();
+        this.isHost = true;
+
         this.game = game;
         game.currentGameScreen = this;
-        this.isHost = true;
+
         this.map = map;
 
         Gdx.graphics.setForegroundFPS(game.fpsCap);
         Gdx.graphics.setVSync(game.vsyncEnabled);
 
         this.colonists = colonists;
+        setup();
     }
 
     public GameScreen(MyGdxGame game, String ip){
         MyGdxGame.initialRes = new Vector2(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        setup();
+        this.isHost = false;
+
         this.game = game;
         game.currentGameScreen = this;
-        this.isHost = false;
         this.isMultiplayer = true;
         connectSocket(ip);
         createSocketListeners();
 
         Gdx.graphics.setForegroundFPS(game.fpsCap);
         Gdx.graphics.setVSync(game.vsyncEnabled);
+        setup();
     }
 
     public void setup(){
@@ -897,6 +900,7 @@ public class GameScreen implements Screen {
     public void setColonistIDs(){
         for (int i = 0; i < colonists.size(); i++) {
             Colonist c = colonists.get(i);
+            System.out.println(i + " showing colonist id");
             c.colonistID = i;
         }
     }
@@ -906,6 +910,7 @@ public class GameScreen implements Screen {
         JSONObject obj = new JSONObject();
         for (Colonist c : colonists
              ) {
+            System.out.println("Colonist: " + c.colonistID + " " + c.x + " " + c.y);
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("x", c.x);
             jsonObject.put("y", c.y);

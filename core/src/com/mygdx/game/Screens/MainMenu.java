@@ -97,7 +97,8 @@ public class MainMenu implements Screen {
 //                    playGif = true;
 //                }
 //            }
-            game.setScreen(new LoadSaveScreen(game));
+//            game.setScreen(new LoadSaveScreen(game));
+            game.setScreen(new LoadSaveScreen2(game));
         }
         if (table.buttonCollection.lastPressedButtonName.equals(JoinGame.name)){
             if (!Gdx.input.isButtonPressed(0)) {
@@ -148,7 +149,7 @@ public class MainMenu implements Screen {
         Settings = new TextButton(0,0,10,10,"Settings", "Settings");
         Exit = new TextButton(0,0,10,10,"Exit", "Exit");
 
-        title = new Label(0,0,100,50,"Title", "mR. Wilord");
+        title = new Label(0,0,100,50,"Title", MyGdxGame.title);
         title.centre((int) (MyGdxGame.initialRes.y / 10 * 3));
         title.setFontColor(Color.BLUE);
         title.setFontScale(2f);
