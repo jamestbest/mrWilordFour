@@ -11,6 +11,7 @@ import com.mygdx.game.Screens.SettingsScreen;
 import java.util.ArrayList;
 
 public class MyGdxGame extends Game {
+	//need to add a goal to the game, giving it an end game and goal
 	public static Vector2 initialRes;
 
 	public static String fontName = "Fortnite";

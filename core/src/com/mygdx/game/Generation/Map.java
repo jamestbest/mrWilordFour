@@ -87,7 +87,6 @@ public class Map {
                     tile.canWalkOn = false;
                     tiles.get(i).set(j, tile);
                 }
-
             }
         }
     }

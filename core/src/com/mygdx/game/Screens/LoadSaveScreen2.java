@@ -1,8 +1,10 @@
 package com.mygdx.game.Screens;
 
-import com.badlogic.gdx.*;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.mygdx.game.Game.CameraTwo;
 import com.mygdx.game.Game.MyGdxGame;
@@ -12,7 +14,6 @@ import com.mygdx.game.ui.extensions.ButtonCollection;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Enumeration;
 import java.util.Objects;
 
 public class LoadSaveScreen2 implements Screen {
@@ -28,6 +29,8 @@ public class LoadSaveScreen2 implements Screen {
     int startIndex = 0;
     int numberShown = 8;
 
+    int selectedIndex = 0;
+
     InputProcessor inputProcessor = new InputAdapter(){
         @Override
         public boolean scrolled(float amountX, float amountY) {
@@ -39,6 +42,7 @@ public class LoadSaveScreen2 implements Screen {
                     System.out.println("increasing start index");
                     startIndex++;
                     updateSaveButtons();
+//                    updateSelected(true);
                 }
             }
             else if(amountY < 0){
@@ -47,6 +51,7 @@ public class LoadSaveScreen2 implements Screen {
                     System.out.println("decreasing start index");
                     startIndex--;
                     updateSaveButtons();
+//                    updateSelected(false);
                 }
             }
             return false;
@@ -116,8 +121,6 @@ public class LoadSaveScreen2 implements Screen {
     }
 
     public void setupAllSaveButtons(){
-
-
         int x = (int) (MyGdxGame.initialRes.x / 10);
         int y = (int) (MyGdxGame.initialRes.y / 10);
 
@@ -147,9 +150,38 @@ public class LoadSaveScreen2 implements Screen {
                 b.setText(saveNames.get(i));
             }
         }
-        buttonCollection.setAllToUnpressed();
-        buttonCollection.setAllToUnSelected();
+//        buttonCollection.setAllToUnpressed();
+//        buttonCollection.setAllToUnSelected();
     }
+
+//    public void updateSelected(boolean movedUp){
+//        if (movedUp){
+//            for (int i = 0; i < buttonCollection.buttons.size(); i++) {
+//                BoxedTextButton b = (BoxedTextButton) buttonCollection.buttons.get(i);
+//                if (b.selected){
+//                    b.selected = (false);
+//                    if (i > 0){
+//                        BoxedTextButton b2 = (BoxedTextButton) buttonCollection.buttons.get(i - 1);
+//                        b2.selected = (true);
+//                        break;
+//                    }
+//                }
+//            }
+//        }
+//        else{
+//            for (int i = buttonCollection.buttons.size() - 1; i >= 0; i--) {
+//                BoxedTextButton b = (BoxedTextButton) buttonCollection.buttons.get(i);
+//                if (b.selected){
+//                    b.selected = (false);
+//                    if (i < buttonCollection.buttons.size() - 1){
+//                        BoxedTextButton b2 = (BoxedTextButton) buttonCollection.buttons.get(i + 1);
+//                        b2.selected = (true);
+//                        break;
+//                    }
+//                }
+//            }
+//        }
+//    }
 
     public void setupSaveNames(){
         saveNames = new ArrayList<String>();
