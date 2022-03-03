@@ -8,9 +8,14 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Json;
 import com.mygdx.game.AStar.AStar;
 import com.mygdx.game.Game.CameraTwo;
+import com.mygdx.game.Game.Colonist;
 import com.mygdx.game.Math.Math;
+import com.mygdx.game.Saving.RLE;
 import com.mygdx.game.Screens.GameScreen;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -25,13 +30,15 @@ public class Map {
     int x;
     int y;
 
-    int drawHeight;
+    public int drawHeight;
 
     public MapSettings settings;
 
     ArrayList<Vector2> riverLocs;
 
     public static HashMap<String, TileInformation> tileInformationHashMap;
+
+    static Json json = new Json();
 
     public Map(MapSettings settings){
         this.settings = settings;
@@ -306,5 +313,58 @@ public class Map {
             }
         }
         tiles = tempArray;
+    }
+
+    public static boolean loadMap(String saveName, Map map, ArrayList<Colonist> colonists){
+        try{
+            File file = new File("core/assets/Saves/" + saveName + "/save.sve");
+            FileReader fr = new FileReader(file);
+            BufferedReader br = new BufferedReader(fr);
+            String[] save = new String[6]; //needs to be the size equal to the number of lines in the save file
+            int count = 0;
+            String temp = br.readLine();
+            while (temp != null){
+                System.out.println(temp);
+                save[count] = temp;
+                count ++;
+                temp = br.readLine();
+            }
+            br.close();
+            System.out.println(Arrays.toString(save));
+
+            String mapDims = "250";
+
+            for (String s : save) {
+                switch (s.split(" ")[0]) {
+                    case "date:":
+                        String loadedDate = s.split(" ")[1];
+                        break;
+                    case "tiles:":
+                        String loadedTiles = s.split(" ")[1];
+                        map.tiles = RLE.decodeTiles(loadedTiles, Integer.parseInt(mapDims));
+                        break;
+                    case "things:":
+                        String loadedThings = s.split(" ")[1];
+                        map.things = RLE.decodeThings(loadedThings, Integer.parseInt(mapDims));
+                        break;
+                    case "colonists:":
+                        String loadedColonists = s.split(": ")[1];
+                        System.out.println("showing the colonists' json: " + loadedColonists);
+                        colonists = json.fromJson(ArrayList.class, Colonist.class, loadedColonists);
+                        break;
+                    case "mapInfo:":
+                        String loadedMapInfo = s.split(" ")[1];
+                        break;
+                    case "mapDims:":
+                        mapDims = s.split(" ")[1];
+                        GameScreen.TILES_ON_X = Integer.parseInt(mapDims);
+                        break;
+                }
+            }
+            return true;
+        }catch(Exception e){
+            System.out.println("Error loading map");
+            return false;
+        }
     }
 }

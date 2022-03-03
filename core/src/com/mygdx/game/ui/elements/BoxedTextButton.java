@@ -9,7 +9,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.mygdx.game.Game.MyGdxGame;
 
 public class BoxedTextButton extends Button {
-    String text;
+    public String text;
     GlyphLayout glyphLayout;
     BitmapFont font;
 

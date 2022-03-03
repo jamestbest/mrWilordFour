@@ -73,6 +73,7 @@ public class RLE {
     }
 
     public static String encodeThings(Map map){
+        setThingNameCode();
         String lastType = "";
         int count = 0;
         StringBuilder output = new StringBuilder();

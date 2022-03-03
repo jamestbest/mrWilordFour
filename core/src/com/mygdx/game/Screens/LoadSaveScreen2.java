@@ -5,15 +5,23 @@ import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.mygdx.game.Game.CameraTwo;
+import com.mygdx.game.Game.Colonist;
 import com.mygdx.game.Game.MyGdxGame;
+import com.mygdx.game.Generation.Map;
+import com.mygdx.game.Generation.MapSettings;
 import com.mygdx.game.ui.elements.BoxedTextButton;
+import com.mygdx.game.ui.elements.Button;
+import com.mygdx.game.ui.elements.TextButton;
 import com.mygdx.game.ui.extensions.ButtonCollection;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Objects;
 
 public class LoadSaveScreen2 implements Screen {
@@ -21,7 +29,8 @@ public class LoadSaveScreen2 implements Screen {
 
     ArrayList<String> saveNames;
 
-    ButtonCollection buttonCollection;
+    ButtonCollection buttonCollectionForSaves;
+    ButtonCollection buttonCollectionForUI;
     CameraTwo camera;
 
     SpriteBatch batch;
@@ -30,6 +39,15 @@ public class LoadSaveScreen2 implements Screen {
     int numberShown = 8;
 
     int selectedIndex = 0;
+
+    int offset = 5;
+
+    boolean hasLoadedAMap;
+
+    ArrayList<Colonist> colonists;
+    Map map;
+    HashMap<String, Texture> textures;
+    HashMap<String, TextureAtlas> thingTextures;
 
     InputProcessor inputProcessor = new InputAdapter(){
         @Override
@@ -66,9 +84,12 @@ public class LoadSaveScreen2 implements Screen {
     public void setup(){
         batch = new SpriteBatch();
         camera = new CameraTwo();
-        buttonCollection = new ButtonCollection();
+        buttonCollectionForSaves = new ButtonCollection();
+        buttonCollectionForUI = new ButtonCollection();
         setupSaveNames();
         setupAllSaveButtons();
+        setupUI();
+        setupMap();
 
         Gdx.input.setInputProcessor(inputProcessor);
     }
@@ -87,11 +108,26 @@ public class LoadSaveScreen2 implements Screen {
 
         batch.begin();
         batch.setProjectionMatrix(camera.projViewMatrix);
-        buttonCollection.drawButtons(batch);
+        buttonCollectionForSaves.drawButtons(batch);
+        buttonCollectionForUI.drawButtons(batch);
+
+        map.drawMiniMap(batch, textures, thingTextures);
         batch.end();
 
         if (Gdx.input.isButtonPressed(0)) {
-            buttonCollection.updateButtons(camera);
+            buttonCollectionForSaves.updateButtons(camera);
+            buttonCollectionForUI.updateButtons(camera);
+
+            if (Gdx.input.isButtonJustPressed(0)){
+                if (buttonCollectionForUI.pressedButtonName.equals("loadButton")){
+                    hasLoadedAMap = loadMap();
+                }
+                else if (buttonCollectionForUI.pressedButtonName.equals("continueButton")){
+                    if (hasLoadedAMap){
+                        game.setScreen(new GameScreen(game, colonists, map));
+                    }
+                }
+            }
         }
     }
 
@@ -127,8 +163,6 @@ public class LoadSaveScreen2 implements Screen {
         int buttonWidth = (int) (MyGdxGame.initialRes.x / 5);
         int buttonHeight = (int) (MyGdxGame.initialRes.y / 10);
 
-        int offset = 5;
-
         for (int i = startIndex; i < startIndex + numberShown; i++) {
             String text = "";
             if (i < saveNames.size()) {
@@ -137,7 +171,7 @@ public class LoadSaveScreen2 implements Screen {
             int height = (int) (MyGdxGame.initialRes.y / 10 * 8) + (offset * (numberShown / 2));
             BoxedTextButton b = new BoxedTextButton(x, height - (buttonHeight * i) - (offset * i),
                     buttonWidth, buttonHeight, i + "", text);
-            buttonCollection.add(b);
+            buttonCollectionForSaves.add(b);
 
         }
     }
@@ -146,7 +180,7 @@ public class LoadSaveScreen2 implements Screen {
         for (int i = startIndex; i < startIndex + numberShown; i++) {
             if (i < saveNames.size()) {
                 System.out.println(i);
-                BoxedTextButton b = (BoxedTextButton) buttonCollection.buttons.get(i - startIndex);
+                BoxedTextButton b = (BoxedTextButton) buttonCollectionForSaves.buttons.get(i - startIndex);
                 b.setText(saveNames.get(i));
             }
         }
@@ -187,5 +221,54 @@ public class LoadSaveScreen2 implements Screen {
         saveNames = new ArrayList<String>();
         File dir = new File("core/assets/Saves");
         saveNames.addAll(Arrays.asList(Objects.requireNonNull(dir.list())));
+    }
+
+    public void setupUI(){
+        TextButton loadButton = new TextButton("Load", "loadButton");
+        TextButton continueButton = new TextButton("Continue", "continueButton");
+
+        loadButton.setSize(MyGdxGame.initialRes.x / 10f * 2, MyGdxGame.initialRes.y / 10f);
+        continueButton.setSize(MyGdxGame.initialRes.x / 10f * 2, MyGdxGame.initialRes.y / 10f);
+
+        float y = (MyGdxGame.initialRes.y / 10 * 8) + (offset * (numberShown / 2f))
+                - ((MyGdxGame.initialRes.y / 10) * (numberShown - 1)) - (offset * numberShown);
+
+        loadButton.setPos(MyGdxGame.initialRes.x / 2 - (loadButton.width * 0.85f), y);
+        continueButton.setPos(MyGdxGame.initialRes.x - MyGdxGame.initialRes.y * 0.1f - continueButton.width
+                , y);
+
+        buttonCollectionForUI.add(loadButton, continueButton);
+    }
+
+    public void setupMap(){
+        map = new Map((int) (MyGdxGame.initialRes.y / 10 * 7),
+                (int) (MyGdxGame.initialRes.x - MyGdxGame.initialRes.y / 10 * 8),
+                (int) (MyGdxGame.initialRes.y / 10 * 2f), "sed");
+        map.generateBlank();
+        setupMapResources();
+    }
+
+    public void setupMapResources(){
+        textures = new HashMap<>();
+        thingTextures = new HashMap<>();
+        GameScreen.getAllMapTextures(textures, thingTextures);
+    }
+
+    public boolean loadMap(){
+        Button b = getSelectedButton();
+        if (b != null){
+            BoxedTextButton b2 = (BoxedTextButton) b;
+            return Map.loadMap(b2.text, map, colonists);
+        }
+        return false;
+    }
+
+    public Button getSelectedButton(){
+        for (Button b : buttonCollectionForSaves.buttons) {
+            if (b.selected){
+                return b;
+            }
+        }
+        return null;
     }
 }
