@@ -1,9 +1,6 @@
 package com.mygdx.game.Screens;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.*;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -38,6 +35,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Scanner;
+
+import static com.badlogic.gdx.Graphics.GraphicsType.LWJGL;
 
 public class GameScreen implements Screen {
     public static int TILES_ON_X = 250;
@@ -95,6 +94,10 @@ public class GameScreen implements Screen {
 
     Vector2 minSelecting = new Vector2(0, 0);
     Vector2 maxSelecting = new Vector2(0, 0);
+
+    Thread socketThread;
+    Thread renderThread;
+    Thread updateThread;
 
     InputProcessor gameInputProcessor = new InputProcessor() {
         @Override
@@ -227,6 +230,8 @@ public class GameScreen implements Screen {
         camera = new CameraTwo();
         camera.setMinMax(new Vector2(0,0), new Vector2(GameScreen.TILES_ON_X * TILE_DIMS, GameScreen.TILES_ON_X * TILE_DIMS));
 
+        setupThreads();
+
         Gdx.input.setInputProcessor(gameInputProcessor);
     }
 
@@ -291,14 +296,7 @@ public class GameScreen implements Screen {
             Gdx.gl.glDisable(GL30.GL_BLEND);
         }
 
-        counter += delta * gameSpeed;
-        if (counter > counterMax) {
-            update();
-            counter = 0f;
-        }
-        if (counter > counterMax / 2) {
-            updateDouble();
-        }
+
 
         Gdx.graphics.setTitle(MyGdxGame.title + "     FPS: " + (Gdx.graphics.getFramesPerSecond()));
 
@@ -399,21 +397,12 @@ public class GameScreen implements Screen {
     public void update(){ //happens at a rate determined by the gameSpeed
         moveColonists();
         if (isHost && isMultiplayer){
-//            socket.emit("updateColonists");
             try {
                 sendColonistMovement();
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
-
-        batch.begin();
-
-        batch.end();
-    }
-
-    public void updateDouble(){
-
     }
 
     public void setPause(boolean pause){
@@ -897,5 +886,34 @@ public class GameScreen implements Screen {
             case "tree" -> new Vector2(1,2);
             default -> new Vector2(1,1);
         };
+    }
+
+    public void setupThreads(){
+        renderThread = new Thread(() -> {
+            while (true) {
+
+            }
+        });
+
+        updateThread = new Thread(() -> {
+            while (true) {
+                float delta = Gdx.graphics.getDeltaTime();
+                counter += delta * gameSpeed;
+                if (counter > counterMax) {
+                    update();
+                    counter = 0f;
+                }
+            }
+        });
+
+        socketThread = new Thread(() -> {
+            while (true) {
+
+            }
+        });
+
+//        renderThread.start();
+        updateThread.start();
+//        socketThread.start();
     }
 }

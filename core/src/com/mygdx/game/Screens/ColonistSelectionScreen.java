@@ -24,6 +24,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.Scanner;
 
 import static com.badlogic.gdx.math.MathUtils.random;
 
@@ -36,6 +37,7 @@ public class ColonistSelectionScreen implements Screen {
 
     int numberOfColonistsToSelectFrom = 10;
     int numberOfColonistsToSelect = 3;
+    boolean ignoreSelectedRequirement = false;
 
     int selectedIndex = numberOfColonistsToSelectFrom - 1;
 
@@ -131,6 +133,14 @@ public class ColonistSelectionScreen implements Screen {
 
         if (Gdx.input.isButtonPressed(0)){
             buttonCollection.updateButtons(camera);
+        }
+
+        if (Gdx.input.isKeyPressed(Input.Keys.C)){
+            setupLoadsOfColonists();
+        }
+
+        if (Gdx.input.isKeyPressed(Input.Keys.ESCAPE)){
+            game.setScreen(game.mainMenu);
         }
 
         continueButton.setText("Continue " + colonistsSelected.size() + "/" + numberOfColonistsToSelect);
@@ -274,7 +284,7 @@ public class ColonistSelectionScreen implements Screen {
                 addToColonistsSelected();
             }
             if (buttonCollection.pressedButtonName.equals("continueButton")){
-                if (colonistsSelected.size() == numberOfColonistsToSelect){
+                if (colonistsSelected.size() == numberOfColonistsToSelect || ignoreSelectedRequirement){
                     game.setScreen(new GameScreen(game, colonistsSelected, map));
                 }
             }
@@ -351,6 +361,16 @@ public class ColonistSelectionScreen implements Screen {
         }
 
         batch.end();
+    }
+
+    public void setupLoadsOfColonists(){
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("How many colonists do you want to generate?");
+        numberOfColonistsToSelect = scanner.nextInt();
+        for (int i = 0; i < numberOfColonistsToSelect; i++){
+            colonistsSelected.add(generateColonist());
+        }
+        ignoreSelectedRequirement = true;
     }
 
     public void setupColonistClothes(){

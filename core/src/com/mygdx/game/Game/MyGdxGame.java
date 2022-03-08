@@ -48,6 +48,7 @@ public class MyGdxGame extends Game {
 		Gdx.graphics.setTitle(title);
 
 		setScreen(this.mainMenu);
+		// owen woz ere
 	}
 	
 	@Override
