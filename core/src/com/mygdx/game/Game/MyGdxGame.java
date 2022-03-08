@@ -15,7 +15,7 @@ public class MyGdxGame extends Game {
 	public static Vector2 initialRes;
 
 	public static String fontName = "Fortnite";
-	public static String title = "mR. Wilord";
+	public static String title = "mR. Wilord owen woz ere";
 
 	public String songPlaying = "Moving on";
 	public boolean mute = true;

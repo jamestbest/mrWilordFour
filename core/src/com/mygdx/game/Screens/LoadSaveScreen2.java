@@ -1,9 +1,6 @@
 package com.mygdx.game.Screens;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputAdapter;
-import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -44,7 +41,7 @@ public class LoadSaveScreen2 implements Screen {
 
     boolean hasLoadedAMap;
 
-    ArrayList<Colonist> colonists;
+    ArrayList<Colonist> colonists = new ArrayList<>();
     Map map;
     HashMap<String, Texture> textures;
     HashMap<String, TextureAtlas> thingTextures;
@@ -129,6 +126,10 @@ public class LoadSaveScreen2 implements Screen {
                 }
             }
         }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
+            game.setScreen(game.mainMenu);
+        }
     }
 
     @Override
@@ -174,6 +175,7 @@ public class LoadSaveScreen2 implements Screen {
             buttonCollectionForSaves.add(b);
 
         }
+        //No one can grow if he does not accept his smallness
     }
 
     public void updateSaveButtons(){
