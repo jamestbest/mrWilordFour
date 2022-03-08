@@ -16,12 +16,14 @@ public class Slider extends TextButton{
     public Slider(int x, int y, int width, int height, String Gda, String name) {
         super(x, y, width, height, "", Gda, name);
         shapeRenderer = new ShapeRenderer();
+        wantsSingleCheck = false;
     }
 
     public Slider(int x, int y, int width, int height, String name) {
         super(x, y, width, height, "", name);
         shapeRenderer = new ShapeRenderer();
         value = minValue;
+        wantsSingleCheck = false;
     }
 
     public Slider(int x, int y, int width, int height, String name, float maxValue, float minValue, float step) {
@@ -29,6 +31,7 @@ public class Slider extends TextButton{
         this.maxValue = maxValue;
         this.minValue = minValue;
         this.step = step;
+        wantsSingleCheck = false;
     }
 
     public void draw(SpriteBatch batch, int drawLayer){
@@ -48,7 +51,7 @@ public class Slider extends TextButton{
         }
     }
 
-    public boolean checkIfPressed(int x, int y){
+    public boolean checkIfPressed(int x, int y, boolean firstCheck){
         if(x > this.x - width && x < this.x + this.width && y > this.y && y < this.y + this.height){
             value = (x - this.x) / (float)width * maxValue;
             if (value < minValue) value = minValue;

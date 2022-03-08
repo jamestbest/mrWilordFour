@@ -41,9 +41,9 @@ public class ToggleButton extends Button{
         }
     }
 
-    public boolean checkIfPressed(int x, int y){
+    public boolean checkIfPressed(int x, int y, boolean firstCheck){
         if (Gdx.input.isButtonJustPressed(0)){
-            if (super.checkIfPressed(x, y)){
+            if (super.checkIfPressed(x, y, firstCheck)){
                 toggled = !toggled;
                 return true;
             }

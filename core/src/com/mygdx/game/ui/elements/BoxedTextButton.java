@@ -62,7 +62,7 @@ public class BoxedTextButton extends Button {
         }
     }
 
-    public boolean checkIfPressed(int x, int y){
+    public boolean checkIfPressed(int x, int y, boolean firstCheck){
         if (x > this.x && x < this.x + this.width && y > this.y && y < this.y + this.height) {
             pressed = true;
             return true;

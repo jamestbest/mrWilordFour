@@ -69,6 +69,8 @@ public class GameScreen implements Screen {
 
     float counter = 0f;
     float counterMax = 1f;
+    float delta = 0f;
+    boolean allowUpdate = true;
 
     public static float gameSpeed = 2f; //game speed
     public float lastGameSpeed = gameSpeed;
@@ -85,6 +87,7 @@ public class GameScreen implements Screen {
     String taskTypeSelected = "Mine";
 
     boolean cancelSelection;
+    boolean drawColonistPath;
 
     boolean paused;
 
@@ -94,10 +97,6 @@ public class GameScreen implements Screen {
 
     Vector2 minSelecting = new Vector2(0, 0);
     Vector2 maxSelecting = new Vector2(0, 0);
-
-    Thread socketThread;
-    Thread renderThread;
-    Thread updateThread;
 
     InputProcessor gameInputProcessor = new InputProcessor() {
         @Override
@@ -230,7 +229,6 @@ public class GameScreen implements Screen {
         camera = new CameraTwo();
         camera.setMinMax(new Vector2(0,0), new Vector2(GameScreen.TILES_ON_X * TILE_DIMS, GameScreen.TILES_ON_X * TILE_DIMS));
 
-        setupThreads();
 
         Gdx.input.setInputProcessor(gameInputProcessor);
     }
@@ -245,6 +243,10 @@ public class GameScreen implements Screen {
         Gdx.gl.glClearColor(1, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+        this.delta += Gdx.graphics.getDeltaTime();
+
+//        System.out.println(updateThread.getState());
+
         camera.allowMovement = !paused;
 
         camera.update();
@@ -254,6 +256,7 @@ public class GameScreen implements Screen {
         batch.setProjectionMatrix(camera.projViewMatrix);
         map.drawMap(batch, tileTextures, camera);
 
+        allowUpdate = true;
         drawAllColonists(batch);
 
         map.drawThings(batch, thingTextures, camera);
@@ -261,6 +264,8 @@ public class GameScreen implements Screen {
         drawTaskType(batch);
 
         batch.end();
+
+        drawColonistsPath(shapeRenderer);
 
         batchWithNoProj.begin();
 //        batchWithNoProj.setProjectionMatrix(camera.projViewMatrix);
@@ -278,31 +283,23 @@ public class GameScreen implements Screen {
             shapeRendererWithNoProj.end();
             Gdx.gl.glDisable(GL30.GL_BLEND);
         }
+
+        counter += delta * gameSpeed;
+        if (counter > counterMax) {
+            update();
+            counter = 0f;
+        }
+
         batchWithNoProj.begin();
 
         optionsButtons.drawButtons(batchWithNoProj);
         batchWithNoProj.end();
 
-        if (!paused) {
-            Gdx.gl.glEnable(GL30.GL_BLEND);
-            Gdx.gl.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
-            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-            shapeRenderer.setProjectionMatrix(camera.projViewMatrix);
-            shapeRenderer.setColor(0, 0, 1, 0.5f);
-            for (Colonist colonist : colonists) {
-                colonist.drawPathOutline(shapeRenderer);
-            }
-            shapeRenderer.end();
-            Gdx.gl.glDisable(GL30.GL_BLEND);
-        }
-
-
-
         Gdx.graphics.setTitle(MyGdxGame.title + "     FPS: " + (Gdx.graphics.getFramesPerSecond()));
 
         if (Gdx.input.isButtonPressed(0)) {
             if (!paused){
-                if (!(bottomBarButtons.updateButtons(camera) || ordersButtons.updateButtons(camera))){
+                if (!(bottomBarButtons.updateButtons(camera, Gdx.input.isButtonJustPressed(0)) || ordersButtons.updateButtons(camera, Gdx.input.isButtonJustPressed(0)))){
                     drawSelectionScreen(shapeRenderer, camera);
                 }
                 else {
@@ -310,19 +307,19 @@ public class GameScreen implements Screen {
                 }
             }
             else {
-                optionsButtons.updateButtons(camera);
+                optionsButtons.updateButtons(camera, Gdx.input.isButtonJustPressed(0));
             }
         }
 
         if (Gdx.input.isButtonJustPressed(0)){
             if (!paused) {
-                if (bottomBarButtons.updateButtons(camera)) {
+                if (bottomBarButtons.updateButtons(camera, Gdx.input.isButtonJustPressed(0))) {
                     if (bottomBarButtons.pressedButtonName.equals("OrdersButton")) {
                         ordersButtons.showButtons = !ordersButtons.showButtons;
                     }
                 }
 
-                if (ordersButtons.updateButtons(camera)) {
+                if (ordersButtons.updateButtons(camera, Gdx.input.isButtonJustPressed(0))) {
                     switch (ordersButtons.pressedButtonName) {
                         case "MineButton" -> taskTypeSelected = "Mine";
                         case "CutDownButton" -> taskTypeSelected = "CutDown";
@@ -331,7 +328,7 @@ public class GameScreen implements Screen {
                     }
                 }
             }
-            if (optionsButtons.updateButtons(camera)){
+            if (optionsButtons.updateButtons(camera, Gdx.input.isButtonJustPressed(0))){
                 switch (optionsButtons.pressedButtonName) {
                     case "ResumeButton" -> {
                         optionsButtons.showButtons = false;
@@ -354,6 +351,10 @@ public class GameScreen implements Screen {
             if (map.isWithinBounds(x, y)) {
                 colonists.get(0).setMoveToPos(x,y, map);
             }
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.O)) {
+            drawColonistPath = !drawColonistPath;
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
@@ -386,6 +387,14 @@ public class GameScreen implements Screen {
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.T)){
             System.out.println(colonists.get(0).getNextTask(map.tiles));
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.N)){
+            gameSpeed = 2;
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.B)){
+            gameSpeed = 0;
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
@@ -888,32 +897,18 @@ public class GameScreen implements Screen {
         };
     }
 
-    public void setupThreads(){
-        renderThread = new Thread(() -> {
-            while (true) {
-
+    public void drawColonistsPath(ShapeRenderer shapeRenderer){
+        if (!paused && drawColonistPath) {
+            Gdx.gl.glEnable(GL30.GL_BLEND);
+            Gdx.gl.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+            shapeRenderer.setProjectionMatrix(camera.projViewMatrix);
+            shapeRenderer.setColor(0, 0, 1, 0.5f);
+            for (Colonist colonist : colonists) {
+                colonist.drawPathOutline(shapeRenderer);
             }
-        });
-
-        updateThread = new Thread(() -> {
-            while (true) {
-                float delta = Gdx.graphics.getDeltaTime();
-                counter += delta * gameSpeed;
-                if (counter > counterMax) {
-                    update();
-                    counter = 0f;
-                }
-            }
-        });
-
-        socketThread = new Thread(() -> {
-            while (true) {
-
-            }
-        });
-
-//        renderThread.start();
-        updateThread.start();
-//        socketThread.start();
+            shapeRenderer.end();
+            Gdx.gl.glDisable(GL30.GL_BLEND);
+        }
     }
 }

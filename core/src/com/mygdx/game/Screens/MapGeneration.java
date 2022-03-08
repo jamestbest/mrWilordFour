@@ -159,7 +159,7 @@ public class MapGeneration implements Screen {
         if (Gdx.input.isButtonPressed(0)){
             labelTable.update(camera);
             buttonTable.update(camera);
-            extraUI.updateButtons(camera);
+            extraUI.updateButtons(camera, Gdx.input.isButtonJustPressed(0));
         }
 
         if (buttonTable.buttonCollection.pressedButtonName.equals("RefreshButton") && Gdx.input.isButtonJustPressed(0)){

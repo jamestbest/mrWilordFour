@@ -30,8 +30,8 @@ public class NumberInputWithSides extends NumberInput{
         }
     }
 
-    public boolean checkIfPressed(int x, int y){
-        if (super.checkIfPressed(x, y)){
+    public boolean checkIfPressed(int x, int y, boolean firstCheck){
+        if (super.checkIfPressed(x, y, firstCheck)){
             typing = true;
             pressed = true;
             return true;

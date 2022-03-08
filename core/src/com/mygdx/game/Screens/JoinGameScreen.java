@@ -102,7 +102,7 @@ public class JoinGameScreen implements Screen {
         batch.end();
 
         if(Gdx.input.isButtonPressed(0)){
-            buttonCollection.updateButtons(cameraTwo);
+            buttonCollection.updateButtons(cameraTwo, Gdx.input.isButtonJustPressed(0));
 
             if(buttonCollection.pressedButtonName.equals("joinGameButton")){
                 myGdxGame.setScreen(new GameScreen(myGdxGame, ipInputButton.text));

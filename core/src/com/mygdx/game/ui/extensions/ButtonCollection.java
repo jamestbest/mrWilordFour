@@ -18,7 +18,8 @@ public class ButtonCollection {
 
     public boolean showButtons = true;
     public boolean useWorldCoords = true;
-    public boolean followCamera = false;
+
+    public boolean firstCheck;
 
     public ButtonCollection() {
         buttons = new ArrayList<>();
@@ -39,7 +40,7 @@ public class ButtonCollection {
         setAllToUnpressed();
     }
 
-    public boolean updateButtons(CameraTwo camera){
+    public boolean updateButtons(CameraTwo camera, boolean firstCheck){
         if (showButtons) {
             int x = Gdx.input.getX();
             int y = Gdx.input.getY();
@@ -51,15 +52,31 @@ public class ButtonCollection {
             else {
                 y = Gdx.graphics.getHeight() - y;
             }
-            for (Button button : buttons) {
-                if (button.checkIfPressed(x, y)) {
-                    setAllToUnSelected();
-                    button.selected = true;
-                    pressedButtonName = button.name;
-                    lastPressedButtonName = button.name;
-                    return true;
+            for (int i = 2; i > -1; i--) {
+                for (Button button : buttons) {
+                    if (button.pressedLayer == i) {
+                        if (firstCheck && button.wantsSingleCheck) {
+                            if (button.checkIfPressed(x, y, firstCheck)) {
+                                setAllToUnSelected(button);
+                                button.selected = true;
+                                pressedButtonName = button.name;
+                                lastPressedButtonName = button.name;
+                                return true;
+                            }
+                        }
+                        else if (!button.wantsSingleCheck){
+                            if (button.checkIfPressed(x, y, firstCheck)) {
+                                setAllToUnSelected(button);
+                                button.selected = true;
+                                pressedButtonName = button.name;
+                                lastPressedButtonName = button.name;
+                                return true;
+                            }
+                        }
+                    }
                 }
             }
+
         }
         return false;
     }
@@ -71,9 +88,11 @@ public class ButtonCollection {
         }
     }
 
-    public void setAllToUnSelected(){
+    public void setAllToUnSelected(Button b){
         for (Button button : buttons) {
-            button.selected = false;
+            if (button != b) {
+                button.setSelected(false);
+            }
         }
     }
 }

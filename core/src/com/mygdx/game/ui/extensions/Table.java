@@ -1,5 +1,6 @@
 package com.mygdx.game.ui.extensions;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.mygdx.game.Game.CameraTwo;
@@ -40,8 +41,8 @@ public class Table {
         buttonCollection.drawButtons(batch);
     }
 
-    public void update(CameraTwo camera) {
-        buttonCollection.updateButtons(camera);
+    public boolean update(CameraTwo camera) {
+        return buttonCollection.updateButtons(camera, Gdx.input.isButtonJustPressed(0));
     }
 
     public void add(Button... button) {

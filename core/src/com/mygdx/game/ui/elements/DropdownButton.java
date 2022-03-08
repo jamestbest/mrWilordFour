@@ -5,6 +5,7 @@ import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.mygdx.game.Game.MyGdxGame;
 
@@ -43,6 +44,8 @@ public class DropdownButton extends TextButton{
 
     public boolean newItemSelected;
 
+    public boolean isForFont;
+
     InputProcessor inputProcessor = new InputAdapter() {
         @Override
         public boolean scrolled(float amountX, float amountY) {
@@ -65,6 +68,9 @@ public class DropdownButton extends TextButton{
     public void draw(SpriteBatch batch, int drawLayer){
         newItemSelected = false;
         if (drawLayer == this.drawLayer){
+            if (isToggled){
+
+            }
             setHoverPos();
             if (isToggled){
                 for (int i = startPos; i < endPos; i++){
@@ -84,6 +90,12 @@ public class DropdownButton extends TextButton{
                             batch.draw(unpressedTexture, x, y + (((i - startPos)) * height), width, height);
                         }
                     }
+
+                    if (isForFont){
+                        String text = dropDowns.get(i);
+                        font = new BitmapFont(Gdx.files.internal("Fonts/" + text + ".fnt"));
+                    }
+
                     glyphLayout.setText(font, dropDowns.get(i));
                     int xPos = (int) (x + (width / 2) - (glyphLayout.width / 2));
                     int yPos = 0;
@@ -98,6 +110,11 @@ public class DropdownButton extends TextButton{
             }
             else {
                 batch.draw(unpressedTexture, x, y, width, height);
+
+                if (isForFont){
+                    String text = dropDowns.get(selectedPosition);
+                    font = new BitmapFont(Gdx.files.internal("Fonts/" + text + ".fnt"));
+                }
                 glyphLayout.setText(font, dropDowns.get(selectedPosition));
                 int xPos = (int) (x + (width / 2) - (glyphLayout.width / 2));
                 int yPos = (int) ((y + (height / 2)) + glyphLayout.height / 2f);
@@ -113,11 +130,11 @@ public class DropdownButton extends TextButton{
         dropDowns = new ArrayList<>();
     }
 
-    public boolean checkIfPressed(int x, int y){
+    public boolean checkIfPressed(int x, int y, boolean firstCheck){
         if (visible){
             if (isToggled){
-                float yPos = 0;
-                float nextY = 0;
+                float yPos;
+                float nextY;
                 if (drawDown){
                     yPos = (this.y - (height * (numBoxesShown - 1)));
                     nextY = (this.y + this.height);
@@ -133,7 +150,7 @@ public class DropdownButton extends TextButton{
                             temp = (numBoxesShown - (int) ((y - yPos) / height)) + startPos - 1;
                         }
                         else {
-                            temp = (numBoxesShown - (int) ((y - yPos) / height)) + startPos - 1;
+                            temp = (y - this.y) / height + startPos;
                         }
 
                         if (temp != selectedPosition){
@@ -143,6 +160,10 @@ public class DropdownButton extends TextButton{
                         isToggled = false;
                     }
                     return true;
+                }
+                else {
+                    isToggled = false;
+                    return false;
                 }
             }
             else{
@@ -162,11 +183,22 @@ public class DropdownButton extends TextButton{
         int x = Gdx.input.getX();
         int y = Gdx.graphics.getHeight() - Gdx.input.getY();
 
-        if (x > this.x && x < this.x + this.width && y > (this.y - (height * (numBoxesShown - 1))) && y < this.y + this.height){
-            hoverPos = numBoxesShown - (y - (this.y - (height * (numBoxesShown - 1)))) / height - 1;
+        if (drawDown){
+            if (x > this.x && x < this.x + this.width && y > (this.y - (height * (numBoxesShown - 1))) && y < this.y + this.height){
+                hoverPos = numBoxesShown - (y - (this.y - (height * (numBoxesShown - 1)))) / height - 1;
+            }
+            else{
+                hoverPos = -1;
+            }
         }
-        else{
-            hoverPos = -1;
+        else {
+            if (x > this.x && x < this.x + this.width && y > this.y && y < this.y + (height * numBoxesShown)){
+                hoverPos = (y - this.y) / height;
+            }
+            else{
+                hoverPos = -1;
+            }
+            System.out.println(hoverPos);
         }
     }
 
@@ -196,5 +228,10 @@ public class DropdownButton extends TextButton{
     public void setSize(float width, float height){
         this.width = (int) (width * 0.9);
         this.height = (int) (height * 0.4f);
+    }
+
+    public void setSelected(boolean selected){
+        this.isToggled = selected;
+        this.selected = selected;
     }
 }

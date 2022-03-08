@@ -132,7 +132,7 @@ public class ColonistSelectionScreen implements Screen {
         batch.end();
 
         if (Gdx.input.isButtonPressed(0)){
-            buttonCollection.updateButtons(camera);
+            buttonCollection.updateButtons(camera, Gdx.input.isButtonJustPressed(0));
         }
 
         if (Gdx.input.isKeyPressed(Input.Keys.C)){

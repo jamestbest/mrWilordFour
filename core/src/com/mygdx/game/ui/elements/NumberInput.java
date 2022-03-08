@@ -74,8 +74,8 @@ public class NumberInput extends TextButton{
         }
     }
 
-    public boolean checkIfPressed(int x, int y){
-        if (super.checkIfPressed(x, y)) {
+    public boolean checkIfPressed(int x, int y, boolean firstCheck){
+        if (super.checkIfPressed(x, y, firstCheck)) {
             typing = true;
         }
         else {

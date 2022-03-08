@@ -27,6 +27,8 @@ public class Button {
     public String name;
 
     public int drawLayer = 0;
+    public int pressedLayer = 0;
+    public boolean wantsSingleCheck = false;
 
     public Button(int x, int y, int width, int height, String Gda, String name) {
         this.x = x;
@@ -61,7 +63,7 @@ public class Button {
         }
     }
 
-    public boolean checkIfPressed(int x, int y){
+    public boolean checkIfPressed(int x, int y, boolean firstCheck){
         if(visible){
             if (x > this.x && x < this.x + width && y > this.y && y < this.y + height) {
                 pressed = true;
@@ -99,5 +101,9 @@ public class Button {
     public void centre(int offsetY){
         x = (int) ((MyGdxGame.initialRes.x - width) / 2);
         y = (int) ((MyGdxGame.initialRes.y - height) / 2 + offsetY);
+    }
+
+    public void setSelected(boolean selected){
+        this.selected = selected;
     }
 }

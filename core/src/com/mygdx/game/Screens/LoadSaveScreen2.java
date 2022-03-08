@@ -112,8 +112,8 @@ public class LoadSaveScreen2 implements Screen {
         batch.end();
 
         if (Gdx.input.isButtonPressed(0)) {
-            buttonCollectionForSaves.updateButtons(camera);
-            buttonCollectionForUI.updateButtons(camera);
+            buttonCollectionForSaves.updateButtons(camera, Gdx.input.isButtonJustPressed(0));
+            buttonCollectionForUI.updateButtons(camera, Gdx.input.isButtonJustPressed(0));
 
             if (Gdx.input.isButtonJustPressed(0)){
                 if (buttonCollectionForUI.pressedButtonName.equals("loadButton")){

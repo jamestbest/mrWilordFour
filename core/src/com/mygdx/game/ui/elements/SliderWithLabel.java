@@ -66,7 +66,7 @@ public class SliderWithLabel extends Slider {
         }
     }
     
-    public boolean checkIfPressed(int x, int y){
+    public boolean checkIfPressed(int x, int y, boolean firstCheck){
         int extraSpace = (int) (width / 5f);
         float tempWidth = width * 0.75f;
 

@@ -15,6 +15,7 @@ public class InputButtonTwo extends TextButton{
     public InputButtonTwo(int x, int y, int width, int height, String text, String name, InputMultiplexer inputMultiplexer) {
         super(x, y, width, height, text, name);
         this.text = text;
+        wantsSingleCheck = true;
         setup(inputMultiplexer);
     }
 
@@ -190,7 +191,7 @@ public class InputButtonTwo extends TextButton{
         }
     }
 
-    public boolean checkIfPressed(int x, int y){
+    public boolean checkIfPressed(int x, int y, boolean firstCheck){
         if(visible){
             if (x > this.x && x < this.x + width && y > this.y && y < this.y + height) {
                 pressed = true;
@@ -208,5 +209,10 @@ public class InputButtonTwo extends TextButton{
     public void setSize(int width, int height){
         this.width = (int) (width * 0.75);
         this.height = (int) (height * 0.35);
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
+        this.typing = selected;
     }
 }

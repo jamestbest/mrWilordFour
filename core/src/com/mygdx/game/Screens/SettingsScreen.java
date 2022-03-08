@@ -73,6 +73,8 @@ public class SettingsScreen implements Screen {
 
     boolean fromGame;
 
+    boolean fontChanged = false;
+
     public SettingsScreen(MyGdxGame game, boolean fromGame){
         MyGdxGame.initialRes = new Vector2(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         this.game = game;
@@ -95,9 +97,13 @@ public class SettingsScreen implements Screen {
         addSongLabel = new Label( "addSongLabel", "add custom song");
         addSongButton = new ImgOnlyButton("addSongButton", "uploadButton");
 
+        currentSongDropDown.pressedLayer = 1;
+        fontDropDown.pressedLayer = 1;
+
         currentSongDropDown.setDropDownsForMusic(getSelectableSongs(), game);
         fontDropDown.setDropDownsForFont(getSelectableFonts());
         fontDropDown.drawDown = false;
+        fontDropDown.isForFont = true;
 
         fPSToggle = new ToggleButton("FPSToggle", game.fpsCounter);
         fPSSlider = new SliderWithLabel("FPSSlider", 145, 30, 1, game.fpsCap);
@@ -199,6 +205,12 @@ public class SettingsScreen implements Screen {
                     String fileName = getCustomSongLocation();
                     addCustomSong(fileName);
                     currentSongDropDown.setDropDownsForMusic(getSelectableSongs(), game);
+                }
+                case "fontDropDown" -> {
+                    if (!Objects.equals(fontDropDown.getSelectedItem(), MyGdxGame.fontName)){
+                        MyGdxGame.fontName = fontDropDown.getSelectedItem();
+                        game.setScreen(new SettingsScreen(game, false));
+                    }
                 }
             }
         }
