@@ -62,7 +62,6 @@ public class SettingsScreen implements Screen {
 
     SpriteBatch batch;
     CameraTwo camera;
-    Viewport viewport;
 
     Texture background = new Texture("Textures/Backgrounds/optionsMenu.jpg");
 
@@ -85,59 +84,8 @@ public class SettingsScreen implements Screen {
         camera = new CameraTwo();
         camera.allowMovement = false;
 
-        viewport = new StretchViewport(MyGdxGame.initialRes.x, MyGdxGame.initialRes.y);
-
-        optionsTable = new Table(0, 0, (int) MyGdxGame.initialRes.x, (int) MyGdxGame.initialRes.y);
-        volumeSlider = new SliderWithLabel("VolumeSlider");
-        volumeSlider.setValue(game.volume);
-        muteToggle = new ToggleButton("MuteToggle", game.mute);
-        currentSongDropDown = new DropdownButton("currentSongDropDown", inputMultiplexer);
-        fontDropDown = new DropdownButton("fontDropDown", inputMultiplexer);
-        loopToggle = new ToggleButton("LoopToggle", game.loop);
-        addSongLabel = new Label( "addSongLabel", "add custom song");
-        addSongButton = new ImgOnlyButton("addSongButton", "uploadButton");
-
-        currentSongDropDown.pressedLayer = 1;
-        fontDropDown.pressedLayer = 1;
-
-        currentSongDropDown.setDropDownsForMusic(getSelectableSongs(), game);
-        fontDropDown.setDropDownsForFont(getSelectableFonts());
-        fontDropDown.drawDown = false;
-        fontDropDown.isForFont = true;
-
-        fPSToggle = new ToggleButton("FPSToggle", game.fpsCounter);
-        fPSSlider = new SliderWithLabel("FPSSlider", 145, 30, 1, game.fpsCap);
-        if (game.fpsCap == Integer.MAX_VALUE){
-            handleMaxFps();
-        }
-        vSyncToggle = new ToggleButton("VsyncToggle", game.vsyncEnabled);
-
-        fontLabel = new Label( "FontLabel", "Font: ");
-        setTitleInputButton = new InputButtonTwo(0, 0,  0,  0, MyGdxGame.title, "SetTitleInputButton", inputMultiplexer);
-
-        volumeLabel = new Label("VolumeLabel", "Volume: ");
-        muteLabel = new Label( "MuteLabel", "Mute: ");
-        currenSongLabel = new Label( "CurrenSongLabel", "Current Song: ");
-        loopLabel = new Label("LoopLabel", "Loop: ");
-        removeSongLabel = new Label( "RemoveSongLabel", "Remove Song: ");
-
-        fPSCounterLabel = new Label("FPSCounterLabel", "FPS Counter: ");
-        maxFPSLabel = new Label("MaxFPSLabel", "Max FPS: ");
-        vsyncLabel = new Label("VsyncLabel", "Vsync: ");
-
-        titleLabel = new Label("TitleLabel", "Title: ");
-
-        optionsTable.add(volumeLabel, volumeSlider, fPSCounterLabel, fPSToggle);
-        optionsTable.row();
-        optionsTable.add(muteLabel, muteToggle, maxFPSLabel, fPSSlider);
-        optionsTable.row();
-        optionsTable.add(currenSongLabel, currentSongDropDown, vsyncLabel,vSyncToggle);
-        optionsTable.row();
-        optionsTable.add(loopLabel ,loopToggle, titleLabel, setTitleInputButton);
-        optionsTable.row();
-        optionsTable.add(addSongLabel, addSongButton, fontLabel, fontDropDown);
-
-        optionsTable.sort();
+        setupAllButtons();
+        setupAllButtonsInCollections();
 
         Gdx.input.setInputProcessor(inputMultiplexer);
     }
@@ -209,7 +157,7 @@ public class SettingsScreen implements Screen {
                 case "fontDropDown" -> {
                     if (!Objects.equals(fontDropDown.getSelectedItem(), MyGdxGame.fontName)){
                         MyGdxGame.fontName = fontDropDown.getSelectedItem();
-                        game.setScreen(new SettingsScreen(game, false));
+                        updateToNewFont();
                     }
                 }
             }
@@ -232,7 +180,6 @@ public class SettingsScreen implements Screen {
 
     @Override
     public void resize(int width, int height) {
-        viewport.update(width, height);
     }
 
     @Override
@@ -336,5 +283,66 @@ public class SettingsScreen implements Screen {
             Gdx.graphics.setForegroundFPS(game.fpsCap);
             fPSSlider.setText("no cap");
         }
+    }
+
+    public void updateToNewFont(){
+        setupAllButtons();
+        setupAllButtonsInCollections();
+    }
+
+    public void setupAllButtons(){
+        optionsTable = new Table(0, 0, (int) MyGdxGame.initialRes.x, (int) MyGdxGame.initialRes.y);
+        volumeSlider = new SliderWithLabel("VolumeSlider");
+        volumeSlider.setValue(game.volume);
+        muteToggle = new ToggleButton("MuteToggle", game.mute);
+        currentSongDropDown = new DropdownButton("currentSongDropDown", inputMultiplexer);
+        fontDropDown = new DropdownButton("fontDropDown", inputMultiplexer);
+        loopToggle = new ToggleButton("LoopToggle", game.loop);
+        addSongLabel = new Label( "addSongLabel", "add custom song");
+        addSongButton = new ImgOnlyButton("addSongButton", "uploadButton");
+
+        currentSongDropDown.pressedLayer = 1;
+        fontDropDown.pressedLayer = 1;
+
+        currentSongDropDown.setDropDownsForMusic(getSelectableSongs(), game);
+        fontDropDown.setDropDownsForFont(getSelectableFonts());
+        fontDropDown.drawDown = false;
+        fontDropDown.isForFont = true;
+
+        fPSToggle = new ToggleButton("FPSToggle", game.fpsCounter);
+        fPSSlider = new SliderWithLabel("FPSSlider", 145, 30, 1, game.fpsCap);
+        if (game.fpsCap == Integer.MAX_VALUE){
+            handleMaxFps();
+        }
+        vSyncToggle = new ToggleButton("VsyncToggle", game.vsyncEnabled);
+
+        fontLabel = new Label( "FontLabel", "Font: ");
+        setTitleInputButton = new InputButtonTwo(0, 0,  0,  0, MyGdxGame.title, "SetTitleInputButton", inputMultiplexer);
+
+        volumeLabel = new Label("VolumeLabel", "Volume: ");
+        muteLabel = new Label( "MuteLabel", "Mute: ");
+        currenSongLabel = new Label( "CurrenSongLabel", "Current Song: ");
+        loopLabel = new Label("LoopLabel", "Loop: ");
+        removeSongLabel = new Label( "RemoveSongLabel", "Remove Song: ");
+
+        fPSCounterLabel = new Label("FPSCounterLabel", "FPS Counter: ");
+        maxFPSLabel = new Label("MaxFPSLabel", "Max FPS: ");
+        vsyncLabel = new Label("VsyncLabel", "Vsync: ");
+
+        titleLabel = new Label("TitleLabel", "Title: ");
+    }
+
+    public void setupAllButtonsInCollections(){
+        optionsTable.add(volumeLabel, volumeSlider, fPSCounterLabel, fPSToggle);
+        optionsTable.row();
+        optionsTable.add(muteLabel, muteToggle, maxFPSLabel, fPSSlider);
+        optionsTable.row();
+        optionsTable.add(currenSongLabel, currentSongDropDown, vsyncLabel,vSyncToggle);
+        optionsTable.row();
+        optionsTable.add(loopLabel ,loopToggle, titleLabel, setTitleInputButton);
+        optionsTable.row();
+        optionsTable.add(addSongLabel, addSongButton, fontLabel, fontDropDown);
+
+        optionsTable.sort();
     }
 }
