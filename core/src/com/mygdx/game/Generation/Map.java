@@ -316,6 +316,7 @@ public class Map {
     }
 
     public static boolean loadMap(String saveName, Map map, ArrayList<Colonist> colonists){
+        colonists = new ArrayList<>();
         try{
             File file = new File("core/assets/Saves/" + saveName + "/save.sve");
             FileReader fr = new FileReader(file);

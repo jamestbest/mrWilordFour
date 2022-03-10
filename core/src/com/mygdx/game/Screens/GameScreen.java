@@ -1,6 +1,9 @@
 package com.mygdx.game.Screens;
 
-import com.badlogic.gdx.*;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -25,9 +28,7 @@ import io.socket.client.Socket;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -35,8 +36,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Scanner;
-
-import static com.badlogic.gdx.Graphics.GraphicsType.LWJGL;
 
 public class GameScreen implements Screen {
     public static int TILES_ON_X = 250;
@@ -390,10 +389,14 @@ public class GameScreen implements Screen {
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.N)){
-            gameSpeed = 2;
+            gameSpeed += 2;
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.B)){
+            gameSpeed -= 2;
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.H)){
             gameSpeed = 0;
         }
 

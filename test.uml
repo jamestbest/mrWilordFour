@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>JAVA</ID>
+  <OriginalElement>C:/Users/15Coward.J/IdeaProjects/mrWilordFour/core/src</OriginalElement>
+  <nodes>
+    <node x="2062.0" y="368.0">com.mygdx.game.ui.elements.NullButton</node>
+    <node x="1131.0" y="1049.0">com.mygdx.game.Game.Colonist</node>
+    <node x="1490.0" y="2006.0">com.mygdx.game.ui.extensions.Table</node>
+    <node x="0.0" y="1049.0">com.mygdx.game.Screens.GameScreen</node>
+    <node x="1749.0" y="2006.0">com.mygdx.game.Jif.GifWithMusicPlayer</node>
+    <node x="341.0" y="2622.0">com.mygdx.game.Generation.Thing</node>
+    <node x="2271.0" y="357.0">com.mygdx.game.ui.elements.AnimatedButton</node>
+    <node x="1853.0" y="368.0">com.mygdx.game.ui.elements.ImgButton</node>
+    <node x="816.0" y="2435.0">com.mygdx.game.Game.MyGdxGame</node>
+    <node x="1850.0" y="1049.0">com.mygdx.game.Screens.ColonistSelectionScreen</node>
+    <node x="852.0" y="582.0">com.mygdx.game.ui.elements.DropdownButton</node>
+    <node x="1027.0" y="2006.0">com.mygdx.game.Saving.RLE</node>
+    <node x="238.0" y="2006.0">com.mygdx.game.Game.CameraTwo</node>
+    <node x="553.0" y="280.0">com.mygdx.game.ui.elements.TextButton</node>
+    <node x="823.0" y="2622.0">com.mygdx.game.Generation.TileInformation</node>
+    <node x="1076.0" y="346.0">com.mygdx.game.ui.elements.BoxedTextButton</node>
+    <node x="626.0" y="2622.0">com.mygdx.game.Generation.Tile</node>
+    <node x="1989.0" y="2006.0">com.mygdx.game.Math.Math</node>
+    <node x="545.0" y="1049.0">com.mygdx.game.Generation.Map</node>
+    <node x="0.0" y="670.0">com.mygdx.game.ui.elements.NumberInput</node>
+    <node x="284.0" y="648.0">com.mygdx.game.ui.elements.InputButtonTwo</node>
+    <node x="454.0" y="2435.0">com.mygdx.game.Generation.Noise2D</node>
+    <node x="0.0" y="2622.0">com.mygdx.game.Math.sortingAlgorithms.QuickSort</node>
+    <node x="1550.0" y="1049.0">com.mygdx.game.Screens.SettingsScreen</node>
+    <node x="230.0" y="2435.0">com.mygdx.game.DataStructures.Stack</node>
+    <node x="0.0" y="917.0">com.mygdx.game.ui.elements.NumberInputWithSides</node>
+    <node x="1483.25" y="0.0">com.mygdx.game.ui.elements.Button</node>
+    <node x="867.0" y="357.0">com.mygdx.game.ui.elements.ImgTextButton</node>
+    <node x="1249.0" y="692.0">com.mygdx.game.ui.elements.Label</node>
+    <node x="1360.0" y="346.0">com.mygdx.game.ui.elements.ToggleButton</node>
+    <node x="2058.0" y="2435.0">com.mygdx.game.Game.Task</node>
+    <node x="1644.0" y="357.0">com.mygdx.game.ui.elements.ImgOnlyButton</node>
+    <node x="583.0" y="2006.0">com.mygdx.game.Screens.MapGeneration</node>
+    <node x="1630.0" y="2435.0">com.mygdx.game.AStar.Node</node>
+    <node x="2211.0" y="2006.0">com.mygdx.game.ui.extensions.ButtonCollection</node>
+    <node x="2106.0" y="1049.0">com.mygdx.game.Screens.JoinGameScreen</node>
+    <node x="1020.0" y="2622.0">com.mygdx.game.Generation.MapSettings</node>
+    <node x="836.0" y="2006.0">com.mygdx.game.Screens.MainMenu</node>
+    <node x="0.0" y="2435.0">com.mygdx.game.DataStructures.Queue</node>
+    <node x="1034.0" y="2435.0">com.mygdx.game.AStar.AStar</node>
+    <node x="568.0" y="659.0">com.mygdx.game.ui.elements.Slider</node>
+    <node x="568.0" y="906.0">com.mygdx.game.ui.elements.SliderWithLabel</node>
+    <node x="0.0" y="2006.0">com.mygdx.game.Screens.LoadSaveScreen2</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="com.mygdx.game.ui.elements.InputButtonTwo" target="com.mygdx.game.ui.elements.TextButton" relationship="GENERALIZATION">
+      <point x="0.0" y="-71.0" />
+      <point x="416.0" y="557.0" />
+      <point x="700.0" y="557.0" />
+      <point x="0.0" y="126.0" />
+    </edge>
+    <edge source="com.mygdx.game.ui.elements.ImgButton" target="com.mygdx.game.ui.elements.Button" relationship="GENERALIZATION">
+      <point x="0.0" y="-38.0" />
+      <point x="1947.5" y="255.0" />
+      <point x="1615.25" y="255.0" />
+      <point x="0.0" y="115.0" />
+    </edge>
+    <edge source="com.mygdx.game.ui.elements.NullButton" target="com.mygdx.game.ui.elements.Button" relationship="GENERALIZATION">
+      <point x="0.0" y="-38.0" />
+      <point x="2156.5" y="255.0" />
+      <point x="1615.25" y="255.0" />
+      <point x="0.0" y="115.0" />
+    </edge>
+    <edge source="com.mygdx.game.ui.elements.ImgOnlyButton" target="com.mygdx.game.ui.elements.Button" relationship="GENERALIZATION">
+      <point x="0.0" y="-49.0" />
+      <point x="1738.5" y="255.0" />
+      <point x="1615.25" y="255.0" />
+      <point x="0.0" y="115.0" />
+    </edge>
+    <edge source="com.mygdx.game.ui.elements.ImgTextButton" target="com.mygdx.game.ui.elements.Button" relationship="GENERALIZATION">
+      <point x="0.0" y="-49.0" />
+      <point x="961.5" y="255.0" />
+      <point x="1615.25" y="255.0" />
+      <point x="0.0" y="115.0" />
+    </edge>
+    <edge source="com.mygdx.game.ui.elements.Slider" target="com.mygdx.game.ui.elements.TextButton" relationship="GENERALIZATION">
+      <point x="-5.6843418860808015E-14" y="-60.0" />
+      <point x="0.0" y="126.0" />
+    </edge>
+    <edge source="com.mygdx.game.ui.elements.NumberInput" target="com.mygdx.game.ui.elements.TextButton" relationship="GENERALIZATION">
+      <point x="0.0" y="-49.0" />
+      <point x="132.0" y="557.0" />
+      <point x="700.0" y="557.0" />
+      <point x="0.0" y="126.0" />
+    </edge>
+    <edge source="com.mygdx.game.ui.elements.BoxedTextButton" target="com.mygdx.game.ui.elements.Button" relationship="GENERALIZATION">
+      <point x="0.0" y="-60.0" />
+      <point x="1208.0" y="255.0" />
+      <point x="1615.25" y="255.0" />
+      <point x="0.0" y="115.0" />
+    </edge>
+    <edge source="com.mygdx.game.ui.elements.DropdownButton" target="com.mygdx.game.ui.elements.TextButton" relationship="GENERALIZATION">
+      <point x="0.0" y="-137.0" />
+      <point x="1040.5" y="557.0" />
+      <point x="700.0" y="557.0" />
+      <point x="0.0" y="126.0" />
+    </edge>
+    <edge source="com.mygdx.game.ui.elements.NumberInputWithSides" target="com.mygdx.game.ui.elements.NumberInput" relationship="GENERALIZATION">
+      <point x="0.0" y="-38.0" />
+      <point x="0.0" y="49.0" />
+    </edge>
+    <edge source="com.mygdx.game.ui.elements.ToggleButton" target="com.mygdx.game.ui.elements.Button" relationship="GENERALIZATION">
+      <point x="0.0" y="-60.0" />
+      <point x="1492.0" y="255.0" />
+      <point x="1615.25" y="255.0" />
+      <point x="0.0" y="115.0" />
+    </edge>
+    <edge source="com.mygdx.game.ui.elements.AnimatedButton" target="com.mygdx.game.ui.elements.Button" relationship="GENERALIZATION">
+      <point x="0.0" y="-49.0" />
+      <point x="2355.5" y="255.0" />
+      <point x="1615.25" y="255.0" />
+      <point x="0.0" y="115.0" />
+    </edge>
+    <edge source="com.mygdx.game.ui.elements.SliderWithLabel" target="com.mygdx.game.ui.elements.Slider" relationship="GENERALIZATION">
+      <point x="-5.6843418860808015E-14" y="-49.0" />
+      <point x="0.0" y="60.0" />
+    </edge>
+    <edge source="com.mygdx.game.ui.elements.TextButton" target="com.mygdx.game.ui.elements.Button" relationship="GENERALIZATION">
+      <point x="-5.6843418860808015E-14" y="-126.0" />
+      <point x="700.0" y="255.0" />
+      <point x="1615.25" y="255.0" />
+      <point x="0.0" y="115.0" />
+    </edge>
+    <edge source="com.mygdx.game.ui.elements.Label" target="com.mygdx.game.ui.elements.TextButton" relationship="GENERALIZATION">
+      <point x="0.0" y="-27.0" />
+      <point x="1343.5" y="557.0" />
+      <point x="700.0" y="557.0" />
+      <point x="0.0" y="126.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic" zoom="1.0" showDependencies="false" x="1252.0" y="1338.0" />
+  <SelectedNodes>
+    <node>com.mygdx.game.Generation.Map</node>
+  </SelectedNodes>
+  <Categories>
+    <Category>Methods</Category>
+  </Categories>
+  <SCOPE>All</SCOPE>
+  <VISIBILITY>private</VISIBILITY>
+</Diagram>
+

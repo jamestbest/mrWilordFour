@@ -260,6 +260,7 @@ public class LoadSaveScreen2 implements Screen {
         Button b = getSelectedButton();
         if (b != null){
             BoxedTextButton b2 = (BoxedTextButton) b;
+            colonists = new ArrayList<>();
             return Map.loadMap(b2.text, map, colonists);
         }
         return false;
