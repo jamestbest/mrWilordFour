@@ -11,7 +11,7 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Json;
-import com.mygdx.game.Game.CameraTwo;
+import com.mygdx.game.Math.CameraTwo;
 import com.mygdx.game.Game.Colonist;
 import com.mygdx.game.Game.MyGdxGame;
 import com.mygdx.game.Game.Task;
@@ -180,6 +180,7 @@ public class GameScreen implements Screen {
 
         this.colonists = colonists;
         setup();
+        System.out.println("hello world");
     }
 
     public GameScreen(MyGdxGame game, String ip){
@@ -244,15 +245,13 @@ public class GameScreen implements Screen {
 
         this.delta += Gdx.graphics.getDeltaTime();
 
-//        System.out.println(updateThread.getState());
-
         camera.allowMovement = !paused;
 
         camera.update();
         updateResourceButtons();
 
         batch.begin();
-        batch.setProjectionMatrix(camera.projViewMatrix);
+        batch.setProjectionMatrix(camera.projViewMatrix.getGdxMatrix());
         map.drawMap(batch, tileTextures, camera);
 
         allowUpdate = true;
@@ -267,7 +266,7 @@ public class GameScreen implements Screen {
         drawColonistsPath(shapeRenderer);
 
         batchWithNoProj.begin();
-//        batchWithNoProj.setProjectionMatrix(camera.projViewMatrix);
+//        batchWithNoProj.setProjectionMatrix(camera.projViewMatrix.getGdxMatrix());
         bottomBarButtons.drawButtons(batchWithNoProj);
         ordersButtons.drawButtons(batchWithNoProj);
         resourceButtons.drawButtons(batchWithNoProj);
@@ -335,7 +334,7 @@ public class GameScreen implements Screen {
                     }
                     case "OptionsButton" -> game.setScreen(new SettingsScreen(game, true));
                     case "SaveButton" -> saveGame("save12");
-//                    case "LoadButton" -> ;
+                    case "LoadButton" -> game.setScreen(new LoadSaveScreen2(game));
                     case "MainMenuButton" -> game.setScreen(game.mainMenu);
                     case "ExitButton" -> Gdx.app.exit();
                 }
@@ -373,7 +372,8 @@ public class GameScreen implements Screen {
         if (Gdx.input.isKeyJustPressed(Input.Keys.L)) {
             Scanner sc = new Scanner(System.in);
             String saveName = sc.nextLine();
-            Map.loadMap(saveName, map, colonists);
+            Map.loadMap(saveName, map);
+            colonists = Map.loadColonists(saveName);
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.C)) {
@@ -509,8 +509,8 @@ public class GameScreen implements Screen {
             try {
                 JSONObject data = new JSONObject();
 
-                ArrayList<String> packagedTiles = map.packageTiles();
-                data.put("tiles", json.toJson(packagedTiles));
+                data.put("tiles", json.toJson(map.packageTiles()));
+                data.put("things", json.toJson(map.packageThings()));
                 data.put("mapWidth", GameScreen.TILES_ON_X);
                 data.put("mapHeight", GameScreen.TILES_ON_X);
                 data.put("tileDims", GameScreen.TILE_DIMS);
@@ -564,6 +564,7 @@ public class GameScreen implements Screen {
                 setColonistIDs();
 
                 ArrayList<String> packagedTiles = json.fromJson(ArrayList.class, data.get("tiles").toString());
+                ArrayList<String> packagedThings = json.fromJson(ArrayList.class, data.get("things").toString());
                 int mapWidth = data.getInt("mapWidth");
                 int mapHeight = data.getInt("mapHeight");
                 int tileDims = data.getInt("tileDims");
@@ -572,6 +573,8 @@ public class GameScreen implements Screen {
 
                 map.settings = json.fromJson(MapSettings.class, data.get("settings").toString());
                 map.unPackageTiles(packagedTiles);
+
+                map.unPackageThings(packagedThings);
 
                 this.resources = json.fromJson(HashMap.class, data.get("resources").toString());
 
@@ -602,6 +605,19 @@ public class GameScreen implements Screen {
                 e.printStackTrace();
             }
         });
+
+        socket.on("changeThingType", args -> {
+            JSONObject data = (JSONObject) args[0];
+            try {
+                int x = (int) data.get("x");
+                int y = (int) data.get("y");
+                String type = (String) data.get("type");
+                int height = (int) data.get("height");
+                map.changeThingType(x, y, type, height);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     public void drawAllColonists(SpriteBatch batch){
@@ -613,7 +629,7 @@ public class GameScreen implements Screen {
     public void moveColonists(){
         if (isHost) {
             for (Colonist c : colonists) {
-                c.moveColonist(map, resources);
+                c.moveColonist(map, resources, socket);
             }
         }
     }
@@ -790,7 +806,7 @@ public class GameScreen implements Screen {
         Gdx.gl.glEnable(GL30.GL_BLEND);
         Gdx.gl.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setProjectionMatrix(cameraTwo.projViewMatrix);
+        shapeRenderer.setProjectionMatrix(cameraTwo.projViewMatrix.getGdxMatrix());
         shapeRenderer.setColor(0, 0.4f, 1, 0.5f);
         shapeRenderer.rect(minSelecting.x, minSelecting.y, maxSelecting.x - minSelecting.x, maxSelecting.y - minSelecting.y);
         shapeRenderer.end();
@@ -905,7 +921,7 @@ public class GameScreen implements Screen {
             Gdx.gl.glEnable(GL30.GL_BLEND);
             Gdx.gl.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
             shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-            shapeRenderer.setProjectionMatrix(camera.projViewMatrix);
+            shapeRenderer.setProjectionMatrix(camera.projViewMatrix.getGdxMatrix());
             shapeRenderer.setColor(0, 0, 1, 0.5f);
             for (Colonist colonist : colonists) {
                 colonist.drawPathOutline(shapeRenderer);

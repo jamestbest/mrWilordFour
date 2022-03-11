@@ -9,7 +9,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
-import com.mygdx.game.Game.CameraTwo;
+import com.mygdx.game.Math.CameraTwo;
 import com.mygdx.game.Game.MyGdxGame;
 import com.mygdx.game.Jif.GifWithMusicPlayer;
 import com.mygdx.game.ui.elements.Label;
@@ -41,6 +41,8 @@ public class MainMenu implements Screen {
 
     boolean playGif = false;
 
+    boolean acceptInput = false;
+
     InputMultiplexer inputMultiplexer = new InputMultiplexer();
 
     public MainMenu(MyGdxGame game) {
@@ -59,6 +61,9 @@ public class MainMenu implements Screen {
         setUpUI();
         setupTable();
 
+        game.clickWaitTimer = 0.2f;
+        acceptInput = false;
+
         Gdx.input.setInputProcessor(inputMultiplexer);
     }
 
@@ -66,6 +71,15 @@ public class MainMenu implements Screen {
     public void render(float delta) {
         Gdx.gl.glClearColor(1, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        if (game.clickWaitTimer <= 0) {
+            acceptInput = true;
+        }
+        else {
+            game.clickWaitTimer -= delta;
+        }
+
+        System.out.println(acceptInput + " " + game.clickWaitTimer);
 
         camera.update();
 
@@ -81,7 +95,7 @@ public class MainMenu implements Screen {
             GWMP.render();
         }
 
-        if (Gdx.input.isButtonPressed(0)) {
+        if (Gdx.input.isButtonPressed(0) && acceptInput) {
             table.update(camera);
         }
 

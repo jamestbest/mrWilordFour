@@ -12,7 +12,7 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Json;
-import com.mygdx.game.Game.CameraTwo;
+import com.mygdx.game.Math.CameraTwo;
 import com.mygdx.game.Game.Colonist;
 import com.mygdx.game.Game.MyGdxGame;
 import com.mygdx.game.Generation.Map;
@@ -127,7 +127,7 @@ public class ColonistSelectionScreen implements Screen {
         drawSelected();
 
         batch.begin();
-        batch.setProjectionMatrix(camera.projViewMatrix);
+        batch.setProjectionMatrix(camera.projViewMatrix.getGdxMatrix());
         buttonCollection.drawButtons(batch);
         batch.end();
 
@@ -210,7 +210,7 @@ public class ColonistSelectionScreen implements Screen {
 
     public void drawColonistMiniCards(){
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        shapeRenderer.setProjectionMatrix(camera.projViewMatrix);
+        shapeRenderer.setProjectionMatrix(camera.projViewMatrix.getGdxMatrix());
 
         for (int i = 0; i < numberOfColonistsToSelectFrom; i++) {
             shapeRenderer.rect(offsetX, offsetY + (height * i) + (offsetY / numberOfColonistsToSelectFrom * i), width, height);
@@ -218,7 +218,7 @@ public class ColonistSelectionScreen implements Screen {
         shapeRenderer.end();
 
         batch.begin();
-        batch.setProjectionMatrix(camera.projViewMatrix);
+        batch.setProjectionMatrix(camera.projViewMatrix.getGdxMatrix());
         for (int i = 0; i < numberOfColonistsToSelectFrom; i++) {
             batch.draw(colonistClothes.get(colonistsToSelectFrom.get(i).clotheName)
                     .findRegion("front"),
@@ -308,7 +308,7 @@ public class ColonistSelectionScreen implements Screen {
 
     public void drawOutlines(){
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        shapeRenderer.setProjectionMatrix(camera.projViewMatrix);
+        shapeRenderer.setProjectionMatrix(camera.projViewMatrix.getGdxMatrix());
 
         shapeRenderer.setColor(Color.GOLD);
         for (int i = 0; i < numberOfColonistsToSelectFrom; i++) {
@@ -326,7 +326,7 @@ public class ColonistSelectionScreen implements Screen {
 
     public void drawSelected(){
         batch.begin();
-        batch.setProjectionMatrix(camera.projViewMatrix);
+        batch.setProjectionMatrix(camera.projViewMatrix.getGdxMatrix());
         Colonist c = colonistsToSelectFrom.get(selectedIndex);
 
         glyphLayout.setText(font, "James Coward");

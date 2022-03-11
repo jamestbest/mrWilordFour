@@ -33,7 +33,6 @@ io.on('connection', function(socket){
     players[0].emit("updateColonists", data)
     console.log("updateColonists")
     console.log(data)
-
   })
 
   socket.on("getUpdatedColonists", function(data){
@@ -72,5 +71,9 @@ io.on('connection', function(socket){
 
   socket.on("changeTileType", function(data){
     socket.broadcast.emit("changeTileType", data)
+  })
+
+  socket.on("changeThingType", function(data){
+    socket.broadcast.emit("changeThingType", data)
   })
 });

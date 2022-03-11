@@ -1,17 +1,19 @@
-package com.mygdx.game.Game;
+package com.mygdx.game.Math;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import com.mygdx.game.Game.MyGdxGame;
 import com.mygdx.game.Screens.GameScreen;
 
 public class CameraTwo {
-
-    public Matrix4 projectionMatrix, viewMatrix, projViewMatrix;
     public Vector3 position;
+
+    public com.mygdx.game.Math.Matrix4 projectionMatrix2, viewMatrix2, projViewMatrix;
 
     public int width, height;
 
@@ -37,29 +39,39 @@ public class CameraTwo {
     }
 
     public CameraTwo(){
-        this((int)MyGdxGame.initialRes.x, (int)MyGdxGame.initialRes.y, new Vector3(MyGdxGame.initialRes.x / 2f, MyGdxGame.initialRes.y / 2f, 0));
+        this((int) MyGdxGame.initialRes.x, (int)MyGdxGame.initialRes.y, new Vector3(MyGdxGame.initialRes.x / 2f, MyGdxGame.initialRes.y / 2f, 0));
     }
 
     public void initialise(){
-        this.projectionMatrix = new Matrix4();
-        this.viewMatrix = new Matrix4();
-        this.projViewMatrix = new Matrix4();
+        this.projectionMatrix2 = new com.mygdx.game.Math.Matrix4();
+        this.viewMatrix2 = new com.mygdx.game.Math.Matrix4();
+
+
         adjustProjection();
     }
 
     public void adjustProjection() {
-        projectionMatrix.idt();
-        projectionMatrix.setToOrtho(-width/2f, width/2f, -height/2f, height/2f, 0, 100);
+        projectionMatrix2.identityMatrix();
+        projectionMatrix2.setToOrthographic(-width/2f, width/2f, -height/2f, height/2f, 0, 100);
     }
 
     public void updateZoom(){
-        projectionMatrix.setToOrtho((-width * zoom)/2f, (width*zoom)/2f, (-height*zoom)/2f, (height*zoom)/2f, 0, 100);
+        projectionMatrix2.setToOrthographic((-width * zoom)/2f, (width*zoom)/2f, (-height*zoom)/2f, (height*zoom)/2f, 0, 100);
     }
 
     public void update() {
-        viewMatrix.idt();
-        viewMatrix.setToLookAt(position, new Vector3(position).add(new Vector3(0,0,-1)),  new Vector3(0.0f, 1.0f, 0.0f));
-        projViewMatrix.set(projectionMatrix).mul(viewMatrix);
+        viewMatrix2.identityMatrix();
+        viewMatrix2.lookAt(position, new Vector3(position).add(new Vector3(0,0,-1)), new Vector3(0,1,0));
+//
+        if (Gdx.input.isKeyPressed(Input.Keys.Y)) {
+            System.out.println(viewMatrix2 + "showing new view matrix");
+
+            System.out.println(position + "showing position");
+        }
+
+        projViewMatrix = new com.mygdx.game.Math.Matrix4(projectionMatrix2);
+        projViewMatrix.multiply(viewMatrix2);
+
         counter -= Gdx.graphics.getDeltaTime();
         if (allowMovement && counter <= 0) {
             counter = counterMax;
@@ -94,16 +106,6 @@ public class CameraTwo {
         coords.y += position.y;
 
         return coords;
-    }
-
-    public Vector2 project(Vector3 coords){
-        coords.prj(projViewMatrix);
-        coords.x = (coords.x + 1) * width;
-        coords.y = (coords.y + 1) * height;
-        coords.x /= 2f;
-        coords.y /= 2f;
-
-        return new Vector2(coords.x, coords.y);
     }
 
     public static Vector2 testProj(Vector2 coords, float screenWidth, float screenHeight, float viewportWidth, float viewportHeight){

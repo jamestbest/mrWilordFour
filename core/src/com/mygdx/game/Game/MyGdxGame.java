@@ -2,6 +2,7 @@ package com.mygdx.game.Game;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.math.Vector2;
 import com.mygdx.game.Screens.GameScreen;
@@ -31,6 +32,8 @@ public class MyGdxGame extends Game {
 
 	public MainMenu mainMenu;
 	public GameScreen currentGameScreen;
+
+	public float clickWaitTimer = 0.2f;
 	
 	@Override
 	public void create () {

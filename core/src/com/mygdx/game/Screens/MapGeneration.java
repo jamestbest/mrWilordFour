@@ -6,15 +6,13 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.mygdx.game.Game.CameraTwo;
+import com.mygdx.game.Math.CameraTwo;
 import com.mygdx.game.Game.MyGdxGame;
 import com.mygdx.game.Generation.Map;
 import com.mygdx.game.ui.elements.*;
 import com.mygdx.game.ui.extensions.ButtonCollection;
 import com.mygdx.game.ui.extensions.Table;
 
-import java.io.File;
-import java.util.Arrays;
 import java.util.HashMap;
 
 public class MapGeneration implements Screen {
@@ -139,11 +137,11 @@ public class MapGeneration implements Screen {
         camera.update();
 
         batch.begin();
-        batch.setProjectionMatrix(camera.projViewMatrix);
+        batch.setProjectionMatrix(camera.projViewMatrix.getGdxMatrix());
         map.drawMiniMap(batch, tileTextures, thingTextures);
         batch.end();
         batch.begin();
-        batch.setProjectionMatrix(camera.projViewMatrix);
+        batch.setProjectionMatrix(camera.projViewMatrix.getGdxMatrix());
         labelTable.draw(batch);
         buttonTable.draw(batch);
         extraUI.drawButtons(batch);

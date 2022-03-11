@@ -5,11 +5,10 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.mygdx.game.Game.CameraTwo;
+import com.mygdx.game.Math.CameraTwo;
 import com.mygdx.game.Game.Colonist;
 import com.mygdx.game.Game.MyGdxGame;
 import com.mygdx.game.Generation.Map;
-import com.mygdx.game.Generation.MapSettings;
 import com.mygdx.game.ui.elements.BoxedTextButton;
 import com.mygdx.game.ui.elements.Button;
 import com.mygdx.game.ui.elements.TextButton;
@@ -104,7 +103,7 @@ public class LoadSaveScreen2 implements Screen {
         camera.update();
 
         batch.begin();
-        batch.setProjectionMatrix(camera.projViewMatrix);
+        batch.setProjectionMatrix(camera.projViewMatrix.getGdxMatrix());
         buttonCollectionForSaves.drawButtons(batch);
         buttonCollectionForUI.drawButtons(batch);
 
@@ -260,8 +259,8 @@ public class LoadSaveScreen2 implements Screen {
         Button b = getSelectedButton();
         if (b != null){
             BoxedTextButton b2 = (BoxedTextButton) b;
-            colonists = new ArrayList<>();
-            return Map.loadMap(b2.text, map, colonists);
+            colonists = Map.loadColonists(b2.text);
+            return Map.loadMap(b2.text, map);
         }
         return false;
     }

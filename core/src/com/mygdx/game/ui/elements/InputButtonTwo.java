@@ -4,8 +4,6 @@ import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.Vector2;
-import com.mygdx.game.Game.CameraTwo;
 
 public class InputButtonTwo extends TextButton{
     public InputButtonTwo(int x, int y, int width, int height, String text, String TextureGda, String name) {

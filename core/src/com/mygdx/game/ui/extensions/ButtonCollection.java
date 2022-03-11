@@ -3,8 +3,7 @@ package com.mygdx.game.ui.extensions;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
-import com.mygdx.game.Game.CameraTwo;
-import com.mygdx.game.Game.MyGdxGame;
+import com.mygdx.game.Math.CameraTwo;
 import com.mygdx.game.ui.elements.Button;
 
 import java.util.ArrayList;

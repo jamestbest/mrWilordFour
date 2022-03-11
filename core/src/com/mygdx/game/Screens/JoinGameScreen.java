@@ -8,7 +8,7 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.utils.Json;
-import com.mygdx.game.Game.CameraTwo;
+import com.mygdx.game.Math.CameraTwo;
 import com.mygdx.game.Game.Colonist;
 import com.mygdx.game.Game.MyGdxGame;
 import com.mygdx.game.Generation.Map;
@@ -25,7 +25,6 @@ import org.json.JSONObject;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -93,7 +92,7 @@ public class JoinGameScreen implements Screen {
         cameraTwo.update();
 
         batch.begin();
-        batch.setProjectionMatrix(cameraTwo.projViewMatrix);
+        batch.setProjectionMatrix(cameraTwo.projViewMatrix.getGdxMatrix());
         map.drawMiniMap(batch, tileTextures, thingTextures);
 
         buttonCollection.drawButtons(batch);

@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import static com.mygdx.game.Generation.Map.tileInformationHashMap;
+
 public class RLE {
     static HashMap<String, String> tileNameCode;
     static HashMap<String, String> thingNameCode;
@@ -58,7 +60,10 @@ public class RLE {
                 if ((count) % mapDims == 0) {
                     output.add(new ArrayList<>());
                 }
-                output.get((count / mapDims)).add(new Tile(count / mapDims, count % mapDims, reverseTileNameCode.get(inputSplit.get(i).substring(0, 1))));
+                Tile tempTile = new Tile(count / mapDims, count % mapDims, reverseTileNameCode.get(inputSplit.get(i).substring(0, 1)));
+                tempTile.canSpawnOn = tileInformationHashMap.get(tempTile.type).canSpawnOn;
+                tempTile.canWalkOn = tileInformationHashMap.get(tempTile.type).canWalkOn;
+                output.get((count / mapDims)).add(tempTile);
                 count++;
             }
             if (i == inputSplit.size() - 3) {

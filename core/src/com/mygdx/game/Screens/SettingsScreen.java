@@ -10,7 +10,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.mygdx.game.Game.CameraTwo;
+import com.mygdx.game.Math.CameraTwo;
 import com.mygdx.game.Game.MyGdxGame;
 import com.mygdx.game.ui.elements.*;
 import com.mygdx.game.ui.elements.Label;
@@ -103,7 +103,7 @@ public class SettingsScreen implements Screen {
         camera.update();
 
         batch.begin();
-        batch.setProjectionMatrix(camera.projViewMatrix);
+        batch.setProjectionMatrix(camera.projViewMatrix.getGdxMatrix());
         batch.draw(background, 0, 0, MyGdxGame.initialRes.x, MyGdxGame.initialRes.y);
 
         optionsTable.draw(batch);

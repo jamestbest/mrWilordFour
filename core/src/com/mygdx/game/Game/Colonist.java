@@ -11,6 +11,7 @@ import com.mygdx.game.AStar.AStar;
 import com.mygdx.game.Generation.Map;
 import com.mygdx.game.Generation.Tile;
 import com.mygdx.game.Screens.GameScreen;
+import io.socket.client.Socket;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -191,9 +192,9 @@ public class Colonist {
         }
     }
 
-    public void moveColonist(Map map, HashMap<String, Integer> resources) {
+    public void moveColonist(Map map, HashMap<String, Integer> resources, Socket socket) {
         if (doingTaskAnimation){
-            doTaskAnimation(map, resources);
+            doTaskAnimation(map, resources, socket);
         }
         else if (movingAcrossPath) {
             moveAlongPath();
@@ -294,7 +295,7 @@ public class Colonist {
         return (float) Math.sqrt(Math.pow(x - this.x, 2) + Math.pow(y - this.y, 2));
     }
 
-    public void doTaskAnimation(Map map, HashMap<String, Integer> resources) {
+    public void doTaskAnimation(Map map, HashMap<String, Integer> resources, Socket socket) {
         System.out.println("doing task animation");
         Task task = map.tiles.get((int) currentTaskLoc.x).get((int) currentTaskLoc.y).task;
         Random random = new Random();
@@ -303,7 +304,7 @@ public class Colonist {
         }
         else {
             doingTaskAnimation = false;
-            task.completeTask((int) currentTaskLoc.x, (int) currentTaskLoc.y, map, resources);
+            task.completeTask((int) currentTaskLoc.x, (int) currentTaskLoc.y, map, resources, socket);
             map.tiles.get((int) currentTaskLoc.x).get((int) currentTaskLoc.y).task = null;
         }
         completingTask = doingTaskAnimation;

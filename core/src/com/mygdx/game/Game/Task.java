@@ -4,6 +4,9 @@ import com.badlogic.gdx.math.Vector2;
 import com.mygdx.game.Generation.Map;
 import com.mygdx.game.Generation.Tile;
 import com.mygdx.game.Screens.GameScreen;
+import io.socket.client.Socket;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -61,19 +64,21 @@ public class Task {
         return null;
     }
 
-    public void completeTask(int x, int y, Map map, HashMap<String, Integer> resources) {
+    public void completeTask(int x, int y, Map map, HashMap<String, Integer> resources, Socket socket) {
         switch (type) {
             case "Mine" -> {
                 map.changeTileType(x, y, "dirt");
+                emitTileChange(socket, x, y, "dirt");
                 addToResource("stone", 1, resources);
             }
             case "CutDown" -> {
                 map.things.get(x).get(y).type = "";
+                emitThingChange("", x, y, 1, socket);
                 addToResource("wood", 1, resources);
             }
             case "Plant" -> {
-                map.changeThingType(x, y, "tree");
-                map.things.get(x).get(y).height = (int) (GameScreen.TILE_DIMS * 2);
+                map.changeThingType(x, y, "tree", (int) (GameScreen.TILE_DIMS * 2));
+                emitThingChange("tree", x, y, (int) (GameScreen.TILE_DIMS * 2), socket);
                 addToResource("wood", -1, resources);
             }
         }
@@ -81,5 +86,30 @@ public class Task {
 
     public void addToResource(String res, int addition, HashMap<String, Integer> resources){
         resources.replace(res, resources.get(res) + addition);
+    }
+
+    public void emitTileChange(Socket socket, int x, int y, String type) {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("x", x);
+            jsonObject.put("y", y);
+            jsonObject.put("type", type);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        socket.emit("changeTileType", jsonObject);
+    }
+
+    public void emitThingChange(String type, int x, int y, int height, Socket socket) {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            jsonObject.put("x", x);
+            jsonObject.put("y", y);
+            jsonObject.put("type", type);
+            jsonObject.put("height", height);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        socket.emit("changeThingType", jsonObject);
     }
 }
