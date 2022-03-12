@@ -89,27 +89,31 @@ public class Task {
     }
 
     public void emitTileChange(Socket socket, int x, int y, String type) {
-        JSONObject jsonObject = new JSONObject();
-        try {
-            jsonObject.put("x", x);
-            jsonObject.put("y", y);
-            jsonObject.put("type", type);
-        } catch (JSONException e) {
-            e.printStackTrace();
+        if (socket != null) {
+            JSONObject jsonObject = new JSONObject();
+            try {
+                jsonObject.put("x", x);
+                jsonObject.put("y", y);
+                jsonObject.put("type", type);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            socket.emit("changeTileType", jsonObject);
         }
-        socket.emit("changeTileType", jsonObject);
     }
 
     public void emitThingChange(String type, int x, int y, int height, Socket socket) {
-        JSONObject jsonObject = new JSONObject();
-        try {
-            jsonObject.put("x", x);
-            jsonObject.put("y", y);
-            jsonObject.put("type", type);
-            jsonObject.put("height", height);
-        } catch (JSONException e) {
-            e.printStackTrace();
+        if (socket != null) {
+            JSONObject jsonObject = new JSONObject();
+            try {
+                jsonObject.put("x", x);
+                jsonObject.put("y", y);
+                jsonObject.put("type", type);
+                jsonObject.put("height", height);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            socket.emit("changeThingType", jsonObject);
         }
-        socket.emit("changeThingType", jsonObject);
     }
 }

@@ -236,6 +236,7 @@ public class GameScreen implements Screen {
     @Override
     public void show() {
         Gdx.input.setInputProcessor(gameInputProcessor);
+        gameSpeed = 2;
     }
 
     @Override
@@ -332,8 +333,17 @@ public class GameScreen implements Screen {
                         optionsButtons.showButtons = false;
                         setPause(false);
                     }
-                    case "OptionsButton" -> game.setScreen(new SettingsScreen(game, true));
-                    case "SaveButton" -> saveGame("save12");
+                    case "OptionsButton" -> {
+                        setPause(false);
+                        game.setScreen(new SettingsScreen(game, true));
+                    }
+                    case "SaveButton" -> {
+                        Scanner sc = new Scanner(System.in);
+                        System.out.println("Enter name of the save file: ");
+                        String name = sc.nextLine();
+                        saveGame(name);
+                        setPause(false);
+                    }
                     case "LoadButton" -> game.setScreen(new LoadSaveScreen2(game));
                     case "MainMenuButton" -> game.setScreen(game.mainMenu);
                     case "ExitButton" -> Gdx.app.exit();

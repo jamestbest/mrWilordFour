@@ -103,6 +103,10 @@ public class AStar {
             path.add(pathRev.get(pathRev.size() - i - 1));
         }
 
+        if (path.size() == 1) {
+            return new ArrayList<>();
+        }
+
         System.out.println(count + " iterations");
 
         return path;

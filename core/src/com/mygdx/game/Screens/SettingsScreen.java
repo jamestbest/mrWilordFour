@@ -130,7 +130,7 @@ public class SettingsScreen implements Screen {
                         setFPSToMonitorRR();
                     }
                 }
-                case "LoopToggle" -> game.loop = (loopToggle.toggled);
+                case "LoopToggle" -> updateLoop(loopToggle.toggled);
                 case "SetTitleInputButton" -> {
                     updateTitle(setTitleInputButton.text);
                 }
@@ -344,5 +344,10 @@ public class SettingsScreen implements Screen {
         optionsTable.add(addSongLabel, addSongButton, fontLabel, fontDropDown);
 
         optionsTable.sort();
+    }
+
+    public void updateLoop(boolean loop){
+        game.loop = loop;
+        game.changeSong();
     }
 }
