@@ -90,6 +90,8 @@ public class GameScreen implements Screen {
 
     boolean paused;
 
+    boolean deanNorrisMode;
+
     // FIXED: 30/01/2022 add the selection rect and then add tasks based on the type and if the tile type is a match
     // TODO: 02/02/2022 Some of the tasks need to be drawn above the things and others below - gl
     // FIXED: 02/02/2022 need to change how the colonists get tasks
@@ -199,6 +201,8 @@ public class GameScreen implements Screen {
     }
 
     public void setup(){
+        Colonist.deanTexture = new Texture(Gdx.files.internal("core/assets/Textures/msc/deanNorris.jpg"));
+
         initialiseAllTextures();
         setupResourceHashMap();
         setupResourceButtons();
@@ -256,7 +260,12 @@ public class GameScreen implements Screen {
         map.drawMap(batch, tileTextures, camera);
 
         allowUpdate = true;
-        drawAllColonists(batch);
+        if (!deanNorrisMode){
+            drawAllColonists(batch);
+        }
+        else {
+            drawAllColonistsAsDeanNorris(batch);
+        }
 
         map.drawThings(batch, thingTextures, camera);
 
@@ -408,6 +417,10 @@ public class GameScreen implements Screen {
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.H)){
             gameSpeed = 0;
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.G)){
+            deanNorrisMode = !deanNorrisMode;
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
@@ -633,6 +646,12 @@ public class GameScreen implements Screen {
     public void drawAllColonists(SpriteBatch batch){
         for (Colonist c : colonists) {
             c.draw(batch, GameScreen.TILE_DIMS, colonistClothes);
+        }
+    }
+
+    public void drawAllColonistsAsDeanNorris(SpriteBatch batch){
+        for (Colonist c : colonists) {
+            c.drawAsDeanNorris(batch, GameScreen.TILE_DIMS);
         }
     }
 

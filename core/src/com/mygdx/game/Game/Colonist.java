@@ -45,6 +45,8 @@ public class Colonist {
 
     HashMap<String, Integer> priorityFromType;
 
+    public static Texture deanTexture;
+
     boolean movingAcrossPath = false;
     public boolean completingTask = false;
     public boolean doingTaskAnimation = false;
@@ -106,6 +108,16 @@ public class Colonist {
     }
 
     public void draw(SpriteBatch batch, float tileDims, HashMap<String, TextureAtlas> clothes) {
+        updateTimer();
+        batch.draw(clothes.get(clotheName).findRegion(direction), (x + ((nextX - x) * timer)) * tileDims, (y + ((nextY - y) * timer)) * tileDims, tileDims, tileDims);
+    }
+
+    public void drawAsDeanNorris(SpriteBatch batch, float tileDims){
+        updateTimer();
+        batch.draw(deanTexture, (x + ((nextX - x) * timer)) * tileDims, (y + ((nextY - y) * timer)) * tileDims, tileDims, tileDims);
+    }
+
+    public void updateTimer(){
         timer += Gdx.graphics.getDeltaTime() * GameScreen.gameSpeed;
         if (timer >= timerMax) {
             x = nextX;
@@ -113,7 +125,6 @@ public class Colonist {
             timer = 0f;
         }
         updateDirection();
-        batch.draw(clothes.get(clotheName).findRegion(direction), (x + ((nextX - x) * timer)) * tileDims, (y + ((nextY - y) * timer)) * tileDims, tileDims, tileDims);
     }
 
     public void draw(SpriteBatch batch, float tileDims, TextureRegion texture, int x, int y) {
