@@ -1,0 +1,47 @@
+
+stoneWall.png
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+four
+  rotate: false
+  xy: 1, 645
+  size: 320, 320
+  orig: 320, 320
+  offset: 0, 0
+  index: -1
+one
+  rotate: false
+  xy: 1, 323
+  size: 320, 320
+  orig: 320, 320
+  offset: 0, 0
+  index: -1
+three
+  rotate: false
+  xy: 323, 645
+  size: 320, 320
+  orig: 320, 320
+  offset: 0, 0
+  index: -1
+twoConnected
+  rotate: false
+  xy: 1, 1
+  size: 320, 320
+  orig: 320, 320
+  offset: 0, 0
+  index: -1
+twoUnconnected
+  rotate: false
+  xy: 323, 323
+  size: 320, 320
+  orig: 320, 320
+  offset: 0, 0
+  index: -1
+zero
+  rotate: false
+  xy: 645, 645
+  size: 320, 320
+  orig: 320, 320
+  offset: 0, 0
+  index: -1

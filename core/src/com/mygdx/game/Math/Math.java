@@ -48,4 +48,8 @@ public class Math {
     public static int ceil(float a){
         return (int)a + 1;
     }
+
+    public static float ffloor(float a){
+        return a>0 ? (int)a : (int)a-1;
+    }
 }

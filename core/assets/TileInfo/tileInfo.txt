@@ -28,4 +28,18 @@
             type:tree,
             canWalkOn:true
         },
+
+    "":
+        {
+            type:"",
+            canWalkOn:true
+            canSpawnOn:true
+        },
+
+    stoneWall:
+        {
+            type:stoneWall,
+            canWalkOn:false
+            canSpawnOn:false
+        },
 }

@@ -198,7 +198,6 @@ public class DropdownButton extends TextButton{
             else{
                 hoverPos = -1;
             }
-            System.out.println(hoverPos);
         }
     }
 

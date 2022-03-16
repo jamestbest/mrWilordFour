@@ -11,12 +11,12 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Json;
+import com.mygdx.game.Generation.*;
+import com.mygdx.game.Generation.Map;
 import com.mygdx.game.Math.CameraTwo;
 import com.mygdx.game.Game.Colonist;
 import com.mygdx.game.Game.MyGdxGame;
 import com.mygdx.game.Game.Task;
-import com.mygdx.game.Generation.Map;
-import com.mygdx.game.Generation.MapSettings;
 import com.mygdx.game.Saving.RLE;
 import com.mygdx.game.ui.elements.Button;
 import com.mygdx.game.ui.elements.ImgButton;
@@ -32,10 +32,7 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Scanner;
+import java.util.*;
 
 public class GameScreen implements Screen {
     public static int TILES_ON_X = 250;
@@ -91,6 +88,7 @@ public class GameScreen implements Screen {
     boolean paused;
 
     boolean deanNorrisMode;
+    Texture neanDorris;
 
     // FIXED: 30/01/2022 add the selection rect and then add tasks based on the type and if the tile type is a match
     // TODO: 02/02/2022 Some of the tasks need to be drawn above the things and others below - gl
@@ -233,6 +231,7 @@ public class GameScreen implements Screen {
         camera = new CameraTwo();
         camera.setMinMax(new Vector2(0,0), new Vector2(GameScreen.TILES_ON_X * TILE_DIMS, GameScreen.TILES_ON_X * TILE_DIMS));
 
+        neanDorris = new Texture(Gdx.files.internal("core/assets/Textures/msc/neanDorris.jpg"));
 
         Gdx.input.setInputProcessor(gameInputProcessor);
     }
@@ -257,7 +256,14 @@ public class GameScreen implements Screen {
 
         batch.begin();
         batch.setProjectionMatrix(camera.projViewMatrix.getGdxMatrix());
-        map.drawMap(batch, tileTextures, camera);
+
+        if (!deanNorrisMode){
+            map.drawMap(batch, tileTextures, camera);
+        }
+        else {
+            drawDeanOver(batch);
+        }
+
 
         allowUpdate = true;
         if (!deanNorrisMode){
@@ -265,6 +271,7 @@ public class GameScreen implements Screen {
         }
         else {
             drawAllColonistsAsDeanNorris(batch);
+
         }
 
         map.drawThings(batch, thingTextures, camera);
@@ -276,6 +283,11 @@ public class GameScreen implements Screen {
         drawColonistsPath(shapeRenderer);
 
         batchWithNoProj.begin();
+
+//        if (deanNorrisMode && (counter < counterMax / 2f) && random.nextInt(10) < 3) {
+//            batchWithNoProj.draw(Colonist.deanTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+//        }
+
 //        batchWithNoProj.setProjectionMatrix(camera.projViewMatrix.getGdxMatrix());
         bottomBarButtons.drawButtons(batchWithNoProj);
         ordersButtons.drawButtons(batchWithNoProj);
@@ -421,6 +433,17 @@ public class GameScreen implements Screen {
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.G)){
             deanNorrisMode = !deanNorrisMode;
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.F)){
+            Vector2 mousePos = camera.unproject(new Vector2(Gdx.input.getX(), Gdx.input.getY()));
+            int x = (int) (mousePos.x / TILE_DIMS);
+            int y = (int) (mousePos.y / TILE_DIMS);
+
+            if (map.isWithinBounds(x, y)) {
+                ConnectedThings stone = new ConnectedThings(x,y, (int) TILE_DIMS, (int) TILE_DIMS, "stoneWall", (int) TILE_DIMS);
+                map.addThing(stone, x, y);
+            }
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
@@ -957,6 +980,14 @@ public class GameScreen implements Screen {
             }
             shapeRenderer.end();
             Gdx.gl.glDisable(GL30.GL_BLEND);
+        }
+    }
+
+    public void drawDeanOver(SpriteBatch batch){
+        for (int i = 0; i < GameScreen.TILES_ON_X; i++) {
+            for (int j = 0; j < GameScreen.TILES_ON_X; j++) {
+                batch.draw(neanDorris, i * GameScreen.TILE_DIMS, j * GameScreen.TILE_DIMS, GameScreen.TILE_DIMS, GameScreen.TILE_DIMS);
+            }
         }
     }
 }

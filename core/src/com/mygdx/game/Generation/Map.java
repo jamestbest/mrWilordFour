@@ -75,6 +75,7 @@ public class Map {
         }
 
         generateTrees();
+        generateWalls();
     }
 
     public void setup(){
@@ -166,7 +167,7 @@ public class Map {
         int endX = (int)(Math.lowest((camera.width * camera.zoom / GameScreen.TILE_DIMS) + startX + 10, GameScreen.TILES_ON_X));
         int endY = (int)(Math.lowest((camera.height * camera.zoom / GameScreen.TILE_DIMS) + startY + 10, GameScreen.TILES_ON_X));
         for(int i = startX; i < endX; i++) {
-            for (int j = endY - 1; j > startY; j--) {
+            for (int j = endY - 1; j > startY - 1; j--) {
                 if (!things.get(i).get(j).type.equals("")) {
                     Thing t = things.get(i).get(j);
                     t.draw(batch, thingTextures.get(t.type));
@@ -182,8 +183,9 @@ public class Map {
             for (int j = 0; j < GameScreen.TILES_ON_X; j++) {
                 batch.draw(textures.get(tiles.get(i).get(j).type), i * miniMapDims + x, j * miniMapDims + y, miniMapDims, miniMapDims);
 
-                if (!things.get(i).get(j).type.equals("")) {
-                    batch.draw(thingTextures.get(things.get(i).get(j).type).findRegion("0"), i * miniMapDims + x, j * miniMapDims + y, miniMapDims, miniMapDims);
+                Thing t = things.get(i).get(j);
+                if (!t.type.equals("")) {
+                    t.drawMini(batch, thingTextures.get(t.type), (int) (i * miniMapDims + x), (int) (j * miniMapDims + y), (int) miniMapDims, (int) miniMapDims);
                 }
             }
         }
@@ -249,7 +251,7 @@ public class Map {
             things.add(new ArrayList<>());
             for(int j = 0; j < GameScreen.TILES_ON_X; j++){
                 if(random.nextInt(100) < settings.treeFreq && tiles.get(i).get(j).canSpawnOn){
-                    Thing temp = new Thing(i, j, (int) GameScreen.TILE_DIMS, (int) GameScreen.TILE_DIMS * 2, "tree", (int) GameScreen.TILE_DIMS);
+                    AnimatedThings temp = new AnimatedThings(i, j, (int) GameScreen.TILE_DIMS, (int) GameScreen.TILE_DIMS * 2, "tree", (int) GameScreen.TILE_DIMS);
                     things.get(i).add(temp);
                 }
                 else {
@@ -258,6 +260,43 @@ public class Map {
             }
         }
         System.out.println("Trees generated");
+    }
+
+    public void generateWalls(){
+        for (int i = 2; i < 13; i++) {
+            for (int j = 2; j < 13; j++) {
+                ConnectedThings temp = new ConnectedThings(i, j, (int) GameScreen.TILE_DIMS, (int) GameScreen.TILE_DIMS, "stoneWall", (int) GameScreen.TILE_DIMS);
+                things.get(i).set(j, temp);
+                tiles.get(i).get(j).canSpawnOn = false;
+                tiles.get(i).get(j).canWalkOn = false;
+            }
+        }
+
+        for (int i = 2; i < 13; i++) {
+            for (int j = 2; j < 13; j++) {
+                Thing temp = things.get(i).get(j);
+                temp.update(things);
+            }
+        }
+    }
+
+    public void addThing(Thing thing, int x, int y){
+        things.get(x).set(y, thing);
+        things.get(x).get(y).update(things);
+        tiles.get(x).get(y).canSpawnOn = tileInformationHashMap.get(thing.type).canSpawnOn;
+        tiles.get(x).get(y).canWalkOn = tileInformationHashMap.get(thing.type).canWalkOn;
+        if (isWithinBounds(x + 1, y)) {
+            things.get(x + 1).get(y).update(things);
+        }
+        if (isWithinBounds(x - 1, y)) {
+            things.get(x - 1).get(y).update(things);
+        }
+        if (isWithinBounds(x, y + 1)) {
+            things.get(x).get(y + 1).update(things);
+        }
+        if (isWithinBounds(x, y - 1)) {
+            things.get(x).get(y - 1).update(things);
+        }
     }
 
     public void changeTileType(int x, int y, String type){
@@ -359,6 +398,7 @@ public class Map {
                     case "things:":
                         String loadedThings = s.split(" ")[1];
                         map.things = RLE.decodeThings(loadedThings, Integer.parseInt(mapDims));
+                        map.updateAllTilesWithNewThings(map.things);
                         break;
                     case "mapInfo:":
                         String loadedMapInfo = s.split(" ")[1];
@@ -375,6 +415,15 @@ public class Map {
         }catch(Exception e){
             System.out.println("Error loading map");
             return false;
+        }
+    }
+
+    public void updateAllTilesWithNewThings(ArrayList<ArrayList<Thing>> things){
+        for (int i = 0; i < GameScreen.TILES_ON_X; i++) {
+            for (int j = 0; j < GameScreen.TILES_ON_X; j++) {
+                tiles.get(i).get(j).canWalkOn = tileInformationHashMap.get(things.get(i).get(j).type).canWalkOn;
+                tiles.get(i).get(j).canSpawnOn = tileInformationHashMap.get(things.get(i).get(j).type).canSpawnOn;
+            }
         }
     }
 

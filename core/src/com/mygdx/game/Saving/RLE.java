@@ -1,20 +1,20 @@
 package com.mygdx.game.Saving;
 
 import com.badlogic.gdx.math.Vector2;
-import com.mygdx.game.Generation.Map;
-import com.mygdx.game.Generation.Thing;
-import com.mygdx.game.Generation.Tile;
+import com.mygdx.game.Generation.*;
 import com.mygdx.game.Screens.GameScreen;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Objects;
 
 import static com.mygdx.game.Generation.Map.tileInformationHashMap;
 
 public class RLE {
     static HashMap<String, String> tileNameCode;
     static HashMap<String, String> thingNameCode;
+    static HashMap<String, String> thingClassType;
 
     public static String encodeTiles(Map map) {
         setupTileNameCodes();
@@ -120,11 +120,28 @@ public class RLE {
                 String type = reverseThingNameCode.get(inputSplit.get(i).substring(0, 1));
                 Vector2 dims = GameScreen.getMultiplierFromThings(type);
                 Vector2 dimsComplete = new Vector2(dims.x * GameScreen.TILE_DIMS, dims.y * GameScreen.TILE_DIMS);
-                output.get((count / mapDims)).add(new Thing(count / mapDims, count % mapDims, (int) dimsComplete.x, (int) dimsComplete.y, type, (int) GameScreen.TILE_DIMS));
+                if (Objects.equals(thingClassType.get(type), "Thing")) {
+                    output.get((count / mapDims)).add(new Thing(count / mapDims, count % mapDims, (int) dimsComplete.x, (int) dimsComplete.y, type, (int) GameScreen.TILE_DIMS));
+                }
+                else if (Objects.equals(thingClassType.get(type), "AnimatedThing")) {
+                    output.get((count / mapDims)).add(new AnimatedThings(count / mapDims, count % mapDims, (int) dimsComplete.x, (int) dimsComplete.y, type, (int) GameScreen.TILE_DIMS));
+                }
+                else if (Objects.equals(thingClassType.get(type), "ConnectedThing")) {
+                    output.get((count / mapDims)).add(new ConnectedThings(count / mapDims, count % mapDims, (int) dimsComplete.x, (int) dimsComplete.y, type, (int) GameScreen.TILE_DIMS));
+                }
                 count++;
             }
             if (i == inputSplit.size() - 3) {
                 System.out.println("test");
+            }
+        }
+
+        for (int i = 0; i < output.size(); i++) {
+            for (int j = 0; j < output.get(i).size(); j++) {
+                Thing tempThing = output.get(i).get(j);
+                if (tempThing != null) {
+                    tempThing.update(output);
+                }
             }
         }
         System.out.println(lineCount + " line count");
@@ -155,6 +172,12 @@ public class RLE {
         thingNameCode = new HashMap<>();
         thingNameCode.put("", "n");
         thingNameCode.put("tree", "t");
+        thingNameCode.put("stoneWall", "s");
+
+        thingClassType = new HashMap<>();
+        thingClassType.put("", "Thing");
+        thingClassType.put("tree", "AnimatedThing");
+        thingClassType.put("stoneWall", "ConnectedThing");
     }
 
     public static ArrayList<String> getSplitArray(String input){

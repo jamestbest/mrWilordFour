@@ -1,37 +1,39 @@
 package com.mygdx.game.Generation;
 
 import com.badlogic.gdx.math.Vector2;
+import com.mygdx.game.Math.Math;
 
 public class Noise2D {
 
     public static double noise(float x, float y, int numberOfLargeSquares){
 
-        int largeSquareX = (int) Math.floor(x) % numberOfLargeSquares;
-        int largeSquareY = (int) Math.floor(y) % numberOfLargeSquares;
+        int largeSquareX = (int) Math.ffloor(x) % numberOfLargeSquares;
+        int largeSquareY = (int) Math.ffloor(y) % numberOfLargeSquares;
 
-        x -= Math.floor(x);
-        y -= Math.floor(y);
+        x -= Math.ffloor(x);
+        y -= Math.ffloor(y);
 
-        Vector2 distanceVector1 = new Vector2(x, y); //bottom left
-        Vector2 distanceVector2 = new Vector2(x - 1, y); //bottom right
-        Vector2 distanceVector3 = new Vector2(x, y - 1); // top left
-        Vector2 distanceVector4 = new Vector2(x - 1, y -1); //top right
+        int[][] mults = new int[][]{{0,0},{1,0},{0,1},{1,1}};
+        Vector2[] distVecs = new Vector2[4];
+        for (int i = 0; i < 4; i++) {
+            distVecs[i] = new Vector2(x - mults[i][0], y - mults[i][1]);
+        }
 
-        int gradVec1 = p[p[largeSquareX] + largeSquareY];
-        int gradVec2= p[p[largeSquareX + 1] + largeSquareY];
-        int gradVec3 = p[p[largeSquareX] + largeSquareY + 1];
-        int gradVec4 = p[p[largeSquareX + 1] + largeSquareY + 1];
+        int[] gradVecs = new int[4];
+        for (int i = 0; i < 4; i++) {
+            gradVecs[i] = p[p[largeSquareX + mults[i][0]] + largeSquareY + mults[i][1]];
+        }
 
-        double dot1 = dotProduct(gradVec1, distanceVector1.x, distanceVector1.y);
-        double dot2 = dotProduct(gradVec2, distanceVector2.x, distanceVector2.y);
-        double dot3 = dotProduct(gradVec3, distanceVector3.x, distanceVector3.y);
-        double dot4 = dotProduct(gradVec4, distanceVector4.x, distanceVector4.y);
+        double[] dots = new double[4];
+        for (int i = 0; i < 4; i++) {
+            dots[i] = dotProduct(gradVecs[i], distVecs[i].x, distVecs[i].y);
+        }
 
         double fadedX = fade(x);
         double fadedY = fade(y);
 
-        double interp1 = linearInterpolation(fadedX, dot1, dot2);
-        double interp2 = linearInterpolation(fadedX, dot3, dot4);
+        double interp1 = linearInterpolation(fadedX, dots[0], dots[1]);
+        double interp2 = linearInterpolation(fadedX, dots[2], dots[3]);
         return (linearInterpolation(fadedY, interp1, interp2) + 1) / 2;
     }
 
