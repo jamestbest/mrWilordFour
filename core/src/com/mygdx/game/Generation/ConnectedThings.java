@@ -12,9 +12,14 @@ public class ConnectedThings extends Thing{
         canConnect = true;
     }
 
+    public ConnectedThings(Thing t, String type){
+        super(t.x, t.y, t.width, t.height, type, t.tileDims);
+        canConnect = true;
+    }
+
     String drawType; //used to decide which texture to use based on where the neighbours are
     int neighborCount = 0;
-    int rotation;
+    public int rotation;
 
     public void setNeighbourCount(ArrayList<ArrayList<Thing>> thingsArray) {
         int[] n = new int[4];
@@ -133,7 +138,7 @@ public class ConnectedThings extends Thing{
                 GameScreen.TILE_DIMS / 2, GameScreen.TILE_DIMS / 2, GameScreen.TILE_DIMS, GameScreen.TILE_DIMS, 1, 1, rotation);
     }
 
-    public void drawMini(SpriteBatch batch, TextureAtlas textureAtlas, int x, int y, int width, int height) {
+    public void drawMini(SpriteBatch batch, TextureAtlas textureAtlas, float x, float y, float width, float height) {
         batch.draw(textureAtlas.findRegion(drawType), x, y, width / 2f, height / 2f, width, height, 1, 1, rotation);
     }
 

@@ -251,6 +251,8 @@ public class Colonist {
         priorityFromType.put("Plant", 2);
         priorityFromType.put("CutDown", 3);
         priorityFromType.put("Harvest", 4);
+        priorityFromType.put("Build", 5);
+        priorityFromType.put("Demolish", 6);
     }
 
     public boolean getNextTask(ArrayList<ArrayList<Tile>> tiles) {
@@ -289,12 +291,12 @@ public class Colonist {
         }
         if (bestTask != null) {
             Vector2 neighbour = tiles.get((int) bestTask.x).get((int) bestTask.y).task.getNeighbour(tiles, (int) bestTask.x, (int) bestTask.y);
-            if (tiles.get((int) bestTask.x).get((int) bestTask.y).canWalkOn) {
-                pathToComplete = AStar.pathFindForColonist(new Vector2(x, y), bestTask, tiles);
-            }
-            else {
-                pathToComplete = AStar.pathFindForColonist(new Vector2(x, y), neighbour, tiles);
-            }
+//            if (tiles.get((int) bestTask.x).get((int) bestTask.y).canWalkOn) {
+//                pathToComplete = AStar.pathFindForColonist(new Vector2(x, y), bestTask, tiles);
+//            }
+//            else {
+            pathToComplete = AStar.pathFindForColonist(new Vector2(x, y), neighbour, tiles);
+//            }
             completingTask = true;
             tiles.get((int) bestTask.x).get((int) bestTask.y).task.reserved = true;
             currentTaskLoc = new Vector2(bestTask.x, bestTask.y);

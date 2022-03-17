@@ -39,7 +39,9 @@
     stoneWall:
         {
             type:stoneWall,
-            canWalkOn:false
-            canSpawnOn:false
+        },
+    woodWall:
+        {
+            type:woodWall,
         },
 }

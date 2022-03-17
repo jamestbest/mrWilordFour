@@ -18,7 +18,7 @@ public class AnimatedThings extends Thing{
         batch.draw(atlas.findRegion(atlasPos + ""), x * tileDims, y * tileDims, width, height);
     }
 
-    public void drawMini(SpriteBatch batch, TextureAtlas textureAtlas, int x, int y, int width, int height) {
+    public void drawMini(SpriteBatch batch, TextureAtlas textureAtlas, float x, float y, float width, float height) {
         updateTimer(textureAtlas);
         batch.draw(textureAtlas.findRegion(atlasPos + ""), x, y, width, height);
     }

@@ -185,7 +185,9 @@ public class Map {
 
                 Thing t = things.get(i).get(j);
                 if (!t.type.equals("")) {
-                    t.drawMini(batch, thingTextures.get(t.type), (int) (i * miniMapDims + x), (int) (j * miniMapDims + y), (int) miniMapDims, (int) miniMapDims);
+                    Vector2 mults = GameScreen.getMultiplierFromThings(t.type);
+                    t.drawMini(batch, thingTextures.get(t.type), ((i * miniMapDims) + x), ((j * miniMapDims) + y),
+                             (miniMapDims * mults.x),  (miniMapDims * mults.y));
                 }
             }
         }
@@ -285,6 +287,10 @@ public class Map {
         things.get(x).get(y).update(things);
         tiles.get(x).get(y).canSpawnOn = tileInformationHashMap.get(thing.type).canSpawnOn;
         tiles.get(x).get(y).canWalkOn = tileInformationHashMap.get(thing.type).canWalkOn;
+        updateThingNeighbours(x, y);
+    }
+
+    public void updateThingNeighbours(int x, int y){
         if (isWithinBounds(x + 1, y)) {
             things.get(x + 1).get(y).update(things);
         }
@@ -460,5 +466,12 @@ public class Map {
         br.close();
         System.out.println(Arrays.toString(save));
         return save;
+    }
+
+    public void clearThing(int x, int y){
+        things.get(x).get(y).type = "";
+        things.get(x).get(y).canConnect = false;
+        tiles.get(x).get(y).canSpawnOn = tileInformationHashMap.get(tiles.get(x).get(y).type).canSpawnOn;
+        tiles.get(x).get(y).canWalkOn = tileInformationHashMap.get(tiles.get(x).get(y).type).canWalkOn;
     }
 }

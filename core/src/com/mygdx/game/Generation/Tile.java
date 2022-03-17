@@ -24,7 +24,8 @@ public class Tile {
 
     }
 
-    public void setTask(String task){
+    public void setTask(String task, String subType){
     	this.task = new Task(task);
+    	this.task.subType = subType;
     }
 }

@@ -1,6 +1,7 @@
 package com.mygdx.game.Game;
 
 import com.badlogic.gdx.math.Vector2;
+import com.mygdx.game.Generation.ConnectedThings;
 import com.mygdx.game.Generation.Map;
 import com.mygdx.game.Generation.Tile;
 import com.mygdx.game.Screens.GameScreen;
@@ -13,6 +14,7 @@ import java.util.HashMap;
 
 public class Task {
     public String type;
+    public String subType;
 
     public boolean reserved = false;
 
@@ -69,17 +71,55 @@ public class Task {
             case "Mine" -> {
                 map.changeTileType(x, y, "dirt");
                 emitTileChange(socket, x, y, "dirt");
-                addToResource("stone", 1, resources);
+                changeResources(resources, "Mine", "");
             }
             case "CutDown" -> {
-                map.things.get(x).get(y).type = "";
+                map.clearThing(x, y);
                 emitThingChange("", x, y, 1, socket);
-                addToResource("wood", 1, resources);
+                changeResources(resources, "CutDown", "");
             }
             case "Plant" -> {
                 map.changeThingType(x, y, "tree", (int) (GameScreen.TILE_DIMS * 2));
                 emitThingChange("tree", x, y, (int) (GameScreen.TILE_DIMS * 2), socket);
-                addToResource("wood", -1, resources);
+                changeResources(resources, "Plant", "");
+            }
+            case "Demolish" -> {
+                map.clearThing(x, y);
+                map.updateThingNeighbours(x, y);
+                emitThingChange("", x, y, 1, socket);
+            }
+            case "Build" -> {
+                ConnectedThings temp = new ConnectedThings(map.things.get(x).get(y), subType);
+                map.addThing(temp, x, y);
+//                emitThingChange(subType, x, y, 1, socket);
+                changeResources(resources, "Build", subType);
+            }
+        }
+    }
+
+    public static void changeResources(HashMap<String, Integer> resources, String type, String subType){
+        switch (type){
+            case "Mine" -> {
+                resources.replace("stone", resources.get("stone") + 1);
+            }
+            case "CutDown" -> {
+                resources.replace("wood", resources.get("wood") + 1);
+            }
+            case "Plant" -> {
+                resources.replace("wood", resources.get("wood") - 1);
+            }
+            case "Demolish" -> {
+
+            }
+            case "Build" -> {
+                switch (subType){
+                    case "stoneWall" -> {
+                        resources.replace("stone", resources.get("stone") - 1);
+                    }
+                    case "woodWall" -> {
+                        resources.replace("wood", resources.get("wood") - 1);
+                    }
+                }
             }
         }
     }

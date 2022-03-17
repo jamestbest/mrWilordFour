@@ -43,7 +43,7 @@ public class Thing {
         batch.draw(textureAtlas.findRegion("0"), x * tileDims, y * tileDims, width, height);
     }
 
-    public void drawMini(SpriteBatch batch, TextureAtlas textureAtlas, int x, int y, int width, int height) {
+    public void drawMini(SpriteBatch batch, TextureAtlas textureAtlas, float x, float y, float width, float height) {
         batch.draw(textureAtlas.findRegion("0"), x, y, width, height);
     }
 }
