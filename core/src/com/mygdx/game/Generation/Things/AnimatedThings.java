@@ -13,14 +13,18 @@ public class AnimatedThings extends Thing{
         super(x, y, width, height, type, dims);
     }
 
-    public void draw(SpriteBatch batch, TextureAtlas atlas){
-        updateTimer(atlas);
-        batch.draw(atlas.findRegion(atlasPos + ""), x * tileDims, y * tileDims, width, height);
+    public void draw(SpriteBatch batch, TextureAtlas atlas, int drawLayer) {
+        if (drawLayer == this.drawLayer) {
+            updateTimer(atlas);
+            batch.draw(atlas.findRegion(atlasPos + ""), x * tileDims, y * tileDims, width, height);
+        }
     }
 
-    public void drawMini(SpriteBatch batch, TextureAtlas textureAtlas, float x, float y, float width, float height) {
-        updateTimer(textureAtlas);
-        batch.draw(textureAtlas.findRegion(atlasPos + ""), x, y, width, height);
+    public void drawMini(SpriteBatch batch, TextureAtlas textureAtlas, float x, float y, float width, float height, int drawLayer) {
+        if (drawLayer == this.drawLayer) {
+            updateTimer(textureAtlas);
+            batch.draw(textureAtlas.findRegion(atlasPos + ""), x, y, width, height);
+        }
     }
 
     public void updateTimer(TextureAtlas atlas){

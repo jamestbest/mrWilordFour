@@ -3,6 +3,7 @@ package com.mygdx.game.Game;
 import com.badlogic.gdx.math.Vector2;
 import com.mygdx.game.Generation.Things.ConnectedThings;
 import com.mygdx.game.Generation.Map;
+import com.mygdx.game.Generation.Things.Door;
 import com.mygdx.game.Generation.Tile;
 import com.mygdx.game.Screens.GameScreen;
 import io.socket.client.Socket;
@@ -89,10 +90,31 @@ public class Task {
                 emitThingChange("", x, y, 1, socket);
             }
             case "Build" -> {
-                ConnectedThings temp = new ConnectedThings(map.things.get(x).get(y), subType);
-                map.addThing(temp, x, y);
+                String s = getThingTypeFromSubType(subType);
+                if (s.equals("connected")){
+                    ConnectedThings temp = new ConnectedThings(map.things.get(x).get(y), subType);
+                    map.addThing(temp, x, y);
+                }
+                else if (s.equals("door")) {
+                    Door temp = new Door(map.things.get(x).get(y), subType);
+                    map.addThing(temp, x, y);
+                }
 //                emitThingChange(subType, x, y, 1, socket);
                 changeResources(resources, "Build", subType);
+            }
+        }
+    }
+
+    public String getThingTypeFromSubType(String subType) {
+        switch (subType) {
+            case "woodWall", "stoneWall" -> {
+                return "connected";
+            }
+            case "stoneDoor" -> {
+                return "door";
+            }
+            default -> {
+                return "";
             }
         }
     }
@@ -113,7 +135,7 @@ public class Task {
             }
             case "Build" -> {
                 switch (subType){
-                    case "stoneWall" -> {
+                    case "stoneWall", "stoneDoor" -> {
                         resources.replace("stone", resources.get("stone") - 1);
                     }
                     case "woodWall" -> {

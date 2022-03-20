@@ -1,0 +1,243 @@
+
+stoneDoor.png
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+Horizontal
+  rotate: false
+  xy: 1, 201
+  size: 96, 48
+  orig: 96, 48
+  offset: 0, 0
+  index: 1
+Horizontal
+  rotate: false
+  xy: 1, 151
+  size: 96, 48
+  orig: 96, 48
+  offset: 0, 0
+  index: 10
+Horizontal
+  rotate: false
+  xy: 99, 201
+  size: 96, 48
+  orig: 96, 48
+  offset: 0, 0
+  index: 11
+Horizontal
+  rotate: false
+  xy: 1, 101
+  size: 96, 48
+  orig: 96, 48
+  offset: 0, 0
+  index: 12
+Horizontal
+  rotate: false
+  xy: 99, 151
+  size: 96, 48
+  orig: 96, 48
+  offset: 0, 0
+  index: 13
+Horizontal
+  rotate: false
+  xy: 197, 201
+  size: 96, 48
+  orig: 96, 48
+  offset: 0, 0
+  index: 14
+Horizontal
+  rotate: false
+  xy: 1, 51
+  size: 96, 48
+  orig: 96, 48
+  offset: 0, 0
+  index: 15
+Horizontal
+  rotate: false
+  xy: 99, 101
+  size: 96, 48
+  orig: 96, 48
+  offset: 0, 0
+  index: 16
+Horizontal
+  rotate: false
+  xy: 197, 151
+  size: 96, 48
+  orig: 96, 48
+  offset: 0, 0
+  index: 17
+Horizontal
+  rotate: false
+  xy: 295, 201
+  size: 96, 48
+  orig: 96, 48
+  offset: 0, 0
+  index: 2
+Horizontal
+  rotate: false
+  xy: 1, 1
+  size: 96, 48
+  orig: 96, 48
+  offset: 0, 0
+  index: 3
+Horizontal
+  rotate: false
+  xy: 99, 51
+  size: 96, 48
+  orig: 96, 48
+  offset: 0, 0
+  index: 4
+Horizontal
+  rotate: false
+  xy: 197, 101
+  size: 96, 48
+  orig: 96, 48
+  offset: 0, 0
+  index: 5
+Horizontal
+  rotate: false
+  xy: 295, 151
+  size: 96, 48
+  orig: 96, 48
+  offset: 0, 0
+  index: 6
+Horizontal
+  rotate: false
+  xy: 393, 201
+  size: 96, 48
+  orig: 96, 48
+  offset: 0, 0
+  index: 7
+Horizontal
+  rotate: false
+  xy: 99, 1
+  size: 96, 48
+  orig: 96, 48
+  offset: 0, 0
+  index: 8
+Horizontal
+  rotate: false
+  xy: 197, 51
+  size: 96, 48
+  orig: 96, 48
+  offset: 0, 0
+  index: 9
+Vertical
+  rotate: false
+  xy: 295, 53
+  size: 48, 96
+  orig: 48, 96
+  offset: 0, 0
+  index: 1
+Vertical
+  rotate: false
+  xy: 345, 53
+  size: 48, 96
+  orig: 48, 96
+  offset: 0, 0
+  index: 10
+Vertical
+  rotate: false
+  xy: 491, 153
+  size: 48, 96
+  orig: 48, 96
+  offset: 0, 0
+  index: 11
+Vertical
+  rotate: false
+  xy: 541, 153
+  size: 48, 96
+  orig: 48, 96
+  offset: 0, 0
+  index: 12
+Vertical
+  rotate: false
+  xy: 591, 153
+  size: 48, 96
+  orig: 48, 96
+  offset: 0, 0
+  index: 13
+Vertical
+  rotate: false
+  xy: 641, 153
+  size: 48, 96
+  orig: 48, 96
+  offset: 0, 0
+  index: 14
+Vertical
+  rotate: false
+  xy: 691, 153
+  size: 48, 96
+  orig: 48, 96
+  offset: 0, 0
+  index: 15
+Vertical
+  rotate: false
+  xy: 741, 153
+  size: 48, 96
+  orig: 48, 96
+  offset: 0, 0
+  index: 16
+Vertical
+  rotate: false
+  xy: 791, 153
+  size: 48, 96
+  orig: 48, 96
+  offset: 0, 0
+  index: 17
+Vertical
+  rotate: false
+  xy: 841, 153
+  size: 48, 96
+  orig: 48, 96
+  offset: 0, 0
+  index: 2
+Vertical
+  rotate: false
+  xy: 891, 153
+  size: 48, 96
+  orig: 48, 96
+  offset: 0, 0
+  index: 3
+Vertical
+  rotate: false
+  xy: 941, 153
+  size: 48, 96
+  orig: 48, 96
+  offset: 0, 0
+  index: 4
+Vertical
+  rotate: false
+  xy: 395, 103
+  size: 48, 96
+  orig: 48, 96
+  offset: 0, 0
+  index: 5
+Vertical
+  rotate: false
+  xy: 395, 5
+  size: 48, 96
+  orig: 48, 96
+  offset: 0, 0
+  index: 6
+Vertical
+  rotate: false
+  xy: 445, 55
+  size: 48, 96
+  orig: 48, 96
+  offset: 0, 0
+  index: 7
+Vertical
+  rotate: false
+  xy: 495, 55
+  size: 48, 96
+  orig: 48, 96
+  offset: 0, 0
+  index: 8
+Vertical
+  rotate: false
+  xy: 545, 55
+  size: 48, 96
+  orig: 48, 96
+  offset: 0, 0
+  index: 9

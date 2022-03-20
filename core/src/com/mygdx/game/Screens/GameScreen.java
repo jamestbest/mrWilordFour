@@ -14,6 +14,7 @@ import com.badlogic.gdx.utils.Json;
 import com.mygdx.game.Generation.*;
 import com.mygdx.game.Generation.Map;
 import com.mygdx.game.Generation.Things.ConnectedThings;
+import com.mygdx.game.Generation.Things.Door;
 import com.mygdx.game.Math.CameraTwo;
 import com.mygdx.game.Entity.Colonist;
 import com.mygdx.game.Game.MyGdxGame;
@@ -64,6 +65,8 @@ public class GameScreen implements Screen {
     HashMap<String, TextureAtlas> colonistClothes = new HashMap<>();
     HashMap<String, Texture> actionSymbols = new HashMap<>();
 
+    public Texture selectionIcon;
+
     float counter = 0f;
     float counterMax = 1f;
     float delta = 0f;
@@ -87,6 +90,7 @@ public class GameScreen implements Screen {
 
     boolean cancelSelection;
     boolean drawColonistPath;
+    boolean inCancelTaskMode;
 
     boolean paused;
 
@@ -209,6 +213,7 @@ public class GameScreen implements Screen {
 
     public void setup(){
         Colonist.deanTexture = new Texture(Gdx.files.internal("core/assets/Textures/msc/deanNorris.jpg"));
+        selectionIcon = new Texture(Gdx.files.internal("core/assets/Textures/ui/selection/selectedIcon.png"));
 
         initialiseAllTextures();
         setupResourceHashMap();
@@ -304,6 +309,8 @@ public class GameScreen implements Screen {
         buildingButtons.drawButtons(batchWithNoProj);
         resourceButtons.drawButtons(batchWithNoProj);
 
+        drawColonistsAtTop(batchWithNoProj);
+
         batchWithNoProj.end();
         if (paused) {
             Gdx.gl.glEnable(GL30.GL_BLEND);
@@ -333,6 +340,10 @@ public class GameScreen implements Screen {
                 if (!(bottomBarButtons.updateButtons(camera, Gdx.input.isButtonJustPressed(0)) || ordersButtons.updateButtons(camera, Gdx.input.isButtonJustPressed(0))
                                                                                                || buildingButtons.updateButtons(camera, Gdx.input.isButtonJustPressed(0)))){
                     drawSelectionScreen(shapeRenderer, camera);
+                    batch.begin();
+                    batch.setProjectionMatrix(camera.projViewMatrix.getGdxMatrix());
+                    highlightSelected(batch);
+                    batch.end();
                 }
                 else {
                     cancelSelection = true;
@@ -357,18 +368,24 @@ public class GameScreen implements Screen {
                 }
 
                 if (ordersButtons.updateButtons(camera, Gdx.input.isButtonJustPressed(0))) {
+                    inCancelTaskMode = false;
                     switch (ordersButtons.pressedButtonName) {
                         case "MineButton" -> taskTypeSelected = "Mine";
                         case "CutDownButton" -> taskTypeSelected = "CutDown";
                         case "PlantButton" -> taskTypeSelected = "Plant";
                         case "HarvestButton" -> taskTypeSelected = "Harvest";
                         case "DemolishButton" -> taskTypeSelected = "Demolish";
+                        case "CancelButton" -> {
+                            taskTypeSelected = "Cancel";
+                            inCancelTaskMode = true;
+                        }
                     }
                 }
                 if (buildingButtons.updateButtons(camera, Gdx.input.isButtonJustPressed(0))) {
                     switch (buildingButtons.pressedButtonName) {
                         case "stoneWallButton" -> buildingSelected = "stoneWall";
                         case "woodWallButton" -> buildingSelected = "woodWall";
+                        case "stoneDoorButton" -> buildingSelected = "stoneDoor";
                     }
                 }
             }
@@ -465,8 +482,12 @@ public class GameScreen implements Screen {
             int y = (int) (mousePos.y / TILE_DIMS);
 
             if (map.isWithinBounds(x, y)) {
-                ConnectedThings stone = new ConnectedThings(x,y, (int) TILE_DIMS, (int) TILE_DIMS, "stoneWall", (int) TILE_DIMS);
-                map.addThing(stone, x, y);
+//                ConnectedThings stone = new ConnectedThings(x,y, (int) TILE_DIMS, (int) TILE_DIMS, "stoneWall", (int) TILE_DIMS);
+//                map.addThing(stone, x, y);
+
+                Door door = new Door(x, y, (int) TILE_DIMS, (int) TILE_DIMS, "stoneDoor", (int) TILE_DIMS);
+                map.addThing(door, x, y);
+                door.triggerOpen();
             }
         }
 
@@ -786,8 +807,9 @@ public class GameScreen implements Screen {
         ImgButton harvest = new ImgButton("HarvestButton", "Harvest");
         ImgButton mine = new ImgButton("MineButton", "Mine");
         ImgButton demolish = new ImgButton("DemolishButton", "Demolish");
+        ImgButton cancel = new ImgButton("CancelButton", "Cancel");
 
-        ordersButtons.add(cutDown, plant, harvest, mine, demolish);
+        ordersButtons.add(cutDown, plant, harvest, mine, demolish, cancel);
 
         int numberOfButtonsPerRow = 3;
         int row = 0;
@@ -811,8 +833,9 @@ public class GameScreen implements Screen {
         float y = (MyGdxGame.initialRes.y / 12f) + 5;
         ImgButton stoneWall = new ImgButton("stoneWallButton", "stoneWall");
         ImgButton woodWall = new ImgButton("woodWallButton", "woodWall");
+        ImgButton stoneDoor = new ImgButton("stoneDoorButton", "stoneDoor");
 
-        buildingButtons.add(stoneWall, woodWall);
+        buildingButtons.add(stoneWall, woodWall, stoneDoor);
 
         for (int i = 0; i < buildingButtons.buttons.size(); i++) {
             Button b = buildingButtons.buttons.get(i);
@@ -880,8 +903,9 @@ public class GameScreen implements Screen {
         orderTypes.put("Plant", new ArrayList<>(Arrays.asList("dirt", "grass")));
         orderTypes.put("CutDown", new ArrayList<>(Arrays.asList("tree")));
         orderTypes.put("Harvest", new ArrayList<>(Arrays.asList()));
-        orderTypes.put("Demolish", new ArrayList<>(Arrays.asList("stoneWall", "woodWall")));
+        orderTypes.put("Demolish", new ArrayList<>(Arrays.asList("stoneWall", "woodWall", "stoneDoor")));
         orderTypes.put("Build", new ArrayList<>(Arrays.asList("dirt", "grass")));
+        orderTypes.put("Cancel", new ArrayList<>(List.of()));
     }
 
     public boolean canUseOrderOnType(String order, String tileType, String thingType){
@@ -909,33 +933,89 @@ public class GameScreen implements Screen {
         Gdx.gl.glDisable(GL30.GL_BLEND);
     }
 
+    public void highlightSelected(SpriteBatch batch){
+        float minX = Math.min(minSelecting.x, maxSelecting.x);
+        float minY = Math.min(minSelecting.y, maxSelecting.y);
+        float maxX = Math.max(minSelecting.x, maxSelecting.x);
+        float maxY = Math.max(minSelecting.y, maxSelecting.y);
+
+        int minXCoord = (int) (minX / TILE_DIMS);
+        int minYCoord = (int) (minY / TILE_DIMS);
+        int maxXCoord = (int) (maxX / TILE_DIMS) + 1;
+        int maxYCoord = (int) (maxY / TILE_DIMS) + 1;
+
+        minXCoord = Math.max(0, minXCoord);
+        minYCoord = Math.max(0, minYCoord);
+        maxXCoord = Math.min(TILES_ON_X, maxXCoord);
+        maxYCoord = Math.min(TILES_ON_X, maxYCoord);
+
+        for (int i = minXCoord; i < maxXCoord; i++) {
+            for (int j = minYCoord; j < maxYCoord; j++) {
+                if (selectionMode.equals("Orders")){
+                    if (canUseOrderOnType(taskTypeSelected, map.things.get(i).get(j).type, map.tiles.get(i).get(j).type)) {
+                        batch.draw(selectionIcon, i * TILE_DIMS, j * TILE_DIMS, TILE_DIMS, TILE_DIMS);
+                    }
+                }
+                else if (selectionMode.equals("Building")){
+                    if (canUseOrderOnType("Build", map.things.get(i).get(j).type, map.tiles.get(i).get(j).type)) {
+                        batch.draw(selectionIcon, i * TILE_DIMS, j * TILE_DIMS, TILE_DIMS, TILE_DIMS);
+                    }
+                }
+                if (inCancelTaskMode){
+                    if (map.tiles.get(i).get(j).task != null){
+                        if (!map.tiles.get(i).get(j).task.reserved){
+                            batch.draw(selectionIcon, i * TILE_DIMS, j * TILE_DIMS, TILE_DIMS, TILE_DIMS);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     public void setTasksFromSelection(String taskType){
         setTasksFromSelection(taskType, "");
     }
 
     public void setTasksFromSelection(String taskType, String taskSubType){
-        int minx = (int) (Math.min(minSelecting.x, maxSelecting.x) / GameScreen.TILE_DIMS);
-        int miny = (int) (Math.min(minSelecting.y, maxSelecting.y) / GameScreen.TILE_DIMS);
-        int maxx = (int) (Math.max(minSelecting.x, maxSelecting.x) / GameScreen.TILE_DIMS);
-        int maxy = (int) (Math.max(minSelecting.y, maxSelecting.y) / GameScreen.TILE_DIMS);
+        float minX = Math.min(minSelecting.x, maxSelecting.x);
+        float minY = Math.min(minSelecting.y, maxSelecting.y);
+        float maxX = Math.max(minSelecting.x, maxSelecting.x);
+        float maxY = Math.max(minSelecting.y, maxSelecting.y);
 
-        minx = Math.max(0, minx);
-        miny = Math.max(0, miny);
-        maxx = Math.min(GameScreen.TILES_ON_X, maxx);
-        maxy = Math.min(GameScreen.TILES_ON_X, maxy);
+        int minXCoord = (int) (minX / TILE_DIMS);
+        int minYCoord = (int) (minY / TILE_DIMS);
+        int maxXCoord = (int) (maxX / TILE_DIMS) + 1;
+        int maxYCoord = (int) (maxY / TILE_DIMS) + 1;
 
-        for (int i = minx; i < maxx; i++) {
-            for (int j = miny; j < maxy; j++) {
-                System.out.println(taskType + " " + map.tiles.get(i).get(j).type + " " + map.things.get(i).get(j).type);
-                if (canUseOrderOnType(taskType, map.tiles.get(i).get(j).type, map.things.get(i).get(j).type)){
-                    Task t = map.tiles.get(i).get(j).task;
-                    if (t != null){
-                        if (!map.tiles.get(i).get(j).task.reserved){
+        minXCoord = Math.max(0, minXCoord);
+        minYCoord = Math.max(0, minYCoord);
+        maxXCoord = Math.min(TILES_ON_X, maxXCoord);
+        maxYCoord = Math.min(TILES_ON_X, maxYCoord);
+
+        if (!inCancelTaskMode) {
+            for (int i = minXCoord; i < maxXCoord; i++) {
+                for (int j = minYCoord; j < maxYCoord; j++) {
+                    System.out.println(taskType + " " + map.tiles.get(i).get(j).type + " " + map.things.get(i).get(j).type);
+                    if (canUseOrderOnType(taskType, map.tiles.get(i).get(j).type, map.things.get(i).get(j).type)) {
+                        Task t = map.tiles.get(i).get(j).task;
+                        if (t != null) {
+                            if (!map.tiles.get(i).get(j).task.reserved) {
+                                map.tiles.get(i).get(j).setTask(taskType, taskSubType);
+                            }
+                        } else {
                             map.tiles.get(i).get(j).setTask(taskType, taskSubType);
                         }
                     }
-                    else{
-                        map.tiles.get(i).get(j).setTask(taskType, taskSubType);
+                }
+            }
+        }
+        else {
+            for (int i = minXCoord; i < maxXCoord; i++) {
+                for (int j = minYCoord; j < maxYCoord; j++) {
+                    if (map.tiles.get(i).get(j).task != null){
+                        if (!map.tiles.get(i).get(j).task.reserved){
+                            map.tiles.get(i).get(j).task = null;
+                        }
                     }
                 }
             }
@@ -1058,6 +1138,21 @@ public class GameScreen implements Screen {
         } else {
             hideAllButtons();
             b.showButtons = true;
+        }
+    }
+
+    public void drawColonistsAtTop(SpriteBatch batch){
+        float dims = MyGdxGame.initialRes.x * 0.03f;
+        float y = MyGdxGame.initialRes.y - (dims * 1.1f);
+        float x = (MyGdxGame.initialRes.x - ((dims * 1.1f) * colonists.size())) / 2f;
+
+        if (colonists.size() > ((MyGdxGame.initialRes.x * 0.8f) / dims)) {
+            dims = (MyGdxGame.initialRes.x * 0.8f) / colonists.size();
+        }
+
+        for (int i = 0; i < colonists.size(); i++) {
+            Colonist c = colonists.get(i);
+            c.drawMini(batch, (int) (x + ((dims * 1.1f)) * i), (int) y, (int) dims, colonistClothes);
         }
     }
 }

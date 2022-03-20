@@ -44,4 +44,9 @@
         {
             type:woodWall,
         },
+    stoneDoor:
+        {
+            type:stoneDoor,
+            canWalkOn:true
+        },
 }

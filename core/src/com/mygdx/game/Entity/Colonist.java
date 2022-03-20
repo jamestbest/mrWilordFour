@@ -96,6 +96,10 @@ public class Colonist extends Entity {
         batch.draw(clothes.get(clotheName).findRegion(direction), (x + ((nextX - x) * timer)) * tileDims, (y + ((nextY - y) * timer)) * tileDims, tileDims, tileDims);
     }
 
+    public void drawMini(SpriteBatch batch, int x, int y, int dims, HashMap<String, TextureAtlas> clothes) {
+        batch.draw(clothes.get(clotheName).findRegion("front"), x, y, dims, dims);
+    }
+
     public void drawAsDeanNorris(SpriteBatch batch, float tileDims){
         updateTimer();
         batch.draw(deanTexture, (x + ((nextX - x) * timer)) * tileDims, (y + ((nextY - y) * timer)) * tileDims, tileDims, tileDims);

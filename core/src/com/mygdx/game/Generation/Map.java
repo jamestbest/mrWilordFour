@@ -168,11 +168,13 @@ public class Map {
 
         int endX = (int)(Math.lowest((camera.width * camera.zoom / GameScreen.TILE_DIMS) + startX + 10, GameScreen.TILES_ON_X));
         int endY = (int)(Math.lowest((camera.height * camera.zoom / GameScreen.TILE_DIMS) + startY + 10, GameScreen.TILES_ON_X));
-        for(int i = startX; i < endX; i++) {
-            for (int j = endY - 1; j > startY - 1; j--) {
-                if (!things.get(i).get(j).type.equals("")) {
-                    Thing t = things.get(i).get(j);
-                    t.draw(batch, thingTextures.get(t.type));
+        for (int k = 0; k < 3; k++) {
+            for(int i = startX; i < endX; i++) {
+                for (int j = endY - 1; j > startY - 1; j--) {
+                    if (!things.get(i).get(j).type.equals("")) {
+                        Thing t = things.get(i).get(j);
+                        t.draw(batch, thingTextures.get(t.type), k);
+                    }
                 }
             }
         }
@@ -180,16 +182,18 @@ public class Map {
 
     public void drawMiniMap(SpriteBatch batch, HashMap<String, Texture> textures, HashMap<String, TextureAtlas> thingTextures){
         float miniMapDims = drawHeight / (float) GameScreen.TILES_ON_X;
-        
-        for (int i = 0; i < GameScreen.TILES_ON_X; i++) {
-            for (int j = 0; j < GameScreen.TILES_ON_X; j++) {
-                batch.draw(textures.get(tiles.get(i).get(j).type), i * miniMapDims + x, j * miniMapDims + y, miniMapDims, miniMapDims);
 
-                Thing t = things.get(i).get(j);
-                if (!t.type.equals("")) {
-                    Vector2 mults = GameScreen.getMultiplierFromThings(t.type);
-                    t.drawMini(batch, thingTextures.get(t.type), ((i * miniMapDims) + x), ((j * miniMapDims) + y),
-                             (miniMapDims * mults.x),  (miniMapDims * mults.y));
+        for(int k = 0; k < 3; k++) {
+            for (int i = 0; i < GameScreen.TILES_ON_X; i++) {
+                for (int j = 0; j < GameScreen.TILES_ON_X; j++) {
+                    batch.draw(textures.get(tiles.get(i).get(j).type), i * miniMapDims + x, j * miniMapDims + y, miniMapDims, miniMapDims);
+
+                    Thing t = things.get(i).get(j);
+                    if (!t.type.equals("")) {
+                        Vector2 mults = GameScreen.getMultiplierFromThings(t.type);
+                        t.drawMini(batch, thingTextures.get(t.type), ((i * miniMapDims) + x), ((j * miniMapDims) + y),
+                                (miniMapDims * mults.x), (miniMapDims * mults.y), k);
+                    }
                 }
             }
         }
@@ -318,9 +322,10 @@ public class Map {
 
     public void changeThingType(int x, int y, String type, int height){
         if (isWithinBounds(x, y)){
-            Thing temp = things.get(x).get(y);
-            temp.type = type;
-            temp.height = height;
+            Thing temp2 = new Thing(things.get(x).get(y));
+            temp2.type = type;
+            temp2.height = height;
+            things.get(x).set(y, temp2);
             Tile tempTile = tiles.get(x).get(y);
             tempTile.canSpawnOn = tileInformationHashMap.get(type).canSpawnOn;
             tempTile.canWalkOn = tileInformationHashMap.get(type).canWalkOn;
@@ -429,8 +434,8 @@ public class Map {
     public void updateAllTilesWithNewThings(ArrayList<ArrayList<Thing>> things){
         for (int i = 0; i < GameScreen.TILES_ON_X; i++) {
             for (int j = 0; j < GameScreen.TILES_ON_X; j++) {
-                tiles.get(i).get(j).canWalkOn = tileInformationHashMap.get(things.get(i).get(j).type).canWalkOn;
-                tiles.get(i).get(j).canSpawnOn = tileInformationHashMap.get(things.get(i).get(j).type).canSpawnOn;
+                tiles.get(i).get(j).canWalkOn = (tileInformationHashMap.get(things.get(i).get(j).type).canWalkOn && tiles.get(i).get(j).canWalkOn);
+                tiles.get(i).get(j).canSpawnOn = (tileInformationHashMap.get(things.get(i).get(j).type).canSpawnOn && tiles.get(i).get(j).canSpawnOn);
             }
         }
     }

@@ -18,6 +18,8 @@ public class Thing {
 
     public boolean canConnect = false;
 
+    int drawLayer = 1;
+
     public Thing(int x, int y, int width, int height, String type, int tileDims) {
         this.x = x;
         this.y = y;
@@ -28,6 +30,14 @@ public class Thing {
         this.type = type;
     }
 
+    public Thing(Thing t){
+        this.x = t.x;
+        this.y = t.y;
+        this.width = t.width;
+        this.height = t.height;
+        this.tileDims = t.tileDims;
+    }
+
     public Thing(){
 
     }
@@ -36,11 +46,15 @@ public class Thing {
 
     }
 
-    public void draw(SpriteBatch batch, TextureAtlas textureAtlas) {
-        batch.draw(textureAtlas.findRegion("0"), x * tileDims, y * tileDims, width, height);
+    public void draw(SpriteBatch batch, TextureAtlas textureAtlas, int drawLayer) {
+        if (this.drawLayer == drawLayer) {
+            batch.draw(textureAtlas.findRegion("0"), x * tileDims, y * tileDims, width, height);
+        }
     }
 
-    public void drawMini(SpriteBatch batch, TextureAtlas textureAtlas, float x, float y, float width, float height) {
-        batch.draw(textureAtlas.findRegion("0"), x, y, width, height);
+    public void drawMini(SpriteBatch batch, TextureAtlas textureAtlas, float x, float y, float width, float height, int drawLayer) {
+        if (this.drawLayer == drawLayer) {
+            batch.draw(textureAtlas.findRegion("0"), x, y, width, height);
+        }
     }
 }

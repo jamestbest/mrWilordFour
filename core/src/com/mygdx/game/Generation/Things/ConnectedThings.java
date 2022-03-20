@@ -21,9 +21,8 @@ public class ConnectedThings extends Thing{
     int neighborCount = 0;
     public int rotation;
 
-    public void setNeighbourCount(ArrayList<ArrayList<Thing>> thingsArray) {
+    public int[] setNeighbourCount(ArrayList<ArrayList<Thing>> thingsArray) {
         int[] n = new int[4];
-        boolean connectedNeighbour = false;
 
         if (isInBounds(x + 1, y)){
             if (thingsArray.get(x + 1).get(y).canConnect) {
@@ -49,22 +48,21 @@ public class ConnectedThings extends Thing{
                 n[3] = 1;
             }
         }
+        return n;
+    }
 
+    public boolean getIfConnectedNeighbour(int[] n)
+    {
         if (n[0] == 1 && n[1] == 1){
-            connectedNeighbour = true;
+            return true;
         }
         if (n[0] == 1 && n[3] == 1){
-            connectedNeighbour = true;
+            return true;
         }
         if (n[2] == 1 && n[1] == 1){
-            connectedNeighbour = true;
+            return true;
         }
-        if (n[2] == 1 && n[3] == 1){
-            connectedNeighbour = true;
-        }
-
-        setDrawType(connectedNeighbour);
-        setRotation(n);
+        return n[2] == 1 && n[3] == 1;
     }
 
     public boolean isInBounds(int x, int y){
@@ -133,17 +131,23 @@ public class ConnectedThings extends Thing{
         }
     }
 
-    public void draw(SpriteBatch batch, TextureAtlas textureAtlas){
-        batch.draw(textureAtlas.findRegion(drawType), x * GameScreen.TILE_DIMS, y * GameScreen.TILE_DIMS,
-                GameScreen.TILE_DIMS / 2, GameScreen.TILE_DIMS / 2, GameScreen.TILE_DIMS, GameScreen.TILE_DIMS, 1, 1, rotation);
+    public void draw(SpriteBatch batch, TextureAtlas textureAtlas, int drawLayer){
+        if (drawLayer == this.drawLayer) {
+            batch.draw(textureAtlas.findRegion(drawType), x * GameScreen.TILE_DIMS, y * GameScreen.TILE_DIMS,
+                    GameScreen.TILE_DIMS / 2, GameScreen.TILE_DIMS / 2, GameScreen.TILE_DIMS, GameScreen.TILE_DIMS, 1, 1, rotation);
+        }
     }
 
-    public void drawMini(SpriteBatch batch, TextureAtlas textureAtlas, float x, float y, float width, float height) {
-        batch.draw(textureAtlas.findRegion(drawType), x, y, width / 2f, height / 2f, width, height, 1, 1, rotation);
+    public void drawMini(SpriteBatch batch, TextureAtlas textureAtlas, float x, float y, float width, float height, int drawLayer) {
+        if (drawLayer == this.drawLayer) {
+            batch.draw(textureAtlas.findRegion(drawType), x, y, width / 2f, height / 2f, width, height, 1, 1, rotation);
+        }
     }
 
     public void update(ArrayList<ArrayList<Thing>> thingsArray){
         neighborCount = 0;
-        setNeighbourCount(thingsArray);
+        int[] n = setNeighbourCount(thingsArray);
+        setDrawType(getIfConnectedNeighbour(n));
+        setRotation(n);
     }
 }
