@@ -1,5 +1,5 @@
 [
-    {class:com.mygdx.game.Game.Colonist,
+    {class:com.mygdx.game.Entity.Colonist,
         skills:{Construction: 1,
                 Intelligence: 6,
                 Mining: 4,
@@ -14,7 +14,7 @@
         profession:Gunnery Sergeant,
         backstory:A leader in the army \nwith great tactical and combat skills
     },
-    {class:com.mygdx.game.Game.Colonist,
+    {class:com.mygdx.game.Entity.Colonist,
         skills:{Construction: 2,
                 Intelligence: 5,
                 Mining: 8,
@@ -29,7 +29,7 @@
         profession:Miner,
         backstory:A miner that has been \nworking in the mines for years
     },
-    {class:com.mygdx.game.Game.Colonist,
+    {class:com.mygdx.game.Entity.Colonist,
         skills:{Construction: 1,
                 Intelligence: 4,
                 Mining: 1,
@@ -44,7 +44,7 @@
         profession:President,
         backstory:A once great leader \nwho came to power after the collapse of the nation
     },
-    {class:com.mygdx.game.Game.Colonist,
+    {class:com.mygdx.game.Entity.Colonist,
         skills:{Construction: 1,
                 Intelligence: 6,
                 Mining: 2,
@@ -59,7 +59,7 @@
         profession:Student,
         backstory:Studies at the university \nand is a student at the university
     },
-    {class:com.mygdx.game.Game.Colonist,
+    {class:com.mygdx.game.Entity.Colonist,
         skills:{Construction: 3,
                 Intelligence: 8,
                 Mining: 1,
@@ -74,7 +74,7 @@
         profession:Accountant,
         backstory:A skilled accountant \nwho is able to keep the nation running
     },
-    {class:com.mygdx.game.Game.Colonist,
+    {class:com.mygdx.game.Entity.Colonist,
         skills:{Construction: 1,
                 Intelligence: 5,
                 Mining: 1,
@@ -89,7 +89,7 @@
         profession:Pool cleaner,
         backstory:A skilled pool cleaner \nwho is able to keep the pool clean
     },
-    {class:com.mygdx.game.Game.Colonist,
+    {class:com.mygdx.game.Entity.Colonist,
         skills:{Construction: 1,
                 Intelligence: 20,
                 Mining: 1,
@@ -104,7 +104,7 @@
         profession:Street lamp,
         backstory:There is nothing that will\n make you happier than a street lamp
     },
-    {class:com.mygdx.game.Game.Colonist,
+    {class:com.mygdx.game.Entity.Colonist,
         skills:{Construction: 3,
                 Intelligence: 3,
                 Mining: 1,
@@ -119,7 +119,7 @@
         profession:Criminal,
         backstory:A criminal who is \nable to commit crimes
     },
-    {class:com.mygdx.game.Game.Colonist,
+    {class:com.mygdx.game.Entity.Colonist,
         skills:{Construction: 1,
                 Intelligence: 9,
                 Mining: 1,
@@ -134,7 +134,7 @@
         profession:Obama,
         backstory:The ruler of all the \nworlds and gamer of the world
     },
-    {class:com.mygdx.game.Game.Colonist,
+    {class:com.mygdx.game.Entity.Colonist,
         skills:{Construction: 4,
                 Intelligence: 8,
                 Mining: 2,
@@ -149,7 +149,7 @@
         profession:Chemist,
         backstory:A skilled chemist \nwho would never turn down a chemical
     },
-    {class:com.mygdx.game.Game.Colonist,
+    {class:com.mygdx.game.Entity.Colonist,
         skills:{Construction: 4,
                 Intelligence: 4,
                 Mining: 1,
@@ -164,7 +164,7 @@
         profession:Able seamen,
         backstory:Throughout their life \nthis person has been on many epic \nvoyages and has been able to \nseamen
     },
-    {class:com.mygdx.game.Game.Colonist,
+    {class:com.mygdx.game.Entity.Colonist,
         skills:{Construction: 3,
                 Intelligence: 5,
                 Mining: 2,
@@ -179,7 +179,7 @@
         profession:Actor,
         backstory: Once took part in the movie \n"The Godfather". However they were caught \nand had to be sent to the prison
     },
-    {class:com.mygdx.game.Game.Colonist,
+    {class:com.mygdx.game.Entity.Colonist,
         skills:{Construction: 2,
                 Intelligence: 6,
                 Mining: 2,
@@ -194,7 +194,7 @@
         profession:Anesthesiologist assistant,
         backstory:There is nothing that will\n make you happier than a street lamp
     },
-    {class:com.mygdx.game.Game.Colonist,
+    {class:com.mygdx.game.Entity.Colonist,
         skills:{Construction: 5,
                 Intelligence: 3,
                 Mining: 1,
@@ -209,7 +209,7 @@
         profession:Infantry,
         backstory:A dedicated soldier who \nhas been in the army for a long time
     },
-    {class:com.mygdx.game.Game.Colonist,
+    {class:com.mygdx.game.Entity.Colonist,
         skills:{Construction: 3,
                 Intelligence: 5,
                 Mining: 1,
@@ -224,7 +224,7 @@
         profession:Zoo keeper,
         backstory:Lost a leg and was forced \nto work in the zoo
     },
-    {class:com.mygdx.game.Game.Colonist,
+    {class:com.mygdx.game.Entity.Colonist,
         skills:{Construction: 1,
                 Intelligence: 6,
                 Mining: 1,
@@ -239,7 +239,7 @@
         profession: "Assassin (not a real one, \nbut a fake one, but it works, \njust don't tell anyone)",
         backstory:A fake assassin who \nhas been in the army for a long time \nand is now a fake assassin
     },
-    {class:com.mygdx.game.Game.Colonist,
+    {class:com.mygdx.game.Entity.Colonist,
         skills:{Construction: 4,
                 Intelligence: 9,
                 Mining: 3,
@@ -254,7 +254,7 @@
         profession:Biofuels/BioDiesel Technology \nand product development manager ***NEW***,
         backstory:An all new profession\n brought to you as part of the free \ntrial of the Biofuels/BioDiesel update
     },
-    {class:com.mygdx.game.Game.Colonist,
+    {class:com.mygdx.game.Entity.Colonist,
         skills:{Construction: 1,
                 Intelligence: 6,
                 Mining: 1,
@@ -269,7 +269,7 @@
         profession:Biologist,
         backstory:Mitochondria is the powerhouse of the cell
     },
-    {class:com.mygdx.game.Game.Colonist,
+    {class:com.mygdx.game.Entity.Colonist,
         skills:{Construction: 8,
                 Intelligence: 6,
                 Mining: 3,
@@ -284,7 +284,7 @@
         profession:Boiler maker,
         backstory:Everyone needs a boiler to keep the heat going in the \nhouse and the heat is needed to keep the water going in the house \nand the water is needed to keep the food going in the house and the food \nis needed to keep the people alive and the people are needed to keep \nthe world alive and the world is needed to keep the world alive
     },
-    {class:com.mygdx.game.Game.Colonist,
+    {class:com.mygdx.game.Entity.Colonist,
         skills:{Construction: 1,
                 Intelligence: 5,
                 Mining: 1,
@@ -299,7 +299,7 @@
         profession:Chef,
         backstory:Their signature dish is the \n"The Great American Hamburger". Which is a \nburger with a side of fries and a side of \ncheese and a side of a salad
     },
-    {class:com.mygdx.game.Game.Colonist,
+    {class:com.mygdx.game.Entity.Colonist,
         skills:{Construction: 2,
                 Intelligence: 4,
                 Mining: 1,
@@ -314,7 +314,7 @@
         profession:Clergy,
         backstory:They are the servants of the church. \nBut they like pizza
     },
-    {class:com.mygdx.game.Game.Colonist,
+    {class:com.mygdx.game.Entity.Colonist,
         skills:{Construction: 5,
                 Intelligence: 7,
                 Mining: 3,
@@ -329,7 +329,7 @@
         profession:Pilot,
         backstory:Their father was a pilot but \nhe was killed in a plane crash. \nThey are now a pilot
     },
-    {class:com.mygdx.game.Game.Colonist,
+    {class:com.mygdx.game.Entity.Colonist,
         skills:{Construction: 4,
                 Intelligence: 6,
                 Mining: 2,
@@ -344,7 +344,7 @@
         profession:Composer,
         backstory:They composed the song "The \nGreat American Song" which goes \n"I am the greatest American and I am the greatest \nAmerican"
     },
-    {class:com.mygdx.game.Game.Colonist,
+    {class:com.mygdx.game.Entity.Colonist,
         skills:{Construction: 4,
                 Intelligence: 7,
                 Mining: 2,
@@ -359,7 +359,7 @@
         profession:Computer Scientist,
         backstory:They are the inventors of the \ncomputer and they invented the internet
     },
-    {class:com.mygdx.game.Game.Colonist,
+    {class:com.mygdx.game.Entity.Colonist,
         skills:{Construction: 2,
                 Intelligence: 7,
                 Mining: 1,
@@ -374,7 +374,7 @@
         profession:Dentist,
         backstory:They are not doctors but they \nare doctors
     },
-    {class:com.mygdx.game.Game.Colonist,
+    {class:com.mygdx.game.Entity.Colonist,
         skills:{Construction: 7,
                 Intelligence: 2,
                 Mining: 4,
@@ -389,7 +389,7 @@
         profession:Deforester,
         backstory:Sworn enemy of the Lorax
     },
-    {class:com.mygdx.game.Game.Colonist,
+    {class:com.mygdx.game.Entity.Colonist,
         skills:{Construction: 2,
                 Intelligence: 6,
                 Mining: 1,
@@ -404,7 +404,7 @@
         profession:Historian,
         backstory:They have studied the ancient aliens \nand discovered the truth about them and the \nLorax and the truth about the Lorax
     },
-    {class:com.mygdx.game.Game.Colonist,
+    {class:com.mygdx.game.Entity.Colonist,
         skills:{Construction: 3,
                 Intelligence: 4,
                 Mining: 2,
@@ -419,7 +419,7 @@
         profession:Insurance Agent,
         backstory:They have sold insurance to the \nLorax
     },
-    {class:com.mygdx.game.Game.Colonist,
+    {class:com.mygdx.game.Entity.Colonist,
         skills:{Construction: 5,
                 Intelligence: 9,
                 Mining: 1,
@@ -434,7 +434,7 @@
         profession:Paper printer,
         backstory:The printer we needed but didn't deserve
     },
-    {class:com.mygdx.game.Game.Colonist,
+    {class:com.mygdx.game.Entity.Colonist,
         skills:{Construction: 3,
                 Intelligence: 8,
                 Mining: 1,
@@ -449,7 +449,7 @@
         profession:Lawyer,
         backstory:They have been hired by the \nLorax to defend the Lorax against the deforesters. \nThey lost
     },
-    {class:com.mygdx.game.Game.Colonist,
+    {class:com.mygdx.game.Entity.Colonist,
         skills:{Construction: 3,
                 Intelligence: 4,
                 Mining: 3,
@@ -464,7 +464,7 @@
         profession:Person,
         backstory:They are a person what more do you \nwant from them
     },
-    {class:com.mygdx.game.Game.Colonist,
+    {class:com.mygdx.game.Entity.Colonist,
         skills:{Construction: 1,
                 Intelligence: 9,
                 Mining: 3,
@@ -479,7 +479,7 @@
         profession:Nuclear Engineer,
         backstory:They were the inventor of the \nRBMK reactor
     },
-    {class:com.mygdx.game.Game.Colonist,
+    {class:com.mygdx.game.Entity.Colonist,
         skills:{Construction: 10,
                 Intelligence: 10,
                 Mining: 1,
@@ -494,7 +494,7 @@
         profession:(toy) Rocket Scientist,
         backstory:They've been making rockets for the \nLorax
     },
-    {class:com.mygdx.game.Game.Colonist,
+    {class:com.mygdx.game.Entity.Colonist,
         skills:{Construction: 7,
                 Intelligence: 8,
                 Mining: 2,
@@ -509,7 +509,7 @@
         profession:Rocket Scientist,
         backstory:Works for Elon Musk and the Lorax \nwith the goal of making mars a little better \nbut not too much better
     },
-    {class:com.mygdx.game.Game.Colonist,
+    {class:com.mygdx.game.Entity.Colonist,
         skills:{Construction: 5,
                 Intelligence: 5,
                 Mining: 5,
@@ -524,7 +524,7 @@
         profession:Fireman,
         backstory:They are good at saving the \nLorax from the deforesters
     },
-    {class:com.mygdx.game.Game.Colonist,
+    {class:com.mygdx.game.Entity.Colonist,
         skills:{Construction: 2,
                 Intelligence: 3,
                 Mining: 1,
@@ -539,7 +539,7 @@
         profession:Psychic,
         backstory:They are a psychic who can \nread minds of other people but at a cost \nthey are a little bit of a jerk
     },
-    {class:com.mygdx.game.Game.Colonist,
+    {class:com.mygdx.game.Entity.Colonist,
         skills:{Construction: 8,
                 Intelligence: 5,
                 Mining: 4,

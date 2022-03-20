@@ -9,7 +9,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.utils.Json;
 import com.mygdx.game.Math.CameraTwo;
-import com.mygdx.game.Game.Colonist;
+import com.mygdx.game.Entity.Colonist;
 import com.mygdx.game.Game.MyGdxGame;
 import com.mygdx.game.Generation.Map;
 import com.mygdx.game.Generation.MapSettings;
@@ -195,9 +195,7 @@ public class JoinGameScreen implements Screen {
 
                 ArrayList<String> packagedTiles = json.fromJson(ArrayList.class, data.get("tiles").toString());
                 int mapWidth = data.getInt("mapWidth");
-                int mapHeight = data.getInt("mapHeight");
                 int tileDims = data.getInt("tileDims");
-                GameScreen.TILES_ON_X = mapHeight;
                 GameScreen.TILES_ON_X = mapWidth;
                 GameScreen.TILE_DIMS = tileDims;
 
@@ -221,7 +219,7 @@ public class JoinGameScreen implements Screen {
 
         for (int i = 0; i < colonists.size(); i++) {
             Colonist c = colonists.get(i);
-            batch.draw(colonistTextures.get(c.clotheName), (x + ((width / 10f) * i + glyphLayout.width)), (y + (height * 0.95f)), width / 10f, height / 10f);
+            batch.draw(colonistTextures.get(c.getClotheName()), (x + ((width / 10f) * i + glyphLayout.width)), (y + (height * 0.95f)), width / 10f, height / 10f);
         }
     }
 

@@ -2,6 +2,9 @@ package com.mygdx.game.Saving;
 
 import com.badlogic.gdx.math.Vector2;
 import com.mygdx.game.Generation.*;
+import com.mygdx.game.Generation.Things.AnimatedThings;
+import com.mygdx.game.Generation.Things.ConnectedThings;
+import com.mygdx.game.Generation.Things.Thing;
 import com.mygdx.game.Screens.GameScreen;
 
 import java.util.ArrayList;

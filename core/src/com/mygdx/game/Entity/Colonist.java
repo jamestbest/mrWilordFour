@@ -1,4 +1,4 @@
-package com.mygdx.game.Game;
+package com.mygdx.game.Entity;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.mygdx.game.AStar.AStar;
+import com.mygdx.game.Game.Task;
 import com.mygdx.game.Generation.Map;
 import com.mygdx.game.Generation.Tile;
 import com.mygdx.game.Screens.GameScreen;
@@ -20,28 +21,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
 
-public class Colonist {
-    public int x;
-    public int y;
-
-    public int nextX;
-    public int nextY;
-
-    public int health;
+public class Colonist extends Entity {
     public HashMap<String, Integer> skills;
 
     public String profession;
     public String backstory;
 
-    public String clotheName;
-    String direction = "front";
-
     public String firstName;
     public String lastName;
-
-    static Random random = new Random();
-
-    public ArrayList<Vector2> pathToComplete = new ArrayList<>();
 
     HashMap<String, Integer> priorityFromType;
 
@@ -52,9 +39,6 @@ public class Colonist {
     public boolean doingTaskAnimation = false;
 
     Vector2 currentTaskLoc;
-
-    public float timer = 0f;
-    float timerMax = 1f;
 
     int randomMoveRadius = 25;
 

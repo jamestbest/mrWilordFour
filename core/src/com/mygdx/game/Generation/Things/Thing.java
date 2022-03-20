@@ -1,10 +1,7 @@
-package com.mygdx.game.Generation;
+package com.mygdx.game.Generation.Things;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
-import com.mygdx.game.Game.MyGdxGame;
 
 import java.util.ArrayList;
 
@@ -19,7 +16,7 @@ public class Thing {
 
     int tileDims;
 
-    boolean canConnect = false;
+    public boolean canConnect = false;
 
     public Thing(int x, int y, int width, int height, String type, int tileDims) {
         this.x = x;

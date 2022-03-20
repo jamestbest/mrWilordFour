@@ -1,7 +1,7 @@
 package com.mygdx.game.Game;
 
 import com.badlogic.gdx.math.Vector2;
-import com.mygdx.game.Generation.ConnectedThings;
+import com.mygdx.game.Generation.Things.ConnectedThings;
 import com.mygdx.game.Generation.Map;
 import com.mygdx.game.Generation.Tile;
 import com.mygdx.game.Screens.GameScreen;

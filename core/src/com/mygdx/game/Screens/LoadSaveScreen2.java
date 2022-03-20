@@ -6,7 +6,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.mygdx.game.Math.CameraTwo;
-import com.mygdx.game.Game.Colonist;
+import com.mygdx.game.Entity.Colonist;
 import com.mygdx.game.Game.MyGdxGame;
 import com.mygdx.game.Generation.Map;
 import com.mygdx.game.ui.elements.BoxedTextButton;

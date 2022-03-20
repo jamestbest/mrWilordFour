@@ -1,4 +1,4 @@
-package com.mygdx.game.Generation;
+package com.mygdx.game.Generation.Things;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;

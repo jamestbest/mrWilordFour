@@ -13,8 +13,9 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Json;
 import com.mygdx.game.Generation.*;
 import com.mygdx.game.Generation.Map;
+import com.mygdx.game.Generation.Things.ConnectedThings;
 import com.mygdx.game.Math.CameraTwo;
-import com.mygdx.game.Game.Colonist;
+import com.mygdx.game.Entity.Colonist;
 import com.mygdx.game.Game.MyGdxGame;
 import com.mygdx.game.Game.Task;
 import com.mygdx.game.Saving.RLE;
@@ -989,13 +990,13 @@ public class GameScreen implements Screen {
         JSONObject obj = new JSONObject();
         for (Colonist c : colonists
              ) {
-            System.out.println("Colonist: " + c.colonistID + " " + c.x + " " + c.y);
+            System.out.println("Colonist: " + c.colonistID + " " + c.getX() + " " + c.getY());
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put("x", c.x);
-            jsonObject.put("y", c.y);
-            jsonObject.put("nextX", c.nextX);
-            jsonObject.put("nextY", c.nextY);
-            jsonObject.put("timer", c.timer);
+            jsonObject.put("x", c.getX());
+            jsonObject.put("y", c.getY());
+            jsonObject.put("nextX", c.getNextX());
+            jsonObject.put("nextY", c.getNextY());
+            jsonObject.put("timer", c.getTimer());
 //            jsonObject.put("pathToComplete", json.toJson(c.pathToComplete));
             obj.put(String.valueOf(c.colonistID), jsonObject);
         }
@@ -1007,11 +1008,11 @@ public class GameScreen implements Screen {
 
         for (Colonist c : colonists) {
             JSONObject colonistInput = jsonObject.getJSONObject(String.valueOf(c.colonistID));
-            c.x = colonistInput.getInt("x");
-            c.y = colonistInput.getInt("y");
-            c.nextX = colonistInput.getInt("nextX");
-            c.nextY = colonistInput.getInt("nextY");
-            c.timer = colonistInput.getInt("timer");
+            c.setX(colonistInput.getInt("x"));
+            c.setY(colonistInput.getInt("y"));
+            c.setNextX(colonistInput.getInt("nextX"));
+            c.setNextY(colonistInput.getInt("nextY"));
+            c.setTimer(colonistInput.getInt("timer"));
 //            c.pathToComplete = json.fromJson(ArrayList.class, Vector2.class, colonistInput.getString("pathToComplete"));
         }
     }

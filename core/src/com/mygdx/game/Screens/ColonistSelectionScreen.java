@@ -13,7 +13,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Json;
 import com.mygdx.game.Math.CameraTwo;
-import com.mygdx.game.Game.Colonist;
+import com.mygdx.game.Entity.Colonist;
 import com.mygdx.game.Game.MyGdxGame;
 import com.mygdx.game.Generation.Map;
 import com.mygdx.game.ui.elements.Label;
@@ -189,7 +189,7 @@ public class ColonistSelectionScreen implements Screen {
         int k = random.nextInt(clothes.length);
         Colonist c = new Colonist();
         c.copyTemplate(colonistTemplates.get(j));
-        c.clotheName = clothes[k];
+        c.setClotheName(clothes[k]);
         c.setup();
 
         return c;
@@ -220,7 +220,7 @@ public class ColonistSelectionScreen implements Screen {
         batch.begin();
         batch.setProjectionMatrix(camera.projViewMatrix.getGdxMatrix());
         for (int i = 0; i < numberOfColonistsToSelectFrom; i++) {
-            batch.draw(colonistClothes.get(colonistsToSelectFrom.get(i).clotheName)
+            batch.draw(colonistClothes.get(colonistsToSelectFrom.get(i).getClotheName())
                     .findRegion("front"),
                     offsetX, offsetY + (height * i) + (offsetY / numberOfColonistsToSelectFrom * i), height - 2, height - 2);
         }
@@ -335,7 +335,7 @@ public class ColonistSelectionScreen implements Screen {
 
         float x = offsetX * 3 + width;
 
-        batch.draw(colonistClothes.get(c.clotheName)
+        batch.draw(colonistClothes.get(c.getClotheName())
                 .findRegion("front"),
                 x, MyGdxGame.initialRes.y / 11 * 6, MyGdxGame.initialRes.x / 5, MyGdxGame.initialRes.x / 5);
 
