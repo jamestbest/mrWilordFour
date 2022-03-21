@@ -39,6 +39,8 @@ public class Entity {
     public static HashMap<String, Integer> typeToHealth = new HashMap<>();
     public static Random random = new Random();
 
+    boolean movingAcrossPath = false;
+
     public Entity(int x, int y, String entityType, int width, int height) {
         this.x = x;
         this.y = y;
@@ -124,14 +126,22 @@ public class Entity {
         return new Vector2(randomX, randomY);
     }
 
+    public void setMoveToPos(int x, int y, Map map) {
+        pathToComplete = AStar.pathFindForColonist(new Vector2(this.x, this.y), new Vector2(x, y), map.tiles);
+        movingAcrossPath = pathToComplete.size() > 0;
+    }
+
     public static Integer getHealthFromType(String entityType) {
         return typeToHealth.get(entityType);
     }
 
-    public static void setHealthFromType(String entityType, int health) {
+    public static void setHealthFromType() {
         typeToHealth.put("Gunner", 90);
         typeToHealth.put("Melee", 150);
         typeToHealth.put("Ranger", 60);
+        typeToHealth.put("Pig", 20);
+        typeToHealth.put("Sheep", 25);
+        typeToHealth.put("Wolf", 50);
     }
 
     public int getX() {
@@ -238,6 +248,13 @@ public class Entity {
         this.weapon = weapon;
     }
 
+    public boolean attack(Entity defender){
+        weapon.setCurrentCooldown(weapon.getCooldown());
+        if (random.nextInt(100) <= weapon.getAccuracy()) {
+            defender.setHealth(defender.getHealth() - weapon.getDamage());
+            return true;
+        }
+        return false;
     public void attack(Entity defender){
         if (weapon.getCurrentCooldown() == 0) {
             if (random.nextInt(100) <= weapon.getAccuracy()) {
