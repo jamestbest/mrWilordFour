@@ -34,13 +34,13 @@ public class Colonist extends Entity {
 
     public static Texture deanTexture;
 
-    boolean movingAcrossPath = false;
+
     public boolean completingTask = false;
     public boolean doingTaskAnimation = false;
 
     Vector2 currentTaskLoc;
 
-    int randomMoveRadius = 25;
+
 
     public int colonistID;
 
@@ -113,64 +113,6 @@ public class Colonist extends Entity {
             timer = 0f;
         }
         updateDirection();
-    }
-
-    public void draw(SpriteBatch batch, float tileDims, TextureRegion texture, int x, int y) {
-        batch.draw(texture, x, y, tileDims, tileDims);
-    }
-
-    public void moveRandomly(Map map) {
-        int randomX = random.nextInt(3) - 1;
-        int randomY = random.nextInt(3) - 1;
-
-        if (map.isWithinBounds(randomX + x, randomY + y)) {
-            if (map.tiles.get(x + randomX).get(y + randomY).canWalkOn) {
-                nextX = x + randomX;
-                nextY = y + randomY;
-            }
-        }
-    }
-
-    public void setMoveToPos(int x, int y, Map map) {
-        pathToComplete = AStar.pathFindForColonist(new Vector2(this.x, this.y), new Vector2(x, y), map.tiles);
-        movingAcrossPath = pathToComplete.size() > 0;
-    }
-
-    public void getRandomPosition(Map map) {
-        int count = 0;
-        Vector2 randomPos = getPosInRange(map);
-        int randomX = (int) randomPos.x;
-        int randomY = (int) randomPos.y;
-
-        while (!map.tiles.get(x + randomX).get(y + randomY).canWalkOn) {
-            randomPos = getPosInRange(map);
-            randomX = (int) randomPos.x;
-            randomY = (int) randomPos.y;
-            count++;
-            if (count > 100) {
-                break;
-            }
-        }
-
-        pathToComplete = AStar.pathFindForColonist(new Vector2(x, y), new Vector2(randomX + x, randomY + y), map.tiles);
-
-        movingAcrossPath = pathToComplete.size() > 0;
-    }
-
-    public Vector2 getPosInRange(Map map) {
-        int randomX = random.nextInt(randomMoveRadius * 2);
-        int randomY = random.nextInt(randomMoveRadius * 2);
-
-        randomX -= randomMoveRadius;
-        randomY -= randomMoveRadius;
-        while (!map.isWithinBounds(x + randomX, y + randomY)) {
-            randomX = random.nextInt(randomMoveRadius * 2);
-            randomY = random.nextInt(randomMoveRadius * 2);
-
-            randomX -= randomMoveRadius;
-            randomY -= randomMoveRadius;
-        }
-        return new Vector2(randomX, randomY);
     }
 
     public void moveAlongPath() {

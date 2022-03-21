@@ -42,10 +42,8 @@ public class ColonistSelectionScreen implements Screen {
     int selectedIndex = numberOfColonistsToSelectFrom - 1;
 
     ButtonCollection buttonCollection;
-    Label title;
-    TextButton selectRemoveButton;
+
     TextButton continueButton;
-    TextButton randomiseButton;
 
     ShapeRenderer shapeRenderer;
     SpriteBatch batch;
@@ -82,8 +80,13 @@ public class ColonistSelectionScreen implements Screen {
 
         buttonCollection = new ButtonCollection();
 
+        Label title;
+
         title = new Label(0,0,0,0, "title", "select your colonists");
         title.centre((int) (MyGdxGame.initialRes.y / 100 * 47));
+
+        TextButton selectRemoveButton;
+        TextButton randomiseButton;
 
         selectRemoveButton = new TextButton(0,0, (int) (MyGdxGame.initialRes.x / 16 * 3), (int) (MyGdxGame.initialRes.y / 9), "Select/Remove colonist", "selectButton");
         selectRemoveButton.resizeFontToCorrectProportionByWidth();

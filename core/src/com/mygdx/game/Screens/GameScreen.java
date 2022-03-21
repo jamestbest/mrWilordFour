@@ -219,7 +219,6 @@ public class GameScreen implements Screen {
         setupResourceHashMap();
         setupResourceButtons();
 
-
         if (isHost) {
             setColonistIDs();
         }

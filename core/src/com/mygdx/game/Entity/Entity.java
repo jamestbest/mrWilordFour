@@ -3,6 +3,8 @@ package com.mygdx.game.Entity;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.Vector2;
+import com.mygdx.game.AStar.AStar;
+import com.mygdx.game.Generation.Map;
 import com.mygdx.game.Weapons.Weapon;
 
 import java.util.ArrayList;
@@ -28,9 +30,11 @@ public class Entity {
     protected int height;
 
     protected int health;
-    protected int maxHealth;
 
     protected Weapon weapon;
+
+    boolean movingAcrossPath = false;
+    int randomMoveRadius = 25;
 
     public static HashMap<String, Integer> typeToHealth = new HashMap<>();
     public static Random random = new Random();
@@ -52,13 +56,72 @@ public class Entity {
 
     }
 
-    public void draw(SpriteBatch batch, int tileDims, HashMap<String, TextureAtlas> clothes) {
+    public void draw(SpriteBatch batch, float tileDims, HashMap<String, TextureAtlas> clothes) {
         batch.draw(clothes.get(clotheName).findRegion(direction), (x + ((nextX - x) * timer)) * tileDims, (y + ((nextY - y) * timer)) * tileDims, tileDims, tileDims);
+    }
+
+
+    public void drawMini(SpriteBatch batch, int x, int y, int dims, HashMap<String, TextureAtlas> clothes) {
+        batch.draw(clothes.get(clotheName).findRegion("front"), x, y, dims, dims);
     }
 
     public void move(int x, int y) {
         this.x += x;
         this.y += y;
+    }
+
+    public void moveRandomly(Map map) {
+        int randomX = random.nextInt(3) - 1;
+        int randomY = random.nextInt(3) - 1;
+
+        if (map.isWithinBounds(randomX + x, randomY + y)) {
+            if (map.tiles.get(x + randomX).get(y + randomY).canWalkOn) {
+                nextX = x + randomX;
+                nextY = y + randomY;
+            }
+        }
+    }
+
+    public void setMoveToPos(int x, int y, Map map) {
+        pathToComplete = AStar.pathFindForColonist(new Vector2(this.x, this.y), new Vector2(x, y), map.tiles);
+        movingAcrossPath = pathToComplete.size() > 0;
+    }
+
+    public void getRandomPosition(Map map) {
+        int count = 0;
+        Vector2 randomPos = getPosInRange(map);
+        int randomX = (int) randomPos.x;
+        int randomY = (int) randomPos.y;
+
+        while (!map.tiles.get(x + randomX).get(y + randomY).canWalkOn) {
+            randomPos = getPosInRange(map);
+            randomX = (int) randomPos.x;
+            randomY = (int) randomPos.y;
+            count++;
+            if (count > 100) {
+                break;
+            }
+        }
+
+        pathToComplete = AStar.pathFindForColonist(new Vector2(x, y), new Vector2(randomX + x, randomY + y), map.tiles);
+
+        movingAcrossPath = pathToComplete.size() > 0;
+    }
+
+    public Vector2 getPosInRange(Map map) {
+        int randomX = random.nextInt(randomMoveRadius * 2);
+        int randomY = random.nextInt(randomMoveRadius * 2);
+
+        randomX -= randomMoveRadius;
+        randomY -= randomMoveRadius;
+        while (!map.isWithinBounds(x + randomX, y + randomY)) {
+            randomX = random.nextInt(randomMoveRadius * 2);
+            randomY = random.nextInt(randomMoveRadius * 2);
+
+            randomX -= randomMoveRadius;
+            randomY -= randomMoveRadius;
+        }
+        return new Vector2(randomX, randomY);
     }
 
     public static Integer getHealthFromType(String entityType) {
@@ -119,14 +182,6 @@ public class Entity {
         this.health = health;
     }
 
-    public int getMaxHealth() {
-        return maxHealth;
-    }
-
-    public void setMaxHealth(int maxHealth) {
-        this.maxHealth = maxHealth;
-    }
-
     public int getNextX() {
         return nextX;
     }
@@ -184,9 +239,11 @@ public class Entity {
     }
 
     public void attack(Entity defender){
-        if (random.nextInt(100) <= weapon.getAccuracy()) {
-            defender.setHealth(defender.getHealth() - weapon.getDamage());
+        if (weapon.getCurrentCooldown() == 0) {
+            if (random.nextInt(100) <= weapon.getAccuracy()) {
+                defender.setHealth(defender.getHealth() - weapon.getDamage());
+            }
+            weapon.setCurrentCooldown(weapon.getCooldown());
         }
-        weapon.setCurrentCooldown(weapon.getCooldown());
     }
 }

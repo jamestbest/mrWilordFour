@@ -5,7 +5,7 @@ import com.mygdx.game.Math.Math;
 
 public class Noise2D {
 
-    public static double noise(float x, float y, int numberOfLargeSquares){
+    public static float noise(float x, float y, int numberOfLargeSquares){
 
         int largeSquareX = (int) Math.ffloor(x) % numberOfLargeSquares;
         int largeSquareY = (int) Math.ffloor(y) % numberOfLargeSquares;
@@ -24,28 +24,28 @@ public class Noise2D {
             gradVecs[i] = p[p[largeSquareX + mults[i][0]] + largeSquareY + mults[i][1]];
         }
 
-        double[] dots = new double[4];
+        float[] dots = new float[4];
         for (int i = 0; i < 4; i++) {
             dots[i] = dotProduct(gradVecs[i], distVecs[i].x, distVecs[i].y);
         }
 
-        double fadedX = fade(x);
-        double fadedY = fade(y);
+        float fadedX = fade(x);
+        float fadedY = fade(y);
 
-        double interp1 = linearInterpolation(fadedX, dots[0], dots[1]);
-        double interp2 = linearInterpolation(fadedX, dots[2], dots[3]);
+        float interp1 = linearInterpolation(fadedX, dots[0], dots[1]);
+        float interp2 = linearInterpolation(fadedX, dots[2], dots[3]);
         return (linearInterpolation(fadedY, interp1, interp2) + 1) / 2;
     }
 
-    public static double linearInterpolation(double x, double left, double right){
+    public static float linearInterpolation(float x, float left, float right){
         return (left + (x * (right - left)));
     }
 
-    public static double fade(double a){
+    public static float fade(float a){
         return a * a * a * (a * (a * 6 - 15) + 10);
     }
 
-    public static double dotProduct(int gradVector, double x, double y){
+    public static float dotProduct(int gradVector, float x, float y){
         new Vector2();
         Vector2 temp = switch (gradVector % 4) {
             case 0 -> new Vector2(1, 1);

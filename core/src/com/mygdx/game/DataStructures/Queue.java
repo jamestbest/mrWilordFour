@@ -3,7 +3,9 @@ package com.mygdx.game.DataStructures;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.Array;
 
-public class Queue {
+import java.util.AbstractList;
+
+public class Queue<E> extends AbstractList<E> {
     Array<Object> array;
 
     int front;
@@ -75,5 +77,15 @@ public class Queue {
         for (int i = front; i < rear; i++) {
             System.out.println(array.get(i));
         }
+    }
+
+    @Override
+    public E get(int index) {
+        return null;
+    }
+
+    @Override
+    public int size() {
+        return 0;
     }
 }

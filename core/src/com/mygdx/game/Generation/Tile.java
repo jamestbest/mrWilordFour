@@ -2,6 +2,8 @@ package com.mygdx.game.Generation;
 
 import com.mygdx.game.Game.Task;
 
+import java.util.HashMap;
+
 public class Tile {
 
     public int x;
@@ -27,5 +29,10 @@ public class Tile {
     public void setTask(String task, String subType){
     	this.task = new Task(task);
     	this.task.subType = subType;
+    }
+
+    public void updateWalkAndSpawn(HashMap<String, TileInformation> tileInformationHashMap){
+        canSpawnOn = tileInformationHashMap.get(type).canSpawnOn;
+        canWalkOn = tileInformationHashMap.get(type).canWalkOn;
     }
 }

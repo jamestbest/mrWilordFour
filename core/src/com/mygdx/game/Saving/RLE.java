@@ -64,8 +64,7 @@ public class RLE {
                     output.add(new ArrayList<>());
                 }
                 Tile tempTile = new Tile(count / mapDims, count % mapDims, reverseTileNameCode.get(inputSplit.get(i).substring(0, 1)));
-                tempTile.canSpawnOn = tileInformationHashMap.get(tempTile.type).canSpawnOn;
-                tempTile.canWalkOn = tileInformationHashMap.get(tempTile.type).canWalkOn;
+                tempTile.updateWalkAndSpawn(tileInformationHashMap);
                 output.get((count / mapDims)).add(tempTile);
                 count++;
             }

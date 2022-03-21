@@ -47,24 +47,7 @@ public class Door extends ConnectedThings{
                     batch.draw(atlas.findRegion("Vertical", 1), x * GameScreen.TILE_DIMS, y * GameScreen.TILE_DIMS - (height / 2f), width, height * 2);
                 }
             }
-            if (isOpening || isClosing) {
-                timeCounter += Gdx.graphics.getDeltaTime();
-                if (timeCounter >= tpf) {
-                    timeCounter = 0;
-                    if (isOpening) {
-                        state++;
-                    } else if (isClosing) {
-                        state--;
-                    }
-                    if (state == 17 && isOpening) {
-                        isOpening = false;
-                        isOpen = true;
-                    } else if (state == 1 && isClosing) {
-                        isClosing = false;
-                        isOpen = false;
-                    }
-                }
-            }
+            updateAnimation(isOpening, isClosing);
         }
     }
 
@@ -78,6 +61,31 @@ public class Door extends ConnectedThings{
         }
     }
 
+    public void updateAnimation(boolean isOpening, boolean isClosing){
+        if (isOpening || isClosing) {
+            timeCounter += Gdx.graphics.getDeltaTime();
+            if (timeCounter >= tpf) {
+                System.out.println(isClosing + " " + isOpening + " " + state);
+                timeCounter = 0;
+                if (isOpening) {
+                    state++;
+                }
+                if (isClosing) {
+                    state--;
+                }
+                if (state == 17 && isOpening) {
+                    isOpening = false;
+                    isOpen = true;
+                    triggerClose();
+                }
+                if (state == 1 && isClosing) {
+                    isClosing = false;
+                    isOpen = false;
+                }
+            }
+        }
+    }
+
     public void triggerOpen(){
         isOpening = true;
         state = 2;
@@ -85,6 +93,7 @@ public class Door extends ConnectedThings{
 
     public void triggerClose(){
         isClosing = true;
+        isOpen = false;
         state = 16;
     }
 

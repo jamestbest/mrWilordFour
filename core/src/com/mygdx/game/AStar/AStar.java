@@ -1,6 +1,7 @@
 package com.mygdx.game.AStar;
 
 import com.badlogic.gdx.math.Vector2;
+import com.mygdx.game.DataStructures.Queue;
 import com.mygdx.game.Generation.Noise2D;
 import com.mygdx.game.Generation.Tile;
 import com.mygdx.game.Screens.GameScreen;

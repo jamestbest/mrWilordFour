@@ -146,10 +146,6 @@ public class Task {
         }
     }
 
-    public void addToResource(String res, int addition, HashMap<String, Integer> resources){
-        resources.replace(res, resources.get(res) + addition);
-    }
-
     public void emitTileChange(Socket socket, int x, int y, String type) {
         if (socket != null) {
             JSONObject jsonObject = new JSONObject();

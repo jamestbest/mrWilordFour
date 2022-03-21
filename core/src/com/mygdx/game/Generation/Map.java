@@ -35,8 +35,6 @@ public class Map {
 
     public MapSettings settings;
 
-    ArrayList<Vector2> riverLocs;
-
     public static HashMap<String, TileInformation> tileInformationHashMap;
 
     static Json json = new Json();
@@ -73,7 +71,7 @@ public class Map {
 
         if (settings.riverToggle){
             findRiverLocs();
-            generateRiver();
+            generateRiver(findRiverLocs());
         }
 
         generateTrees();
@@ -92,8 +90,7 @@ public class Map {
                         (((float) j / GameScreen.TILES_ON_X) * settings.perlinFrequency) + addition, 255);
                 if (temp > 0.65f) {
                     Tile tile = new Tile(i, j, "stone");
-                    tile.canSpawnOn = false;
-                    tile.canWalkOn = false;
+                    tile.updateWalkAndSpawn(tileInformationHashMap);
                     tiles.get(i).set(j, tile);
                 }
             }
@@ -207,7 +204,7 @@ public class Map {
         }
     }
 
-    public void generateRiver(){
+    public void generateRiver(ArrayList<Vector2> riverLocs){
         Vector2 start = riverLocs.get(0);
         Vector2 end = riverLocs.get(1);
         ArrayList<Vector2> path;
@@ -237,8 +234,8 @@ public class Map {
         }
     }
 
-    public void findRiverLocs(){
-        riverLocs = new ArrayList<>();
+    public ArrayList<Vector2> findRiverLocs(){
+        ArrayList<Vector2> riverLocs = new ArrayList<>();
         Random rand = new Random();
         int sx = rand.nextInt(GameScreen.TILES_ON_X);
         int ex = rand.nextInt(GameScreen.TILES_ON_X);
@@ -251,6 +248,7 @@ public class Map {
         }
         riverLocs.add(new Vector2(sx, 0));
         riverLocs.add(new Vector2(ex, GameScreen.TILES_ON_X - 1));
+        return riverLocs;
     }
 
     public void generateTrees(){
@@ -291,8 +289,7 @@ public class Map {
     public void addThing(Thing thing, int x, int y){
         things.get(x).set(y, thing);
         things.get(x).get(y).update(things);
-        tiles.get(x).get(y).canSpawnOn = tileInformationHashMap.get(thing.type).canSpawnOn;
-        tiles.get(x).get(y).canWalkOn = tileInformationHashMap.get(thing.type).canWalkOn;
+        tiles.get(x).get(y).updateWalkAndSpawn(tileInformationHashMap);
         updateThingNeighbours(x, y);
     }
 
@@ -315,8 +312,7 @@ public class Map {
         if (isWithinBounds(x, y)){
             Tile temp = tiles.get(x).get(y);
             temp.type = type;
-            temp.canSpawnOn = tileInformationHashMap.get(type).canSpawnOn;
-            temp.canWalkOn = tileInformationHashMap.get(type).canWalkOn;
+            temp.updateWalkAndSpawn(tileInformationHashMap);
         }
     }
 
@@ -327,8 +323,7 @@ public class Map {
             temp2.height = height;
             things.get(x).set(y, temp2);
             Tile tempTile = tiles.get(x).get(y);
-            tempTile.canSpawnOn = tileInformationHashMap.get(type).canSpawnOn;
-            tempTile.canWalkOn = tileInformationHashMap.get(type).canWalkOn;
+            tempTile.updateWalkAndSpawn(tileInformationHashMap);
         }
     }
 
@@ -337,7 +332,6 @@ public class Map {
     }
 
     public static void setTileInfoHashMap(){
-        Json json = new Json();
         tileInformationHashMap = json.fromJson(HashMap.class, TileInformation.class, Gdx.files.internal("TileInfo/tileInfo.txt"));
         System.out.println("");
     }
@@ -369,8 +363,7 @@ public class Map {
             tempArray.add(new ArrayList<>());
             for (int j = 0; j < GameScreen.TILES_ON_X; j++) {
                 Tile temp = new Tile(i, j, input.get(i * GameScreen.TILES_ON_X + j));
-                temp.canSpawnOn = tileInformationHashMap.get(temp.type).canSpawnOn;
-                temp.canWalkOn = tileInformationHashMap.get(temp.type).canWalkOn;
+                temp.updateWalkAndSpawn(tileInformationHashMap);
                 tempArray.get(i).add(temp);
             }
         }
@@ -434,8 +427,7 @@ public class Map {
     public void updateAllTilesWithNewThings(ArrayList<ArrayList<Thing>> things){
         for (int i = 0; i < GameScreen.TILES_ON_X; i++) {
             for (int j = 0; j < GameScreen.TILES_ON_X; j++) {
-                tiles.get(i).get(j).canWalkOn = (tileInformationHashMap.get(things.get(i).get(j).type).canWalkOn && tiles.get(i).get(j).canWalkOn);
-                tiles.get(i).get(j).canSpawnOn = (tileInformationHashMap.get(things.get(i).get(j).type).canSpawnOn && tiles.get(i).get(j).canSpawnOn);
+                tiles.get(i).get(j).updateWalkAndSpawn(tileInformationHashMap);
             }
         }
     }
@@ -478,7 +470,6 @@ public class Map {
     public void clearThing(int x, int y){
         things.get(x).get(y).type = "";
         things.get(x).get(y).canConnect = false;
-        tiles.get(x).get(y).canSpawnOn = tileInformationHashMap.get(tiles.get(x).get(y).type).canSpawnOn;
-        tiles.get(x).get(y).canWalkOn = tileInformationHashMap.get(tiles.get(x).get(y).type).canWalkOn;
+        tiles.get(x).get(y).updateWalkAndSpawn(tileInformationHashMap);
     }
 }

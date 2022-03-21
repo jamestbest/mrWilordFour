@@ -14,12 +14,12 @@ public class GifWithMusicPlayer {
     String musicExtension;
     String musicName;
 
-    int x = 0;
-    int y = 0;
-    int width = Gdx.graphics.getWidth();
-    int height = Gdx.graphics.getHeight();
+    private int x = 0;
+    private int y = 0;
+    private int width = Gdx.graphics.getWidth();
+    private int height = Gdx.graphics.getHeight();
 
-    int fps = 12;
+    private int fps = 12;
     float deltaTime = 0;
 
     public boolean ended = false;
