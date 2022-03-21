@@ -39,8 +39,6 @@ public class Entity {
     public static HashMap<String, Integer> typeToHealth = new HashMap<>();
     public static Random random = new Random();
 
-    boolean movingAcrossPath = false;
-
     public Entity(int x, int y, String entityType, int width, int height) {
         this.x = x;
         this.y = y;
@@ -124,11 +122,6 @@ public class Entity {
             randomY -= randomMoveRadius;
         }
         return new Vector2(randomX, randomY);
-    }
-
-    public void setMoveToPos(int x, int y, Map map) {
-        pathToComplete = AStar.pathFindForColonist(new Vector2(this.x, this.y), new Vector2(x, y), map.tiles);
-        movingAcrossPath = pathToComplete.size() > 0;
     }
 
     public static Integer getHealthFromType(String entityType) {
@@ -248,19 +241,14 @@ public class Entity {
         this.weapon = weapon;
     }
 
-    public boolean attack(Entity defender){
-        weapon.setCurrentCooldown(weapon.getCooldown());
-        if (random.nextInt(100) <= weapon.getAccuracy()) {
-            defender.setHealth(defender.getHealth() - weapon.getDamage());
-            return true;
-        }
-        return false;
-    public void attack(Entity defender){
+    public boolean attack(Entity defender) {
         if (weapon.getCurrentCooldown() == 0) {
+            weapon.setCurrentCooldown(weapon.getCooldown());
             if (random.nextInt(100) <= weapon.getAccuracy()) {
                 defender.setHealth(defender.getHealth() - weapon.getDamage());
+                return true;
             }
-            weapon.setCurrentCooldown(weapon.getCooldown());
         }
+        return false;
     }
 }
