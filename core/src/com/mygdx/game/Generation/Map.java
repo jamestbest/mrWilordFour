@@ -420,6 +420,9 @@ public class Map {
                         mapDims = s.split(" ")[1];
                         GameScreen.TILES_ON_X = Integer.parseInt(mapDims);
                         break;
+                    case "resources:":
+                        String loadedResources = s.split(" ")[1];
+                        break;
                     default:
                         break;
                 }

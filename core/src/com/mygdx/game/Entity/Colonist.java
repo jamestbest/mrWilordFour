@@ -34,7 +34,6 @@ public class Colonist extends Entity {
 
     public static Texture deanTexture;
 
-    boolean movingAcrossPath = false;
     public boolean completingTask = false;
     public boolean doingTaskAnimation = false;
 
@@ -129,11 +128,6 @@ public class Colonist extends Entity {
                 nextY = y + randomY;
             }
         }
-    }
-
-    public void setMoveToPos(int x, int y, Map map) {
-        pathToComplete = AStar.pathFindForColonist(new Vector2(this.x, this.y), new Vector2(x, y), map.tiles);
-        movingAcrossPath = pathToComplete.size() > 0;
     }
 
     public void getRandomPosition(Map map) {

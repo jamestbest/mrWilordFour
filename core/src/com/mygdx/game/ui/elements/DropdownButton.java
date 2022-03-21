@@ -91,12 +91,7 @@ public class DropdownButton extends TextButton{
                         }
                     }
 
-                    if (isForFont){
-                        String text = dropDowns.get(i);
-                        font = new BitmapFont(Gdx.files.internal("Fonts/" + text + ".fnt"));
-                    }
-
-                    glyphLayout.setText(font, dropDowns.get(i));
+                    setTextAndReloadFont(i);
                     int xPos = (int) (x + (width / 2) - (glyphLayout.width / 2));
                     int yPos = 0;
                     if (drawDown){
@@ -111,16 +106,22 @@ public class DropdownButton extends TextButton{
             else {
                 batch.draw(unpressedTexture, x, y, width, height);
 
-                if (isForFont){
-                    String text = dropDowns.get(selectedPosition);
-                    font = new BitmapFont(Gdx.files.internal("Fonts/" + text + ".fnt"));
-                }
-                glyphLayout.setText(font, dropDowns.get(selectedPosition));
+                setTextAndReloadFont(selectedPosition);
                 int xPos = (int) (x + (width / 2) - (glyphLayout.width / 2));
                 int yPos = (int) ((y + (height / 2)) + glyphLayout.height / 2f);
                 font.draw(batch, glyphLayout, xPos, yPos);
             }
         }
+    }
+
+    private void setTextAndReloadFont(int i) {
+        if (isForFont){
+            String text = dropDowns.get(i);
+            font.dispose();
+            font = new BitmapFont(Gdx.files.internal("Fonts/" + text + ".fnt"));
+        }
+
+        glyphLayout.setText(font, dropDowns.get(i));
     }
 
     public void setup(){
