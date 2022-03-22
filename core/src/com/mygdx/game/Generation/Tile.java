@@ -4,13 +4,7 @@ import com.mygdx.game.Game.Task;
 
 import java.util.HashMap;
 
-public class Tile {
-
-    public int x;
-    public int y;
-
-    public String type;
-
+public class Tile extends MapComponent{
     public boolean canWalkOn = true;
     public boolean canSpawnOn = true;
 

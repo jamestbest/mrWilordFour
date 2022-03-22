@@ -62,12 +62,6 @@ public class CameraTwo {
     public void update() {
         viewMatrix2.identityMatrix();
         viewMatrix2.lookAt(position, new Vector3(position).add(new Vector3(0,0,-1)), new Vector3(0,1,0));
-//
-        if (Gdx.input.isKeyPressed(Input.Keys.Y)) {
-            System.out.println(viewMatrix2 + "showing new view matrix");
-
-            System.out.println(position + "showing position");
-        }
 
         projViewMatrix = new com.mygdx.game.Math.Matrix4(projectionMatrix2);
         projViewMatrix.multiply(viewMatrix2);

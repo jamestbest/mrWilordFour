@@ -2,15 +2,11 @@ package com.mygdx.game.Generation.Things;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.mygdx.game.Generation.MapComponent;
 
 import java.util.ArrayList;
 
-public class Thing {
-    public int x;
-    public int y;
-
-    public String type;
-
+public class Thing extends MapComponent {
     public int width;
     public int height;
 

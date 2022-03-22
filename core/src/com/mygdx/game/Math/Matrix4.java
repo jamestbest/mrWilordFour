@@ -76,9 +76,6 @@ public class Matrix4 {
         Vector3 directionCopy = new Vector3(direction);
         Vector3 upCopy = new Vector3(up);
         Vector3 right = upCopy.crs(directionCopy).nor();
-        directionCopy = new Vector3(direction);
-        Vector3 rightCopy = new Vector3(right);
-        Vector3 cameraUp = rightCopy.crs(directionCopy).nor();
 
         m00 = right.x;
         m01 = right.y;

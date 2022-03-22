@@ -54,28 +54,17 @@ public class RLE {
         ArrayList<String> inputSplit = getSplitArray(input);
 
         int count = 0;
-        int lineCount = 0;
-        String temp = "";
-        for (int i = 0; i < inputSplit.size(); i++) {
-            lineCount++;
-            for (int j = 0; j < Integer.parseInt(inputSplit.get(i).substring(1)); j++) {
-                temp = inputSplit.get(i);
+        for (String s : inputSplit) {
+            for (int j = 0; j < Integer.parseInt(s.substring(1)); j++) {
                 if ((count) % mapDims == 0) {
                     output.add(new ArrayList<>());
                 }
-                Tile tempTile = new Tile(count / mapDims, count % mapDims, reverseTileNameCode.get(inputSplit.get(i).substring(0, 1)));
+                Tile tempTile = new Tile(count / mapDims, count % mapDims, reverseTileNameCode.get(s.substring(0, 1)));
                 tempTile.updateWalkAndSpawn(tileInformationHashMap);
                 output.get((count / mapDims)).add(tempTile);
                 count++;
             }
-            if (i == inputSplit.size() - 3) {
-                System.out.println("test");
-            }
         }
-        System.out.println(lineCount + " line count");
-
-        System.out.println(output.size() + " size info " + output.get(0).size());
-
         return output;
     }
 
@@ -111,30 +100,22 @@ public class RLE {
         ArrayList<ArrayList<Thing>> output = new ArrayList<>();
 
         int count = 0;
-        int lineCount = 0;
-        String temp = "";
-        for (int i = 0; i < inputSplit.size(); i++) {
-            lineCount++;
-            for (int j = 0; j < Integer.parseInt(inputSplit.get(i).substring(1)); j++) {
+        for (String s : inputSplit) {
+            for (int j = 0; j < Integer.parseInt(s.substring(1)); j++) {
                 if ((count) % mapDims == 0) {
                     output.add(new ArrayList<>());
                 }
-                String type = reverseThingNameCode.get(inputSplit.get(i).substring(0, 1));
+                String type = reverseThingNameCode.get(s.substring(0, 1));
                 Vector2 dims = GameScreen.getMultiplierFromThings(type);
                 Vector2 dimsComplete = new Vector2(dims.x * GameScreen.TILE_DIMS, dims.y * GameScreen.TILE_DIMS);
                 if (Objects.equals(thingClassType.get(type), "Thing")) {
                     output.get((count / mapDims)).add(new Thing(count / mapDims, count % mapDims, (int) dimsComplete.x, (int) dimsComplete.y, type, (int) GameScreen.TILE_DIMS));
-                }
-                else if (Objects.equals(thingClassType.get(type), "AnimatedThing")) {
+                } else if (Objects.equals(thingClassType.get(type), "AnimatedThing")) {
                     output.get((count / mapDims)).add(new AnimatedThings(count / mapDims, count % mapDims, (int) dimsComplete.x, (int) dimsComplete.y, type, (int) GameScreen.TILE_DIMS));
-                }
-                else if (Objects.equals(thingClassType.get(type), "ConnectedThing")) {
+                } else if (Objects.equals(thingClassType.get(type), "ConnectedThing")) {
                     output.get((count / mapDims)).add(new ConnectedThings(count / mapDims, count % mapDims, (int) dimsComplete.x, (int) dimsComplete.y, type, (int) GameScreen.TILE_DIMS));
                 }
                 count++;
-            }
-            if (i == inputSplit.size() - 3) {
-                System.out.println("test");
             }
         }
 
@@ -146,10 +127,6 @@ public class RLE {
                 }
             }
         }
-        System.out.println(lineCount + " line count");
-
-        System.out.println(output.size() + " size info " + output.get(0).size());
-
         return output;
     }
 

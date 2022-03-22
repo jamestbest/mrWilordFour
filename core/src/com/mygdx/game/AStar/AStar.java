@@ -13,13 +13,15 @@ import static java.util.Comparator.comparing;
 public class AStar {
     public static ArrayList<ArrayList<Node>> grid;
     
-    public static ArrayList<Vector2> pathFindForRivers(Vector2 start, Vector2 end, int addition, ArrayList<ArrayList<Tile>> map, int riverBend, int freq) {
+    public static ArrayList<Vector2> pathFindForRivers(Vector2 start, Vector2 end,
+                                                       int addition, ArrayList<ArrayList<Tile>> map,
+                                                       int riverBend, int freq) {
         grid = new ArrayList<>();
         for (int i = 0; i < GameScreen.TILES_ON_X; i++) {
             grid.add(new ArrayList<>());
             for (int j = 0; j < GameScreen.TILES_ON_X; j++) {
                 Node temp = new Node(i, j);
-                temp.HMP = (float) Noise2D.noise((i / (float) GameScreen.TILES_ON_X) * freq + addition,
+                temp.HMP = Noise2D.noise((i / (float) GameScreen.TILES_ON_X) * freq + addition,
                         (j / (float) GameScreen.TILES_ON_X) * freq + addition, 255);
                 temp.HMP *= riverBend;
                 temp.accessible = map.get(i).get(j).canSpawnOn;
@@ -60,11 +62,7 @@ public class AStar {
         nodesToCheck.add(startNode);
         Node currentNode;
 
-        int count = 0;
-
         while (nodesToCheck.size() > 0) {
-//            nodesToCheck = QuickSort.sortNodes(nodesToCheck); //too slow
-//            System.out.println(count);
             if (nodesToCheck.get(0).x == end.x && nodesToCheck.get(0).y == end.y) {
                 break;
             }
@@ -73,8 +71,6 @@ public class AStar {
 
             currentNode = nodesToCheck.get(0);
             nodesToCheck.remove(0);
-
-            count ++;
 
             for (Node n: currentNode.getNeighbours(grid)) {
                 if (n.accessible && !n.visited) {
@@ -107,9 +103,6 @@ public class AStar {
         if (path.size() == 1) {
             return new ArrayList<>();
         }
-
-        System.out.println(count + " iterations");
-
         return path;
     }
 }
