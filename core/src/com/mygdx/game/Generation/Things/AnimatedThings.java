@@ -6,7 +6,7 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 
 public class AnimatedThings extends Thing{
     int atlasPos = 0;
-    float totalTime = 1f;
+    final float totalTime = 1f;
     float timeCounter = 0;
 
     public AnimatedThings(int x, int y, int width, int height, String type, int dims) {

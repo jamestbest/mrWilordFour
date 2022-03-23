@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 
+@SuppressWarnings("unchecked")
 public class JoinGameScreen implements Screen {
     MyGdxGame myGdxGame;
 

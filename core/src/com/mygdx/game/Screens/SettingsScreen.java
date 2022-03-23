@@ -131,9 +131,7 @@ public class SettingsScreen implements Screen {
                     }
                 }
                 case "LoopToggle" -> updateLoop(loopToggle.toggled);
-                case "SetTitleInputButton" -> {
-                    updateTitle(setTitleInputButton.text);
-                }
+                case "SetTitleInputButton" -> updateTitle(setTitleInputButton.text);
                 case "VolumeSlider" -> {
                     game.volume = volumeSlider.value;
                     game.updateMusicInfo();

@@ -29,4 +29,9 @@ public class Tile extends MapComponent{
         canSpawnOn = tileInformationHashMap.get(type).canSpawnOn;
         canWalkOn = tileInformationHashMap.get(type).canWalkOn;
     }
+
+    public void updateWalkAndSpawn(HashMap<String, TileInformation> tileInformation, String thingType){
+        canSpawnOn = tileInformation.get(thingType).canSpawnOn && tileInformation.get(type).canSpawnOn;
+        canWalkOn = tileInformation.get(thingType).canWalkOn && tileInformation.get(type).canWalkOn;
+    }
 }

@@ -121,26 +121,16 @@ public class Task {
 
     public static void changeResources(HashMap<String, Integer> resources, String type, String subType){
         switch (type){
-            case "Mine" -> {
-                resources.replace("stone", resources.get("stone") + 1);
-            }
-            case "CutDown" -> {
-                resources.replace("wood", resources.get("wood") + 1);
-            }
-            case "Plant" -> {
-                resources.replace("wood", resources.get("wood") - 1);
-            }
+            case "Mine" -> resources.replace("stone", resources.get("stone") + 1);
+            case "CutDown" -> resources.replace("wood", resources.get("wood") + 1);
+            case "Plant" -> resources.replace("wood", resources.get("wood") - 1);
             case "Demolish" -> {
 
             }
             case "Build" -> {
                 switch (subType){
-                    case "stoneWall", "stoneDoor" -> {
-                        resources.replace("stone", resources.get("stone") - 1);
-                    }
-                    case "woodWall" -> {
-                        resources.replace("wood", resources.get("wood") - 1);
-                    }
+                    case "stoneWall", "stoneDoor" -> resources.replace("stone", resources.get("stone") - 1);
+                    case "woodWall" -> resources.replace("wood", resources.get("wood") - 1);
                 }
             }
         }

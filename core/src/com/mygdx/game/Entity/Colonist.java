@@ -10,6 +10,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.mygdx.game.AStar.AStar;
 import com.mygdx.game.Game.Task;
 import com.mygdx.game.Generation.Map;
+import com.mygdx.game.Generation.Things.Door;
 import com.mygdx.game.Generation.Tile;
 import com.mygdx.game.Screens.GameScreen;
 import io.socket.client.Socket;
@@ -34,13 +35,10 @@ public class Colonist extends Entity {
 
     public static Texture deanTexture;
 
-
     public boolean completingTask = false;
     public boolean doingTaskAnimation = false;
 
     Vector2 currentTaskLoc;
-
-
 
     public int colonistID;
 
@@ -115,7 +113,7 @@ public class Colonist extends Entity {
         updateDirection();
     }
 
-    public void moveAlongPath() {
+    public void moveAlongPath(Map map) {
         if (pathToComplete.size() > 0) {
             Vector2 nextTile = pathToComplete.get(0);
             if (nextTile.x == x && nextTile.y == y) {
@@ -130,6 +128,10 @@ public class Colonist extends Entity {
         if (pathToComplete.size() >= 1) {
             nextX = (int) pathToComplete.get(0).x;
             nextY = (int) pathToComplete.get(0).y;
+            if (map.things.get(nextX).get(nextY).getClass().getName().equals("Door")){
+                Door temp = (Door) map.things.get(nextX).get(nextY);
+                temp.triggerOpen();
+            }
         }
     }
 
@@ -138,7 +140,7 @@ public class Colonist extends Entity {
             doTaskAnimation(map, resources, socket);
         }
         else if (movingAcrossPath) {
-            moveAlongPath();
+            moveAlongPath(map);
         } else {
             if (getNextTask(map.tiles)) {
                 movingAcrossPath = true;

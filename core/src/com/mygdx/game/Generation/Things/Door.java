@@ -47,7 +47,7 @@ public class Door extends ConnectedThings{
                     batch.draw(atlas.findRegion("Vertical", 1), x * GameScreen.TILE_DIMS, y * GameScreen.TILE_DIMS - (height / 2f), width, height * 2);
                 }
             }
-            updateAnimation(isOpening, isClosing);
+            updateAnimation();
         }
     }
 
@@ -61,7 +61,7 @@ public class Door extends ConnectedThings{
         }
     }
 
-    public void updateAnimation(boolean isOpening, boolean isClosing){
+    public void updateAnimation(){
         if (isOpening || isClosing) {
             timeCounter += Gdx.graphics.getDeltaTime();
             if (timeCounter >= tpf) {

@@ -28,44 +28,45 @@ import java.util.Scanner;
 
 import static com.badlogic.gdx.math.MathUtils.random;
 
+@SuppressWarnings("unchecked")
 public class ColonistSelectionScreen implements Screen {
-    MyGdxGame game;
+    final MyGdxGame game;
 
-    ArrayList<Colonist> colonistTemplates;
+    final ArrayList<Colonist> colonistTemplates;
     ArrayList<Colonist> colonistsToSelectFrom;
     ArrayList<Colonist> colonistsSelected;
 
-    int numberOfColonistsToSelectFrom = 10;
+    final int numberOfColonistsToSelectFrom = 10;
     int numberOfColonistsToSelect = 3;
     boolean ignoreSelectedRequirement = false;
 
     int selectedIndex = numberOfColonistsToSelectFrom - 1;
 
-    ButtonCollection buttonCollection;
+    final ButtonCollection buttonCollection;
 
-    TextButton continueButton;
+    final TextButton continueButton;
 
-    ShapeRenderer shapeRenderer;
-    SpriteBatch batch;
+    final ShapeRenderer shapeRenderer;
+    final SpriteBatch batch;
 
-    BitmapFont font;
-    GlyphLayout glyphLayout;
+    final BitmapFont font;
+    final GlyphLayout glyphLayout;
 
-    CameraTwo camera;
+    final CameraTwo camera;
 
-    float offsetY = MyGdxGame.initialRes.y / 12f;
-    float offsetX = MyGdxGame.initialRes.x / 38f;
-    int width = (int) (MyGdxGame.initialRes.x / 38 * 7);
-    float height = (MyGdxGame.initialRes.y - (3 * offsetY)) / (float) numberOfColonistsToSelectFrom;
+    final float offsetY = MyGdxGame.initialRes.y / 12f;
+    final float offsetX = MyGdxGame.initialRes.x / 38f;
+    final int width = (int) (MyGdxGame.initialRes.x / 38 * 7);
+    final float height = (MyGdxGame.initialRes.y - (3 * offsetY)) / (float) numberOfColonistsToSelectFrom;
 
-    HashMap<String, TextureAtlas> colonistClothes = new HashMap<>();
+    final HashMap<String, TextureAtlas> colonistClothes = new HashMap<>();
 
     float inputTimer = 0.5f;
 
-    Random random = new Random();
+    final Random random = new Random();
     String[] clothes;
 
-    Map map;
+    final Map map;
 
     public ColonistSelectionScreen(MyGdxGame game, Map map) {
         this.game = game;

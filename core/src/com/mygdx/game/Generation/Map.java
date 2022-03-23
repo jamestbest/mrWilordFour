@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Random;
 
+@SuppressWarnings("unchecked")
 public class Map {
     public ArrayList<ArrayList<Tile>> tiles;
     public ArrayList<ArrayList<Thing>> things;
@@ -289,7 +290,7 @@ public class Map {
     public void addThing(Thing thing, int x, int y){
         things.get(x).set(y, thing);
         things.get(x).get(y).update(things);
-        tiles.get(x).get(y).updateWalkAndSpawn(tileInformationHashMap);
+        tiles.get(x).get(y).updateWalkAndSpawn(tileInformationHashMap, thing.type);
         updateThingNeighbours(x, y);
     }
 
@@ -456,7 +457,7 @@ public class Map {
         File file = new File("core/assets/Saves/" + saveName + "/save.sve");
         FileReader fr = new FileReader(file);
         BufferedReader br = new BufferedReader(fr);
-        String[] save = new String[6]; //needs to be the size equal to the number of lines in the save file
+        String[] save = new String[7]; //needs to be the size equal to the number of lines in the save file
         int count = 0;
         String temp = br.readLine();
         while (temp != null){

@@ -36,6 +36,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+@SuppressWarnings("unchecked")
 public class GameScreen implements Screen {
     public static int TILES_ON_X = 250;
     public static float TILE_DIMS = 20;
@@ -1088,6 +1089,7 @@ public class GameScreen implements Screen {
     }
 
     public static Vector2 getMultiplierFromThings(String s){
+        //noinspection SwitchStatementWithTooFewBranches
         return switch (s) {
             case "tree" -> new Vector2(1,2);
             default -> new Vector2(1,1);
