@@ -98,6 +98,8 @@ public class GameScreen implements Screen {
     boolean deanNorrisMode;
     Texture neanDorris;
 
+    String lastMouseType = "";
+
     // FIXED: 30/01/2022 add the selection rect and then add tasks based on the type and if the tile type is a match
     // TODO: 02/02/2022 Some of the tasks need to be drawn above the things and others below - gl
     // FIXED: 02/02/2022 need to change how the colonists get tasks
@@ -128,18 +130,21 @@ public class GameScreen implements Screen {
                 minSelecting = camera.unproject(new Vector2(screenX, screenY));
                 maxSelecting = minSelecting;
             }
+            lastMouseType = (Gdx.input.isButtonPressed(0) ? "left" : "right");
             return false;
         }
 
         @Override
         public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-            if (!cancelSelection) {
-                System.out.println(selectionMode);
-                if (selectionMode.equals("Building")) {
-                    setTasksFromSelection("Build", buildingSelected);
-                }
-                if (selectionMode.equals("Orders")) {
-                    setTasksFromSelection(taskTypeSelected);
+            if (lastMouseType.equals("left")) {
+                if (!cancelSelection) {
+                    System.out.println(selectionMode);
+                    if (selectionMode.equals("Building")) {
+                        setTasksFromSelection("Build", buildingSelected);
+                    }
+                    if (selectionMode.equals("Orders")) {
+                        setTasksFromSelection(taskTypeSelected);
+                    }
                 }
             }
             cancelSelection = false;
@@ -311,7 +316,7 @@ public class GameScreen implements Screen {
         buildingButtons.drawButtons(batchWithNoProj);
         resourceButtons.drawButtons(batchWithNoProj);
 
-        drawColonistsAtTop(batchWithNoProj);
+        drawColonistsAtTop(batchWithNoProj, shapeRendererWithNoProj);
 
         batchWithNoProj.end();
         if (paused) {
@@ -384,6 +389,7 @@ public class GameScreen implements Screen {
                     }
                 }
                 if (buildingButtons.updateButtons(camera, Gdx.input.isButtonJustPressed(0))) {
+                    inCancelTaskMode = false;
                     switch (buildingButtons.pressedButtonName) {
                         case "stoneWallButton" -> buildingSelected = "stoneWall";
                         case "woodWallButton" -> buildingSelected = "woodWall";
@@ -1133,7 +1139,7 @@ public class GameScreen implements Screen {
         }
     }
 
-    public void drawColonistsAtTop(SpriteBatch batch){
+    public void drawColonistsAtTop(SpriteBatch batch, ShapeRenderer shapeRenderer){
         float dims = MyGdxGame.initialRes.x * 0.03f;
         float y = MyGdxGame.initialRes.y - (dims * 1.1f);
         float x = (MyGdxGame.initialRes.x - ((dims * 1.1f) * colonists.size())) / 2f;
@@ -1141,6 +1147,18 @@ public class GameScreen implements Screen {
         if (colonists.size() > ((MyGdxGame.initialRes.x * 0.8f) / dims)) {
             dims = (MyGdxGame.initialRes.x * 0.8f) / colonists.size();
         }
+
+        batch.end();
+
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(64/255f, 64/255f, 64/255f, 1f);
+        for (int i = 0; i < colonists.size(); i++) {
+            shapeRenderer.rect((x + ((dims * 1.1f)) * i), y, dims, dims);
+        }
+
+        shapeRenderer.end();
+
+        batch.begin();
 
         for (int i = 0; i < colonists.size(); i++) {
             Colonist c = colonists.get(i);

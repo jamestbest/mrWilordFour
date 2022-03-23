@@ -128,9 +128,13 @@ public class Colonist extends Entity {
         if (pathToComplete.size() >= 1) {
             nextX = (int) pathToComplete.get(0).x;
             nextY = (int) pathToComplete.get(0).y;
-            if (map.things.get(nextX).get(nextY).getClass().getName().equals("Door")){
-                Door temp = (Door) map.things.get(nextX).get(nextY);
-                temp.triggerOpen();
+            if (pathToComplete.size() >= 2) {
+                int nextX2 = (int) pathToComplete.get(1).x;
+                int nextY2 = (int) pathToComplete.get(1).y;
+                if (map.things.get(nextX2).get(nextY2).getClass().getName().equals("com.mygdx.game.Generation.Things.Door")) {
+                    Door temp = (Door) map.things.get(nextX2).get(nextY2);
+                    temp.triggerOpen();
+                }
             }
         }
     }
@@ -223,15 +227,12 @@ public class Colonist extends Entity {
         }
         if (bestTask != null) {
             Vector2 neighbour = tiles.get((int) bestTask.x).get((int) bestTask.y).task.getNeighbour(tiles, (int) bestTask.x, (int) bestTask.y);
-//            if (tiles.get((int) bestTask.x).get((int) bestTask.y).canWalkOn) {
-//                pathToComplete = AStar.pathFindForColonist(new Vector2(x, y), bestTask, tiles);
-//            }
-//            else {
-            pathToComplete = AStar.pathFindForColonist(new Vector2(x, y), neighbour, tiles);
-//            }
-            completingTask = true;
-            tiles.get((int) bestTask.x).get((int) bestTask.y).task.reserved = true;
-            currentTaskLoc = new Vector2(bestTask.x, bestTask.y);
+            if (neighbour != null) {
+                pathToComplete = AStar.pathFindForColonist(new Vector2(x, y), neighbour, tiles);
+                completingTask = true;
+                tiles.get((int) bestTask.x).get((int) bestTask.y).task.reserved = true;
+                currentTaskLoc = new Vector2(bestTask.x, bestTask.y);
+            }
         }
         return bestTask != null;
     }

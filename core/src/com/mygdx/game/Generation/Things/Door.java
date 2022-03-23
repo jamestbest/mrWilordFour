@@ -22,7 +22,7 @@ public class Door extends ConnectedThings{
     boolean isOpen = false;
     boolean isHorizontal = true;
     int state = 1;
-    int fps = 12;
+    int fps = 6;
     float tpf = 1f / fps;
     float timeCounter = 0;
 
@@ -62,6 +62,7 @@ public class Door extends ConnectedThings{
     }
 
     public void updateAnimation(){
+        tpf = 1f / (fps * GameScreen.gameSpeed);
         if (isOpening || isClosing) {
             timeCounter += Gdx.graphics.getDeltaTime();
             if (timeCounter >= tpf) {
@@ -87,14 +88,18 @@ public class Door extends ConnectedThings{
     }
 
     public void triggerOpen(){
-        isOpening = true;
-        state = 2;
+        if (!isOpening){
+            isOpening = true;
+            state = 2;
+        }
     }
 
     public void triggerClose(){
-        isClosing = true;
-        isOpen = false;
-        state = 16;
+        if (!isClosing) {
+            isClosing = true;
+            isOpen = false;
+            state = 16;
+        }
     }
 
     public void update(ArrayList<ArrayList<Thing>> things){

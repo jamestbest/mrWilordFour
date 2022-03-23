@@ -3,10 +3,11 @@ package com.mygdx.game.Generation.Things;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.mygdx.game.Screens.GameScreen;
 
 public class AnimatedThings extends Thing{
     int atlasPos = 0;
-    final float totalTime = 1f;
+    final float totalTime = 2f;
     float timeCounter = 0;
 
     public AnimatedThings(int x, int y, int width, int height, String type, int dims) {
@@ -28,7 +29,7 @@ public class AnimatedThings extends Thing{
     }
 
     public void updateTimer(TextureAtlas atlas){
-        timeCounter += Gdx.graphics.getDeltaTime();
+        timeCounter += (Gdx.graphics.getDeltaTime() * GameScreen.gameSpeed);
         if (timeCounter >= totalTime) {
             atlasPos++;
             if (atlasPos > atlas.getRegions().size - 1) {

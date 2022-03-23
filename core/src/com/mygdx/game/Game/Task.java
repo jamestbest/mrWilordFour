@@ -1,6 +1,7 @@
 package com.mygdx.game.Game;
 
 import com.badlogic.gdx.math.Vector2;
+import com.mygdx.game.Entity.Colonist;
 import com.mygdx.game.Generation.Things.ConnectedThings;
 import com.mygdx.game.Generation.Map;
 import com.mygdx.game.Generation.Things.Door;
@@ -65,6 +66,28 @@ public class Task {
             }
         }
         return null;
+    }
+
+    public boolean checkIfNeighbourIsSafe(int x, int y, ArrayList<ArrayList<Tile>> tileMap, ArrayList<Colonist> colonists){
+        if (tileMap.get(x).get(y).task != null){
+            if (!tileMap.get(x).get(y).task.reserved){
+                return checkIfNoColonists(colonists, x, y);
+            }
+        }
+        else if (tileMap.get(x).get(y).task == null){
+            return checkIfNoColonists(colonists, x, y);
+        }
+        return false;
+    }
+    
+    public boolean checkIfNoColonists(ArrayList<Colonist> colonists, int x, int y){
+        for (Colonist c: colonists
+             ) {
+            if (c.getX() == x && c.getY() == y){
+                return false;
+            }
+        }
+        return true;
     }
 
     public void completeTask(int x, int y, Map map, HashMap<String, Integer> resources, Socket socket) {
