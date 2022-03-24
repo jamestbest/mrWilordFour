@@ -136,6 +136,12 @@ public class Colonist extends Entity {
                     temp.triggerOpen();
                 }
             }
+            else{
+                if (map.things.get(nextX).get(nextY).getClass().getName().equals("com.mygdx.game.Generation.Things.Door")) {
+                    Door temp = (Door) map.things.get(nextX).get(nextY);
+                    temp.triggerOpen();
+                }
+            }
         }
     }
 

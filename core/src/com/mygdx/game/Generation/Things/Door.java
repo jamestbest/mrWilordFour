@@ -88,14 +88,14 @@ public class Door extends ConnectedThings{
     }
 
     public void triggerOpen(){
-        if (!isOpening){
+        if (!isOpening && !isOpen && !isClosing){
             isOpening = true;
             state = 2;
         }
     }
 
     public void triggerClose(){
-        if (!isClosing) {
+        if (!isClosing && isOpen) {
             isClosing = true;
             isOpen = false;
             state = 16;

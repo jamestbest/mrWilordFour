@@ -28,7 +28,7 @@ import java.util.Objects;
 
 public class SettingsScreen implements Screen {
 
-    // TODO: 27/02/2022 add the font drop down box
+    // FIXED: 27/02/2022 add the font drop down box
     Table optionsTable;
 
     Label volumeLabel;
