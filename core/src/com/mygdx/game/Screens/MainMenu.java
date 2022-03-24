@@ -9,12 +9,18 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Json;
 import com.mygdx.game.Math.CameraTwo;
 import com.mygdx.game.Game.MyGdxGame;
 import com.mygdx.game.Jif.GifWithMusicPlayer;
+import com.mygdx.game.Weapons.Ranged;
+import com.mygdx.game.Weapons.Weapon;
 import com.mygdx.game.ui.elements.Label;
 import com.mygdx.game.ui.elements.TextButton;
 import com.mygdx.game.ui.extensions.Table;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class MainMenu implements Screen {
     // DROPPED: 12/01/2022 change the button doing if clicked to adding in a function to each button
@@ -65,6 +71,25 @@ public class MainMenu implements Screen {
         acceptInput = false;
 
         Gdx.input.setInputProcessor(inputMultiplexer);
+
+        Weapon weapon = new Weapon("Baguette");
+        weapon.setDamage(10);
+        weapon.setRange(1);
+        weapon.setAccuracy(1);
+        Ranged weapon2 = new Ranged("Rifle");
+        weapon2.setDamage(10);
+        weapon2.setRange(1);
+        weapon2.setAccuracy(1);
+        ArrayList<Weapon> weapons = new ArrayList<>();
+        weapons.add(weapon);
+        weapons.add(weapon2);
+        Json json = new Json();
+        String jsonString = json.toJson(weapons);
+        System.out.println(jsonString);
+        ArrayList<Weapon> weapons2 = json.fromJson(ArrayList.class, jsonString);
+        System.out.println(Arrays.toString(weapons2.toArray()));
+        System.out.println(weapons2.get(0).getName());
+        System.out.println(weapons2.get(1).getName());
     }
 
     @Override
@@ -78,8 +103,6 @@ public class MainMenu implements Screen {
         else {
             game.clickWaitTimer -= delta;
         }
-
-        System.out.println(acceptInput + " " + game.clickWaitTimer);
 
         camera.update();
 

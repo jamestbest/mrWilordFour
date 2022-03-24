@@ -1,10 +1,13 @@
 package com.mygdx.game.Entity;
 
+import com.badlogic.gdx.Game;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.Vector2;
 import com.mygdx.game.AStar.AStar;
 import com.mygdx.game.Generation.Map;
+import com.mygdx.game.Screens.GameScreen;
 import com.mygdx.game.Weapons.Weapon;
 
 import java.util.ArrayList;
@@ -58,6 +61,7 @@ public class Entity {
 
     public void draw(SpriteBatch batch, float tileDims, HashMap<String, TextureAtlas> clothes) {
         batch.draw(clothes.get(clotheName).findRegion(direction), (x + ((nextX - x) * timer)) * tileDims, (y + ((nextY - y) * timer)) * tileDims, tileDims, tileDims);
+        weapon.updateTimers(Gdx.graphics.getDeltaTime() * GameScreen.gameSpeed);
     }
 
 
@@ -241,14 +245,7 @@ public class Entity {
         this.weapon = weapon;
     }
 
-    public boolean attack(Entity defender) {
-        if (weapon.getCurrentCooldown() == 0) {
-            weapon.setCurrentCooldown(weapon.getCooldown());
-            if (random.nextInt(100) <= weapon.getAccuracy()) {
-                defender.setHealth(defender.getHealth() - weapon.getDamage());
-                return true;
-            }
-        }
-        return false;
+    public boolean attack(Entity defender, Entity attacker) {
+        return weapon.attack(defender, attacker);
     }
 }

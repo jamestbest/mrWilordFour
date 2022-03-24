@@ -1,0 +1,25 @@
+[
+    {
+        class:com.mygdx.game.Weapons.Weapon,
+        name:Baguette,
+        damage:10,
+        damageRange:2,
+        range:20,
+        accuracy:100
+    },
+
+    {
+        class:com.mygdx.game.Weapons.Ranged,
+        name:Rifle,
+        damage:12,
+        damageRange:3,
+        range:15,
+        coolDown:0.6,
+        currentCoolDown:0,
+        accuracy:100,
+        reloadTime:0,
+        reloadTimer:0,
+        ammo:0,
+        maxAmmo:0
+    }
+]

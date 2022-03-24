@@ -20,6 +20,8 @@ import com.mygdx.game.Generation.MapSettings;
 import com.mygdx.game.Generation.Things.Door;
 import com.mygdx.game.Math.CameraTwo;
 import com.mygdx.game.Saving.RLE;
+import com.mygdx.game.Weapons.Ranged;
+import com.mygdx.game.Weapons.Weapon;
 import com.mygdx.game.ui.elements.Button;
 import com.mygdx.game.ui.elements.ImgButton;
 import com.mygdx.game.ui.elements.ImgTextButton;
@@ -65,6 +67,7 @@ public class GameScreen implements Screen {
     HashMap<String, TextureAtlas> thingTextures = new HashMap<>();
     HashMap<String, TextureAtlas> colonistClothes = new HashMap<>();
     HashMap<String, Texture> actionSymbols = new HashMap<>();
+    HashMap<String, Weapon> weaponPresets = new HashMap<>();
 
     public Texture selectionIcon;
 
@@ -226,6 +229,8 @@ public class GameScreen implements Screen {
         initialiseAllTextures();
         setupResourceHashMap();
         setupResourceButtons();
+        setupWeaponPresets();
+        giveAllColonistsBaguettes();
 
         if (isHost) {
             setColonistIDs();
@@ -497,6 +502,12 @@ public class GameScreen implements Screen {
                 map.addThing(door, x, y);
                 door.triggerOpen();
             }
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.T)){
+            System.out.println(colonists.get(1).getHealth());
+            colonists.get(0).attack(colonists.get(1), colonists.get(0));
+            System.out.println(colonists.get(1).getHealth() + " new health");
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
@@ -1163,6 +1174,20 @@ public class GameScreen implements Screen {
         for (int i = 0; i < colonists.size(); i++) {
             Colonist c = colonists.get(i);
             c.drawMini(batch, (int) (x + ((dims * 1.1f)) * i), (int) y, (int) dims, colonistClothes);
+        }
+    }
+
+    public void setupWeaponPresets(){
+        Json json = new Json();
+        ArrayList<Weapon> weaponPresetsArray = json.fromJson(ArrayList.class, Weapon.class, Gdx.files.internal("core/assets/weaponInfo/weaponInfo.txt"));
+        for (Weapon w : weaponPresetsArray) {
+            weaponPresets.put(w.getName(), w);
+        }
+    }
+
+    public void giveAllColonistsBaguettes(){
+        for (Colonist c: colonists) {
+            c.setWeapon(weaponPresets.get("Baguette"));
         }
     }
 }

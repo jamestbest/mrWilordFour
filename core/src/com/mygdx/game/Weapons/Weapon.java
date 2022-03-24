@@ -1,15 +1,31 @@
 package com.mygdx.game.Weapons;
 
+import com.mygdx.game.Entity.Entity;
+
+import java.util.Random;
+
 public class Weapon {
-    private String name;
-    private int damage;
-    private int range;
-    private int cooldown;
-    private int currentCooldown;
-    private int accuracy; // 0 - 100
+    protected String name;
+    protected int damage;
+    protected int damageRange;
+    protected int range;
+    protected int coolDown;
+    protected int currentCoolDown;
+    protected int accuracy; // 0 - 100
+    
+    protected static Random random = new Random();
 
     public Weapon(String weaponType) {
         this.name = weaponType;
+    }
+
+    public Weapon(Weapon copy){
+        this.accuracy = copy.accuracy;
+        this.coolDown = copy.coolDown;
+        this.currentCoolDown = copy.coolDown;
+        this.damage = copy.damage;
+        this.name = copy.name;
+        this.range = copy.range;
     }
 
     public Weapon(){
@@ -40,20 +56,20 @@ public class Weapon {
         this.range = range;
     }
 
-    public int getCooldown() {
-        return cooldown;
+    public int getCoolDown() {
+        return coolDown;
     }
 
-    public void setCooldown(int cooldown) {
-        this.cooldown = cooldown;
+    public void setCoolDown(int coolDown) {
+        this.coolDown = coolDown;
     }
 
-    public int getCurrentCooldown() {
-        return currentCooldown;
+    public int getCurrentCoolDown() {
+        return currentCoolDown;
     }
 
-    public void setCurrentCooldown(int currentCooldown) {
-        this.currentCooldown = currentCooldown;
+    public void setCurrentCoolDown(int currentCoolDown) {
+        this.currentCoolDown = currentCoolDown;
     }
 
     public int getAccuracy() {
@@ -62,5 +78,34 @@ public class Weapon {
 
     public void setAccuracy(int accuracy) {
         this.accuracy = accuracy;
+    }
+    
+    public boolean attack(Entity defender, Entity attacker) {
+        if (currentCoolDown <= 0) {
+            currentCoolDown = coolDown;
+            int temp = random.nextInt(100);
+            if (temp <= accuracy && isInRange(attacker, defender)) {
+                int delta = accuracy - temp;
+                int totalDamage = damage;
+                if (random.nextInt(100) <= (50 + delta)){
+                    totalDamage += damageRange;
+                }
+                else {
+                    totalDamage -= damageRange;
+                }
+                defender.setHealth(defender.getHealth() - totalDamage);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isInRange(Entity attacker, Entity defender){
+        return (Math.pow(attacker.getX() - defender.getX(), 2) +
+                Math.pow(attacker.getY() - defender.getY(), 2)) <= Math.pow(range, 2);
+    }
+
+    public void updateTimers(float deltaTime){
+        currentCoolDown -= deltaTime;
     }
 }

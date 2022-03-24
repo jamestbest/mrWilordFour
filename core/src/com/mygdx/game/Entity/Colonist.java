@@ -104,6 +104,7 @@ public class Colonist extends Entity {
     }
 
     public void updateTimer(){
+        weapon.updateTimers(Gdx.graphics.getDeltaTime() * GameScreen.gameSpeed);
         timer += Gdx.graphics.getDeltaTime() * GameScreen.gameSpeed;
         if (timer >= timerMax) {
             x = nextX;
