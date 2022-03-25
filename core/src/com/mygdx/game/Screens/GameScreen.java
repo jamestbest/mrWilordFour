@@ -11,8 +11,10 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Json;
+import com.mygdx.game.Entity.Barbarian;
 import com.mygdx.game.Entity.Colonist;
 import com.mygdx.game.Entity.Entity;
+import com.mygdx.game.Entity.Mob;
 import com.mygdx.game.Game.MyGdxGame;
 import com.mygdx.game.Game.Task;
 import com.mygdx.game.Generation.Map;
@@ -55,6 +57,8 @@ public class GameScreen implements Screen {
 
     Map map;
     ArrayList<Colonist> colonists;
+    ArrayList<Barbarian> barbarians;
+    ArrayList<Mob> mobs;
 
     MyGdxGame game;
 
