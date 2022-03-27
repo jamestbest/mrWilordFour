@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Json;
 import com.mygdx.game.AStar.AStar;
+import com.mygdx.game.Game.Task;
 import com.mygdx.game.Generation.Things.AnimatedThings;
 import com.mygdx.game.Generation.Things.ConnectedThings;
 import com.mygdx.game.Generation.Things.Thing;
@@ -26,6 +27,7 @@ import java.util.Random;
 public class Map {
     public ArrayList<ArrayList<Tile>> tiles;
     public ArrayList<ArrayList<Thing>> things;
+    public ArrayList<Task> tasks = new ArrayList<>();
 
     public int addition;
 
@@ -102,7 +104,7 @@ public class Map {
         for(int i = 0; i < GameScreen.TILES_ON_X; i++) {
             tiles.add(new ArrayList<>());
             for (int j = 0; j < GameScreen.TILES_ON_X; j++) {
-                float temp = (float) Noise2D.noise((((float) i / GameScreen.TILES_ON_X) * 40) + addition,
+                float temp = Noise2D.noise((((float) i / GameScreen.TILES_ON_X) * 40) + addition,
                         (((float) j / GameScreen.TILES_ON_X) * 40) + addition, 255);
                 Tile tile;
                 if (temp > 0.55f) {
@@ -111,7 +113,7 @@ public class Map {
                 else{
                     tile = new Tile(i, j, "dirt");
                 }
-                tile.canSpawnOn = true;
+                tile.updateWalkAndSpawn(tileInformationHashMap);
                 tiles.get(i).add(tile);
             }
         }
@@ -259,6 +261,8 @@ public class Map {
             for(int j = 0; j < GameScreen.TILES_ON_X; j++){
                 if(random.nextInt(100) < settings.treeFreq && tiles.get(i).get(j).canSpawnOn){
                     AnimatedThings temp = new AnimatedThings(i, j, (int) GameScreen.TILE_DIMS, (int) GameScreen.TILE_DIMS * 2, "tree", (int) GameScreen.TILE_DIMS);
+                    tiles.get(i).get(j).canSpawnOn = tileInformationHashMap.get("tree").canSpawnOn;
+                    tiles.get(i).get(j).canWalkOn = tileInformationHashMap.get("tree").canWalkOn;
                     things.get(i).add(temp);
                 }
                 else {
@@ -274,8 +278,8 @@ public class Map {
             for (int j = 2; j < 13; j++) {
                 ConnectedThings temp = new ConnectedThings(i, j, (int) GameScreen.TILE_DIMS, (int) GameScreen.TILE_DIMS, "stoneWall", (int) GameScreen.TILE_DIMS);
                 things.get(i).set(j, temp);
-                tiles.get(i).get(j).canSpawnOn = false;
-                tiles.get(i).get(j).canWalkOn = false;
+                tiles.get(i).get(j).canSpawnOn = tileInformationHashMap.get("stoneWall").canSpawnOn;
+                tiles.get(i).get(j).canWalkOn = tileInformationHashMap.get("stoneWall").canWalkOn;
             }
         }
 
@@ -333,7 +337,7 @@ public class Map {
     }
 
     public static void setTileInfoHashMap(){
-        tileInformationHashMap = json.fromJson(HashMap.class, TileInformation.class, Gdx.files.internal("TileInfo/tileInfo.txt"));
+        tileInformationHashMap = json.fromJson(HashMap.class, TileInformation.class, Gdx.files.internal("info/tileInfo/tileInfo.txt"));
         System.out.println("");
     }
 

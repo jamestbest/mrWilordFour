@@ -11,10 +11,7 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Json;
-import com.mygdx.game.Entity.Barbarian;
-import com.mygdx.game.Entity.Colonist;
-import com.mygdx.game.Entity.Entity;
-import com.mygdx.game.Entity.Mob;
+import com.mygdx.game.Entity.*;
 import com.mygdx.game.Game.MyGdxGame;
 import com.mygdx.game.Game.Task;
 import com.mygdx.game.Generation.Map;
@@ -22,13 +19,13 @@ import com.mygdx.game.Generation.MapSettings;
 import com.mygdx.game.Generation.Things.Door;
 import com.mygdx.game.Math.CameraTwo;
 import com.mygdx.game.Saving.RLE;
-import com.mygdx.game.Weapons.Ranged;
 import com.mygdx.game.Weapons.Weapon;
 import com.mygdx.game.ui.elements.Button;
 import com.mygdx.game.ui.elements.ImgButton;
 import com.mygdx.game.ui.elements.ImgTextButton;
 import com.mygdx.game.ui.elements.TextButton;
 import com.mygdx.game.ui.extensions.ButtonCollection;
+import com.sun.source.doctree.EntityTree;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import org.json.JSONException;
@@ -57,8 +54,8 @@ public class GameScreen implements Screen {
 
     Map map;
     ArrayList<Colonist> colonists;
-    ArrayList<Barbarian> barbarians;
-    ArrayList<Mob> mobs;
+    ArrayList<EntityGroup> barbarians = new ArrayList<>();
+    ArrayList<EntityGroup> mobs = new ArrayList<>();
 
     MyGdxGame game;
 
@@ -70,8 +67,11 @@ public class GameScreen implements Screen {
     HashMap<String, Texture> tileTextures = new HashMap<>();
     HashMap<String, TextureAtlas> thingTextures = new HashMap<>();
     HashMap<String, TextureAtlas> colonistClothes = new HashMap<>();
+    HashMap<String, TextureAtlas> mobTextures = new HashMap<>();
     HashMap<String, Texture> actionSymbols = new HashMap<>();
     HashMap<String, Weapon> weaponPresets = new HashMap<>();
+
+    String[] listOfColonistClothes;
 
     public Texture selectionIcon;
 
@@ -82,6 +82,8 @@ public class GameScreen implements Screen {
 
     public static float gameSpeed = 2f; //game speed
     public float lastGameSpeed = gameSpeed;
+
+    static Random random = new Random();
 
     ButtonCollection bottomBarButtons;
     ButtonCollection ordersButtons;
@@ -98,7 +100,14 @@ public class GameScreen implements Screen {
 
     boolean cancelSelection;
     boolean drawColonistPath;
+    boolean drawBarbarianPath;
+    boolean drawMobPath;
     boolean inCancelTaskMode;
+
+    boolean showReservedOverlay;
+    boolean showCanWalkOverlay;
+    boolean showCanSpawnOverlay;
+    boolean showTaskOverlay;
 
     boolean paused;
 
@@ -230,11 +239,13 @@ public class GameScreen implements Screen {
 
         Entity.setHealthFromType();
 
+        listOfColonistClothes = ColonistSelectionScreen.getListOfClothes();
+
         initialiseAllTextures();
         setupResourceHashMap();
         setupResourceButtons();
         setupWeaponPresets();
-        giveAllColonistsBaguettes();
+        giveAllConsistsRandomWeapons();
 
         if (isHost) {
             setColonistIDs();
@@ -278,6 +289,10 @@ public class GameScreen implements Screen {
         Gdx.gl.glClearColor(1, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+//        for (int i = 0; i < colonists.size(); i++) {
+//            System.out.println(colonists.get(i).getHealth() + " " + i);
+//        }
+
         this.delta += Gdx.graphics.getDeltaTime();
 
         camera.allowMovement = !paused;
@@ -295,7 +310,8 @@ public class GameScreen implements Screen {
             drawDeanOver(batch);
         }
 
-
+        drawAllMobs(batch);
+        drawAllBarbarians(batch);
         allowUpdate = true;
         if (!deanNorrisMode){
             drawAllColonists(batch);
@@ -311,7 +327,25 @@ public class GameScreen implements Screen {
 
         batch.end();
 
+        shapeRenderer.setProjectionMatrix(camera.projViewMatrix.getGdxMatrix());
+        drawAllTaskPercentages(shapeRenderer);
+
+        if (showReservedOverlay){
+            highlightAllReserved(shapeRenderer);
+        }
+        if (showCanSpawnOverlay){
+            highlightAllCanSpawnOn(shapeRenderer);
+        }
+        if (showCanWalkOverlay){
+            highlightAllCanWalkOn(shapeRenderer);
+        }
+        if (showTaskOverlay){
+            highlightAllTasks(shapeRenderer);
+        }
+
         drawColonistsPath(shapeRenderer);
+        drawAllBarbarianPaths(shapeRenderer);
+        drawAllMobsPaths(shapeRenderer);
 
         batchWithNoProj.begin();
 
@@ -474,7 +508,7 @@ public class GameScreen implements Screen {
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.T)){
-            System.out.println(colonists.get(0).getNextTask(map.tiles));
+            System.out.println(colonists.get(0).getNextTask(map.tiles, map.tasks));
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.N)){
@@ -514,6 +548,56 @@ public class GameScreen implements Screen {
             System.out.println(colonists.get(1).getHealth() + " new health");
         }
 
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)){
+            spawnMobs("sheep", 10, 50, 50);
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)){
+            spawnBarbarians("barbarian", 10, 20, 50);
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)){
+            colonists.get(0).setDefender(colonists.get(1));
+            colonists.get(1).setDefender(colonists.get(0));
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_4)){
+            Entity.haveLineOfSight(colonists.get(0), colonists.get(1), map);
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_5)){
+            for (EntityGroup eg : barbarians) {
+                for (Entity b : eg.entities) {
+                    b.setDefender(colonists.get(0));
+                }
+            }
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_6)){
+            drawBarbarianPath = !drawBarbarianPath;
+            drawMobPath = !drawMobPath;
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_7)){
+            showReservedOverlay = !showReservedOverlay;
+            System.out.println("showReservedOverlay: " + showReservedOverlay);
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_8)) {
+            showCanSpawnOverlay = !showCanSpawnOverlay;
+            System.out.println("showCanSpawnOverlay: " + showCanSpawnOverlay);
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_9)) {
+            showCanWalkOverlay = !showCanWalkOverlay;
+            System.out.println("showCanWalkOverlay: " + showCanWalkOverlay);
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_0)) {
+            showTaskOverlay = !showTaskOverlay;
+            System.out.println("showTaskOverlay: " + showTaskOverlay);
+        }
+
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
             optionsButtons.showButtons = !optionsButtons.showButtons;
             setPause(optionsButtons.showButtons);
@@ -522,6 +606,8 @@ public class GameScreen implements Screen {
 
     public void update(){ //happens at a rate determined by the gameSpeed
         moveColonists();
+        moveMobs();
+        moveBarbarians();
         if (isHost && isMultiplayer){
             try {
                 sendColonistMovement();
@@ -571,6 +657,7 @@ public class GameScreen implements Screen {
         initialiseTextures();
         setupActionSymbols();
         setupColonistClothes();
+        setupMobTextures();
     }
 
     public void initialiseTextures(){
@@ -742,18 +829,38 @@ public class GameScreen implements Screen {
         }
     }
 
-    public void setupColonistClothes(){
-        getTAResources(colonistClothes);
+    public void moveMobs(){
+        if (isHost) {
+            for (EntityGroup eg : mobs) {
+                eg.moveGroup(map);
+            }
+        }
     }
 
-    static void getTAResources(HashMap<String, TextureAtlas> colonistClothes) {
-        File directory= new File("core/assets/Textures/TAResources");
+    public void moveBarbarians(){
+        if (isHost) {
+            for (EntityGroup eg : barbarians) {
+                eg.moveGroup(map);
+            }
+        }
+    }
+
+    public void setupColonistClothes(){
+        getTAResources(colonistClothes, "TAResources");
+    }
+
+    public void setupMobTextures(){
+        getTAResources(mobTextures, "mobTAResources");
+    }
+
+    static void getTAResources(HashMap<String, TextureAtlas> hashMap, String location) {
+        File directory= new File("core/assets/Textures/" + location);
         String[] files = directory.list();
         assert files != null;
         for (String fileName : files) {
             String[] temp = fileName.split("\\.");
             if (temp[1].equals("atlas")){
-                colonistClothes.put(temp[0], new TextureAtlas(Gdx.files.internal("core/assets/Textures/TAResources/" + fileName)));
+                hashMap.put(temp[0], new TextureAtlas(Gdx.files.internal("core/assets/Textures/" + location + "/" + fileName)));
             }
         }
     }
@@ -920,8 +1027,8 @@ public class GameScreen implements Screen {
         orderTypes.put("Cancel", new ArrayList<>(List.of()));
     }
 
-    public boolean canUseOrderOnType(String order, String tileType, String thingType){
-        return orderTypes.get(order).contains(tileType) || orderTypes.get(order).contains(thingType);
+    public boolean canUseOrderOnType(String order, String thingType, String tileType){
+        return orderTypes.get(order).contains(tileType) && (orderTypes.get(order).contains(thingType) || thingType.equals(""));
     }
 
     public void setCustomCursor(String name){
@@ -1007,48 +1114,74 @@ public class GameScreen implements Screen {
         if (!inCancelTaskMode) {
             for (int i = minXCoord; i < maxXCoord; i++) {
                 for (int j = minYCoord; j < maxYCoord; j++) {
-                    System.out.println(taskType + " " + map.tiles.get(i).get(j).type + " " + map.things.get(i).get(j).type);
-                    if (canUseOrderOnType(taskType, map.tiles.get(i).get(j).type, map.things.get(i).get(j).type)) {
-                        Task t = map.tiles.get(i).get(j).task;
-                        if (t != null) {
-                            if (!map.tiles.get(i).get(j).task.reserved) {
-                                map.tiles.get(i).get(j).setTask(taskType, taskSubType);
+                    if (canUseOrderOnType(taskType, map.things.get(i).get(j).type, map.tiles.get(i).get(j).type)) {
+                        Task t = new Task(taskType, taskSubType, i, j);
+                        ArrayList<Task> copy = new ArrayList<>(map.tasks);
+                        for (Task t2 : copy) {
+                            if (t2.getX() == t.getX() && t2.getY() == t.getY()) {
+                                if (!t2.isIndependent){
+                                    map.tasks.remove(t2);
+                                }
                             }
-                        } else {
-                            map.tiles.get(i).get(j).setTask(taskType, taskSubType);
                         }
+                        map.tasks.add(t);
                     }
                 }
             }
+            System.out.println("Tasks: " + map.tasks.size());
+
+//            for (int i = minXCoord; i < maxXCoord; i++) {
+//                for (int j = minYCoord; j < maxYCoord; j++) {
+//                    System.out.println(taskType + " " + map.tiles.get(i).get(j).type + " " + map.things.get(i).get(j).type);
+//                    if (canUseOrderOnType(taskType, map.tiles.get(i).get(j).type, map.things.get(i).get(j).type)) {
+//                        Task t = map.tiles.get(i).get(j).task;
+//                        if (t != null) {
+//                            if (!map.tiles.get(i).get(j).task.reserved) {
+//                                map.tiles.get(i).get(j).setTask(taskType, taskSubType);
+//                            }
+//                        } else {
+//                            map.tiles.get(i).get(j).setTask(taskType, taskSubType);
+//                        }
+//                    }
+//                }
+//            }
         }
         else {
-            for (int i = minXCoord; i < maxXCoord; i++) {
-                for (int j = minYCoord; j < maxYCoord; j++) {
-                    if (map.tiles.get(i).get(j).task != null){
-                        if (!map.tiles.get(i).get(j).task.reserved){
-                            map.tiles.get(i).get(j).task = null;
+//            for (int i = minXCoord; i < maxXCoord; i++) {
+//                for (int j = minYCoord; j < maxYCoord; j++) {
+//                    if (map.tiles.get(i).get(j).task != null){
+//                        if (!map.tiles.get(i).get(j).task.reserved){
+//                            map.tiles.get(i).get(j).task = null;
+//                        }
+//                    }
+            ArrayList<Task> copy = new ArrayList<>(map.tasks);
+            for (Task t : copy) {
+                if (t.getX() >= minXCoord && t.getX() < maxXCoord && t.getY() >= minYCoord && t.getY() < maxYCoord) {
+                    if (t.reserved){
+                        for (Colonist c : colonists) {
+                            if (c.getCurrentTask() == t){
+                                c.removeCurrentTask();
+                            }
                         }
                     }
+                    map.tasks.remove(t);
                 }
             }
+//                }
+//            }
         }
     }
 
-    public void drawTaskType(SpriteBatch batch){
-        for (int i = 0; i < GameScreen.TILES_ON_X; i++) {
-            for (int j = 0; j < GameScreen.TILES_ON_X; j++) {
-                if (map.tiles.get(i).get(j).task != null) {
-                    Texture t;
-                    if (map.tiles.get(i).get(j).task.type.equals("Build")) {
-                        t = actionSymbols.get(map.tiles.get(i).get(j).task.subType);
-                    }
-                    else {
-                        t = actionSymbols.get(map.tiles.get(i).get(j).task.type);
-                    }
-
-                    batch.draw(t, i * GameScreen.TILE_DIMS, j * GameScreen.TILE_DIMS, GameScreen.TILE_DIMS, GameScreen.TILE_DIMS);
-                }
+    public void drawTaskType(SpriteBatch batch) {
+        for (Task t : map.tasks) {
+            Texture tx;
+            if (t.type.equals("Build")) {
+                tx = actionSymbols.get(t.subType);
+            } else {
+                tx = actionSymbols.get(t.type);
             }
+            batch.draw(tx, t.getX() * GameScreen.TILE_DIMS, t.getY() * GameScreen.TILE_DIMS,
+                        GameScreen.TILE_DIMS, GameScreen.TILE_DIMS);
         }
     }
 
@@ -1132,6 +1265,35 @@ public class GameScreen implements Screen {
         }
     }
 
+    public void drawAllBarbarianPaths(ShapeRenderer shapeRenderer){
+        if (!paused && drawBarbarianPath) {
+            for (EntityGroup eg : barbarians) {
+                drawAllEntitiesPaths(eg.entities, shapeRenderer, new Color(1, 0, 0, 0.5f));
+            }
+        }
+    }
+
+    public void drawAllMobsPaths(ShapeRenderer shapeRenderer){
+        if (!paused && drawMobPath) {
+            for (EntityGroup eg : mobs) {
+                drawAllEntitiesPaths(eg.entities, shapeRenderer, new Color(0, 1, 0, 0.5f));
+            }
+        }
+    }
+
+    public void drawAllEntitiesPaths(ArrayList<Entity> entities, ShapeRenderer shapeRenderer, Color color){
+        Gdx.gl.glEnable(GL30.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setProjectionMatrix(camera.projViewMatrix.getGdxMatrix());
+        shapeRenderer.setColor(color);
+        for (Entity e : entities) {
+            e.drawPathOutline(shapeRenderer);
+        }
+        shapeRenderer.end();
+        Gdx.gl.glDisable(GL30.GL_BLEND);
+    }
+
     public void drawDeanOver(SpriteBatch batch){
         for (int i = 0; i < GameScreen.TILES_ON_X; i++) {
             for (int j = 0; j < GameScreen.TILES_ON_X; j++) {
@@ -1183,15 +1345,152 @@ public class GameScreen implements Screen {
 
     public void setupWeaponPresets(){
         Json json = new Json();
-        ArrayList<Weapon> weaponPresetsArray = json.fromJson(ArrayList.class, Weapon.class, Gdx.files.internal("core/assets/weaponInfo/weaponInfo.txt"));
+        ArrayList<Weapon> weaponPresetsArray = json.fromJson(ArrayList.class, Weapon.class, Gdx.files.internal("core/assets/info/weaponInfo/weaponInfo.txt"));
         for (Weapon w : weaponPresetsArray) {
             weaponPresets.put(w.getName(), w);
         }
     }
 
-    public void giveAllColonistsBaguettes(){
+    public void giveAllConsistsRandomWeapons(){
         for (Colonist c: colonists) {
-            c.setWeapon(weaponPresets.get("Baguette"));
+            c.setWeapon(getRandomWeapon());
         }
+    }
+
+    public void spawnMobs(String type, int amount, int x, int y){
+        EntityGroup group = new EntityGroup(type);
+        for (int i = 0; i < amount; i++) {
+            Mob b = new Mob(x + random.nextInt(10) - 5, y + random.nextInt(10) - 5, type,
+                    (int) GameScreen.TILE_DIMS, (int) GameScreen.TILE_DIMS);
+            b.setWeapon(weaponPresets.get("Fists"));
+            group.add(b);
+        }
+        mobs.add(group);
+    }
+
+    public void spawnBarbarians(String type, int amount, int x, int y){
+        EntityGroup group = new EntityGroup(type);
+        for (int i = 0; i < amount; i++) {
+            group.add(createBarbarian(x + random.nextInt(10) - 5, y + random.nextInt(10) - 5, type));
+        }
+        barbarians.add(group);
+    }
+
+    public Weapon getRandomWeapon(){
+        Object[] t = weaponPresets.keySet().toArray();
+        return weaponPresets.get(t[random.nextInt(t.length)]);
+    }
+
+    public void drawAllMobs(SpriteBatch batch){
+        for (EntityGroup e : mobs) {
+            e.draw(batch, mobTextures);
+        }
+    }
+
+    public void drawAllBarbarians(SpriteBatch batch){
+        for (EntityGroup e : barbarians) {
+            e.draw(batch, colonistClothes);
+        }
+    }
+
+    public Barbarian createBarbarian(int x, int y, String type){
+        Barbarian b = new Barbarian(x, y, type, (int) GameScreen.TILE_DIMS, (int) GameScreen.TILE_DIMS);
+        b.setWeapon(getRandomWeapon());
+        b.setClotheName(listOfColonistClothes[random.nextInt(listOfColonistClothes.length)]);
+        return b;
+    }
+
+    public void drawAllTaskPercentages(ShapeRenderer shapeRenderer){
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        shapeRenderer.setColor(Color.BLACK);
+        drawTaskPercentagesBoundBox(shapeRenderer);
+        shapeRenderer.end();
+
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(Color.GREEN);
+        drawTaskPercentagesFillBox(shapeRenderer);
+        shapeRenderer.end();
+    }
+
+    public void drawTaskPercentagesBoundBox(ShapeRenderer shapeRenderer){
+        for (Task t : map.tasks) {
+            if (t.getPercentageComplete() > 0) {
+                shapeRenderer.rect(t.getX() * GameScreen.TILE_DIMS + GameScreen.TILE_DIMS * 0.05f,
+                        t.getY() * GameScreen.TILE_DIMS + GameScreen.TILE_DIMS * 0.05f,
+                        GameScreen.TILE_DIMS * 0.9f, GameScreen.TILE_DIMS * 0.2f);
+            }
+        }
+    }
+
+    public void drawTaskPercentagesFillBox(ShapeRenderer shapeRenderer){
+        for (Task t : map.tasks) {
+            if (t.getPercentageComplete() > 0) {
+                shapeRenderer.rect(t.getX() * GameScreen.TILE_DIMS + GameScreen.TILE_DIMS * 0.05f + 1,
+                        t.getY() * GameScreen.TILE_DIMS + 1 + GameScreen.TILE_DIMS * 0.05f,
+                        (GameScreen.TILE_DIMS * 0.9f - 2) * (t.getPercentageComplete() / 100), GameScreen.TILE_DIMS * 0.2f - 2);
+            }
+        }
+    }
+
+    public void highlightAllReserved(ShapeRenderer shapeRenderer){
+        Gdx.gl.glEnable(GL30.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(1f,69/255f,0, 0.5f);
+        for (Task t : map.tasks) {
+            if (t.reserved){
+                shapeRenderer.rect(t.getX() * GameScreen.TILE_DIMS, t.getY() * GameScreen.TILE_DIMS,
+                                    GameScreen.TILE_DIMS, GameScreen.TILE_DIMS);
+            }
+        }
+        shapeRenderer.end();
+        Gdx.gl.glDisable(GL30.GL_BLEND);
+    }
+
+    public void highlightAllCanSpawnOn(ShapeRenderer shapeRenderer){
+        Gdx.gl.glEnable(GL30.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(106/255f,13/255f,173/255f, 0.5f);
+        for (int i = 0; i < map.tiles.size(); i++) {
+            for (int j = 0; j < map.tiles.get(i).size(); j++) {
+                if (map.tiles.get(i).get(j).canSpawnOn){
+                    shapeRenderer.rect(i * GameScreen.TILE_DIMS, j * GameScreen.TILE_DIMS,
+                            GameScreen.TILE_DIMS, GameScreen.TILE_DIMS);
+                }
+            }
+        }
+        shapeRenderer.end();
+        Gdx.gl.glDisable(GL30.GL_BLEND);
+    }
+
+    public void highlightAllCanWalkOn(ShapeRenderer shapeRenderer){
+        Gdx.gl.glEnable(GL30.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(0,1,1, 0.5f);
+        for (int i = 0; i < map.tiles.size(); i++) {
+            for (int j = 0; j < map.tiles.get(i).size(); j++) {
+                if (map.tiles.get(i).get(j).canWalkOn){
+                    shapeRenderer.rect(i * GameScreen.TILE_DIMS, j * GameScreen.TILE_DIMS,
+                            GameScreen.TILE_DIMS, GameScreen.TILE_DIMS);
+                }
+            }
+        }
+        shapeRenderer.end();
+        Gdx.gl.glDisable(GL30.GL_BLEND);
+    }
+
+    public void highlightAllTasks(ShapeRenderer shapeRenderer){
+        Gdx.gl.glEnable(GL30.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(204/255f, 237/255f,0, 0.5f);
+        for (Task t : map.tasks) {
+            shapeRenderer.rect(t.getX() * GameScreen.TILE_DIMS, t.getY() * GameScreen.TILE_DIMS,
+                    GameScreen.TILE_DIMS, GameScreen.TILE_DIMS);
+        }
+        shapeRenderer.end();
+        Gdx.gl.glDisable(GL30.GL_BLEND);
     }
 }

@@ -4,9 +4,11 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.mygdx.game.AStar.AStar;
 import com.mygdx.game.Generation.Map;
+import com.mygdx.game.Math.Math;
 import com.mygdx.game.Screens.GameScreen;
 import com.mygdx.game.Weapons.Weapon;
 
@@ -42,9 +44,15 @@ public class Entity {
     public static HashMap<String, Integer> typeToHealth = new HashMap<>();
     public static Random random = new Random();
 
+    boolean isAttacking;
+    Entity defender;
+    ArrayList<Entity> attackers = new ArrayList<>();
+
     public Entity(int x, int y, String entityType, int width, int height) {
         this.x = x;
         this.y = y;
+        this.nextX = x;
+        this.nextY = y;
         this.entityType = entityType;
         this.width = width;
         this.height = height;
@@ -60,8 +68,8 @@ public class Entity {
     }
 
     public void draw(SpriteBatch batch, float tileDims, HashMap<String, TextureAtlas> clothes) {
-        batch.draw(clothes.get(clotheName).findRegion(direction), (x + ((nextX - x) * timer)) * tileDims, (y + ((nextY - y) * timer)) * tileDims, tileDims, tileDims);
-        weapon.updateTimers(Gdx.graphics.getDeltaTime() * GameScreen.gameSpeed);
+        batch.draw(clothes.get(entityType).findRegion(direction), (x + ((nextX - x) * timer)) * tileDims, (y + ((nextY - y) * timer)) * tileDims, tileDims, tileDims);
+        updateTimer();
     }
 
 
@@ -72,6 +80,64 @@ public class Entity {
     public void move(int x, int y) {
         this.x += x;
         this.y += y;
+    }
+
+    public void updateTimer(){
+        weapon.updateTimers(Gdx.graphics.getDeltaTime() * GameScreen.gameSpeed);
+        timer += Gdx.graphics.getDeltaTime() * GameScreen.gameSpeed;
+        if (timer >= timerMax) {
+            x = nextX;
+            y = nextY;
+            timer = 0f;
+        }
+        updateDirection();
+    }
+
+    public void updateDirection() {
+        if (nextX > x) {
+            direction = "right";
+        } else if (nextX < x) {
+            direction = "left";
+        }
+        if (nextY > y) {
+            direction = "back";
+        } else if (nextY < y) {
+            direction = "front";
+        }
+    }
+
+    public void updateMovement(EntityGroup eg, Map map){
+        if (isAlive()) {
+            if (isAttacking && defender == null) {
+                defender = findClosestAttacker();
+            }
+            if (isAttacking && !isNeighbouringDefender() && !isInRange()) {
+                setMoveToPos(defender.x, defender.y, map);
+            }
+            if (isAttacking && isInRange() && Entity.haveLineOfSight(this, defender, map)) {
+                attack();
+            }
+            else if (movingAcrossPath) {
+                moveAcrossPath();
+            } else {
+                setMoveToPos(eg.x + (random.nextInt(eg.radius * 2) - eg.radius), eg.y + (random.nextInt(eg.radius * 2) - eg.radius), map);
+            }
+        }
+    }
+
+    public void moveAcrossPath(){
+        if (pathToComplete.size() > 0) {
+            Vector2 nextTile = pathToComplete.get(0);
+            if (nextTile.x == x && nextTile.y == y) {
+                pathToComplete.remove(0);
+            }
+        } else {
+            movingAcrossPath = false;
+        }
+        if (pathToComplete.size() >= 1) {
+            nextX = (int) pathToComplete.get(0).x;
+            nextY = (int) pathToComplete.get(0).y;
+        }
     }
 
     public void moveRandomly(Map map) {
@@ -133,12 +199,11 @@ public class Entity {
     }
 
     public static void setHealthFromType() {
-        typeToHealth.put("Gunner", 90);
-        typeToHealth.put("Melee", 150);
-        typeToHealth.put("Ranger", 60);
-        typeToHealth.put("Pig", 20);
-        typeToHealth.put("Sheep", 25);
-        typeToHealth.put("Wolf", 50);
+        typeToHealth.put("barbarian", 90);
+        typeToHealth.put("colonist", 150);
+        typeToHealth.put("pig", 20);
+        typeToHealth.put("sheep", 25);
+        typeToHealth.put("wolf", 50);
     }
 
     public int getX() {
@@ -247,5 +312,100 @@ public class Entity {
 
     public boolean attack(Entity defender, Entity attacker) {
         return weapon.attack(defender, attacker);
+    }
+
+    public boolean isAlive(){
+        return health > 0;
+    }
+
+    public static boolean haveLineOfSight(Entity one, Entity two, Map map) {
+        if (one.getX() == two.getX() && one.getY() != two.getY()) {
+            for (int i = java.lang.Math.min(two.getY(), one.getY()); i < two.getY() - one.getY(); i++) {
+                if (!map.tiles.get(one.getX()).get(one.getY() + i).canWalkOn) {
+                    return false;
+                }
+            }
+        }
+        if (one.getY() == two.getY() && one.getX() != two.getX()) {
+            for (int i = java.lang.Math.min(two.getX(), one.getX()); i < two.getX() - one.getX(); i++) {
+                if (!map.tiles.get(one.getX() + i).get(one.getY()).canWalkOn) {
+                    return false;
+                }
+            }
+        }
+        if (one.getX() != two.getX() && one.getY() != two.getY()) {
+            int x = one.getX();
+            int y = one.getY();
+            int x2 = two.getX();
+            int y2 = two.getY();
+            int xDiff = java.lang.Math.abs(x2 - x);
+            int yDiff = java.lang.Math.abs(y2 - y);
+            int xDir = x2 - x;
+            int yDir = y2 - y;
+            int xInc = xDir / xDiff;
+            int yInc = yDir / yDiff;
+            for (int i = 0; i < xDiff; i++) {
+                x += xInc;
+                y += yInc;
+                if (map.isWithinBounds(x, y)) {
+                    if (!map.tiles.get(x).get(y).canWalkOn) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    public void setDefender(Entity defender){
+        this.defender = defender;
+        defender.addAttacker(this);
+        isAttacking = true;
+    }
+
+    public void addAttacker(Entity e){
+        isAttacking = true;
+        attackers.add(e);
+    }
+
+    public void removeAttacker(Entity e){
+        attackers.remove(e);
+    }
+
+    public boolean isInRange(){
+        return Math.abs(defender.x - x) <= weapon.getRange() && Math.abs(defender.y - y) <= weapon.getRange();
+    }
+
+    public boolean isNeighbouringDefender(){
+        return Math.abs(defender.x - x) <= 1 && Math.abs(defender.y - y) <= 1;
+    }
+
+    public boolean attack() {
+        if (!defender.isAlive()) {
+            isAttacking = false;
+            defender = null;
+            return false;
+        }
+        return weapon.attack(defender, this);
+    }
+
+    public void drawPathOutline(ShapeRenderer shapeRenderer) {
+        for (Vector2 v : pathToComplete) {
+            shapeRenderer.rect(v.x * GameScreen.TILE_DIMS, v.y * GameScreen.TILE_DIMS, GameScreen.TILE_DIMS, GameScreen.TILE_DIMS);
+        }
+    }
+
+    public Entity findClosestAttacker(){
+        float minDist = Float.MAX_VALUE;
+        Entity closest = null;
+        for (Entity e : attackers){
+            float dist = Math.abs(e.x - x) + Math.abs(e.y - y);
+            if (dist < minDist){
+                minDist = dist;
+                closest = e;
+            }
+        }
+        this.isAttacking = closest != null;
+        return closest;
     }
 }

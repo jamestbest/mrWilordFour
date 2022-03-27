@@ -15,16 +15,35 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Task {
+    private int x;
+    private int y;
+
     public String type;
     public String subType;
 
     public boolean reserved = false;
+    public boolean isIndependent;
+
+    private float percentageComplete;
+    private float percentageIncrement = 5;
 
     public Task(String type) {
         this.type = type;
     }
 
-    public Vector2 getNeighbour (ArrayList<ArrayList<Tile>> tileMap, int x, int y) {
+    public Task(){
+
+    }
+
+    public Task(String type, String subType, int x, int y){
+        this.type = type;
+        this.subType = subType;
+        this.x = x;
+        this.y = y;
+        this.isIndependent = getIndependentValueFromType(type);
+    }
+
+    public static Vector2 getNeighbour (ArrayList<ArrayList<Tile>> tileMap, int x, int y) {
         if (x + 1 < tileMap.size()){
             if (tileMap.get(x + 1).get(y).canWalkOn) {
                 return new Vector2(x + 1, y);
@@ -186,5 +205,52 @@ public class Task {
             }
             socket.emit("changeThingType", jsonObject);
         }
+    }
+
+    public static boolean getIndependentValueFromType(String type) {
+        switch (type) {
+            case "hunt" -> {
+                return true;
+            }
+            default -> {
+                return false;
+            }
+        }
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public void setY(int y) {
+        this.y = y;
+    }
+
+    public float getPercentageComplete() {
+        return percentageComplete;
+    }
+
+    public void setPercentageComplete(float percentageComplete) {
+        this.percentageComplete = percentageComplete;
+    }
+
+    public float getPercentageIncrement() {
+        return percentageIncrement;
+    }
+
+    public void setPercentageIncrement(float percentageIncrement) {
+        this.percentageIncrement = percentageIncrement;
+    }
+
+    public void incrementPercentage(){
+        this.percentageComplete += this.percentageIncrement;
     }
 }

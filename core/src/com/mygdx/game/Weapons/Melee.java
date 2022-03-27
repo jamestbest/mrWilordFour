@@ -4,4 +4,8 @@ public class Melee extends Weapon {
     public Melee(String name) {
         super(name);
     }
+
+    public Melee(){
+
+    }
 }

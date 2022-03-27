@@ -1,11 +1,12 @@
 [
     {
-        class:com.mygdx.game.Weapons.Weapon,
+        class:com.mygdx.game.Weapons.Melee,
         name:Baguette,
         damage:10,
         damageRange:2,
         range:20,
-        accuracy:100
+        accuracy:100,
+        coolDown:0.5
     },
 
     {
@@ -21,5 +22,15 @@
         reloadTimer:0,
         ammo:0,
         maxAmmo:0
+    },
+
+    {
+        class:com.mygdx.game.Weapons.Melee,
+        name:Fists,
+        damage:5,
+        damageRange:1,
+        range:2,
+        accuracy:70,
+        coolDown:0.5
     }
 ]

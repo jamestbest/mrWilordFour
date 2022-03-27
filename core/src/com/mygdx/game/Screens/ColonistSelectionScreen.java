@@ -12,6 +12,7 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Json;
+import com.mygdx.game.Entity.Entity;
 import com.mygdx.game.Math.CameraTwo;
 import com.mygdx.game.Entity.Colonist;
 import com.mygdx.game.Game.MyGdxGame;
@@ -74,6 +75,7 @@ public class ColonistSelectionScreen implements Screen {
         Json json = new Json();
         colonistTemplates = json.fromJson(ArrayList.class, Colonist.class, Gdx.files.internal("ColonistInformation/Backstories"));
 
+        Entity.setHealthFromType();
         generateColonists();
 
         shapeRenderer = new ShapeRenderer();
@@ -199,7 +201,7 @@ public class ColonistSelectionScreen implements Screen {
         return c;
     }
 
-    public String[] getListOfClothes(){
+    public static String[] getListOfClothes(){
         File dir = new File("core/assets/Textures/TAResources");
         String[] files = dir.list();
         assert files != null;
@@ -378,6 +380,6 @@ public class ColonistSelectionScreen implements Screen {
     }
 
     public void setupColonistClothes(){
-        GameScreen.getTAResources(colonistClothes);
+        GameScreen.getTAResources(colonistClothes, "TAResources");
     }
 }
