@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -13,6 +14,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Json;
 import com.mygdx.game.Entity.*;
 import com.mygdx.game.Game.MyGdxGame;
+import com.mygdx.game.Game.SoundManager;
 import com.mygdx.game.Game.Task;
 import com.mygdx.game.Generation.Map;
 import com.mygdx.game.Generation.MapSettings;
@@ -25,7 +27,6 @@ import com.mygdx.game.ui.elements.ImgButton;
 import com.mygdx.game.ui.elements.ImgTextButton;
 import com.mygdx.game.ui.elements.TextButton;
 import com.mygdx.game.ui.extensions.ButtonCollection;
-import com.sun.source.doctree.EntityTree;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import org.json.JSONException;
@@ -115,6 +116,8 @@ public class GameScreen implements Screen {
     Texture neanDorris;
 
     String lastMouseType = "";
+
+    SoundManager soundManager = new SoundManager();
 
     // FIXED: 30/01/2022 add the selection rect and then add tasks based on the type and if the tile type is a match
     // TODO: 02/02/2022 Some of the tasks need to be drawn above the things and others below - gl
@@ -596,6 +599,12 @@ public class GameScreen implements Screen {
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_0)) {
             showTaskOverlay = !showTaskOverlay;
             System.out.println("showTaskOverlay: " + showTaskOverlay);
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.Q)) {
+            Sound s = Gdx.audio.newSound(Gdx.files.internal("Music/#FreeFortnite.mp3"));
+            s.play();
+            soundManager.addSound(s);
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
