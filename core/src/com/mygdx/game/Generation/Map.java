@@ -78,7 +78,6 @@ public class Map {
         }
 
         generateTrees();
-        generateWalls();
     }
 
     public void setup(){
@@ -273,24 +272,6 @@ public class Map {
         System.out.println("Trees generated");
     }
 
-    public void generateWalls(){
-        for (int i = 2; i < 13; i++) {
-            for (int j = 2; j < 13; j++) {
-                ConnectedThings temp = new ConnectedThings(i, j, (int) GameScreen.TILE_DIMS, (int) GameScreen.TILE_DIMS, "stoneWall", (int) GameScreen.TILE_DIMS);
-                things.get(i).set(j, temp);
-                tiles.get(i).get(j).canSpawnOn = tileInformationHashMap.get("stoneWall").canSpawnOn;
-                tiles.get(i).get(j).canWalkOn = tileInformationHashMap.get("stoneWall").canWalkOn;
-            }
-        }
-
-        for (int i = 2; i < 13; i++) {
-            for (int j = 2; j < 13; j++) {
-                Thing temp = things.get(i).get(j);
-                temp.update(things);
-            }
-        }
-    }
-
     public void addThing(Thing thing, int x, int y){
         things.get(x).set(y, thing);
         things.get(x).get(y).update(things);
@@ -461,7 +442,7 @@ public class Map {
         File file = new File("core/assets/Saves/" + saveName + "/save.sve");
         FileReader fr = new FileReader(file);
         BufferedReader br = new BufferedReader(fr);
-        String[] save = new String[7]; //needs to be the size equal to the number of lines in the save file
+        String[] save = new String[6]; //needs to be the size equal to the number of lines in the save file
         int count = 0;
         String temp = br.readLine();
         while (temp != null){

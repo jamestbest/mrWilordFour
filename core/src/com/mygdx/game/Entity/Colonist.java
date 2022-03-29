@@ -40,6 +40,9 @@ public class Colonist extends Entity {
 
     public int colonistID;
 
+    static ArrayList<String> firstNames;
+    static ArrayList<String> lastNames;
+
     public Colonist() {
         this.health = 100;
     }
@@ -58,13 +61,16 @@ public class Colonist extends Entity {
     }
 
     public void getRandomName() {
-        ArrayList<String> firstNames = makeArrayOfNames("ColonistFirstNames");
-        ArrayList<String> lastNames = makeArrayOfNames("ColonistLastNames");
         firstName = firstNames.get(random.nextInt(firstNames.size()));
         lastName = lastNames.get(random.nextInt(lastNames.size()));
     }
 
-    public ArrayList<String> makeArrayOfNames(String nameOfFile) {
+    public static void setupNames(){
+        firstNames = makeArrayOfNames("ColonistFirstNames");
+        lastNames = makeArrayOfNames("ColonistLastNames");
+    }
+
+    public static ArrayList<String> makeArrayOfNames(String nameOfFile) {
         try {
             FileReader fileReader = new FileReader("core/assets/ColonistInformation/" + nameOfFile);
 
@@ -163,6 +169,7 @@ public class Colonist extends Entity {
                 if (getNextTask(map.tiles, map.tasks)) {
                     movingAcrossPath = true;
                     // FIXED: 04/02/2022 BUG: colonists will sometimes move randomly before going to next task
+                    // FIXED: 29/03/2022 BUG: the colonists will start completing a tasks that they have access to but cannot pathfind to
                 } else {
                     int choice = random.nextInt(10);
                     if (choice <= 3) {
@@ -192,45 +199,18 @@ public class Colonist extends Entity {
         String maxPriorityTaskType = "";
         Task bestTask = null;
 
-//        for (int i = 0; i < GameScreen.TILES_ON_X; i++) {
-//            for (int j = 0; j < GameScreen.TILES_ON_X; j++) {
-//                Task task = tiles.get(i).get(j).task;
-//                if (task != null){
-//                    boolean canGetToTask = task.getNeighbour(tiles, i, j) != null || tiles.get(i).get(j).canWalkOn;
-//                    if (priorityFromType.get(task.type) > maxPriority && canGetToTask && !task.reserved) {
-//                        maxPriority = priorityFromType.get(task.type);
-//                        maxPriorityTaskType = task.type;
-//                    }
-//                }
-//            }
-//        }
-
         for (Task task : tasks) {
-            boolean canGetToTask = Task.getNeighbour(tiles, task.getX(), task.getY()) != null || tiles.get(task.getX()).get(task.getY()).canWalkOn;
+            boolean canGetToTask = Task.getNeighbour(tiles, task.getX(), task.getY()) != null
+                    || tiles.get(task.getX()).get(task.getY()).canWalkOn;
             if (priorityFromType.get(task.type) > maxPriority && canGetToTask && !task.reserved) {
                 maxPriority = priorityFromType.get(task.type);
                 maxPriorityTaskType = task.type;
             }
         }
 
-//        for (int i = 0; i < GameScreen.TILES_ON_X; i++) {
-//            for (int j = 0; j < GameScreen.TILES_ON_X; j++) {
-//                Task task = tiles.get(i).get(j).task;
-//                if (task != null) {
-//                    boolean canGetToTask = task.getNeighbour(tiles, i, j) != null || tiles.get(i).get(j).canWalkOn;
-//                    if (task.type.equals(maxPriorityTaskType) && canGetToTask && !task.reserved) {
-//                        float distance = getDistance(i, j);
-//                        if (distance < minDistance) {
-//                            minDistance = distance;
-//                            bestTask = new Vector2(i, j);
-//                        }
-//                    }
-//                }
-//            }
-//        }
-
         for (Task task : tasks) {
-            boolean canGetToTask = Task.getNeighbour(tiles, task.getX(), task.getY()) != null || tiles.get(task.getX()).get(task.getY()).canWalkOn;
+            boolean canGetToTask = Task.getNeighbour(tiles, task.getX(), task.getY()) != null
+                    || tiles.get(task.getX()).get(task.getY()).canWalkOn;
             if (task.type.equals(maxPriorityTaskType) && !task.reserved && canGetToTask) {
                 float distance = getDistance(task.getX(), task.getY());
                 if (distance < minDistance) {
@@ -244,11 +224,12 @@ public class Colonist extends Entity {
             Vector2 neighbour = Task.getNeighbour(tiles, bestTask.getX(), bestTask.getY());
             if (neighbour != null) {
                 pathToComplete = AStar.pathFindForColonist(new Vector2(x, y), neighbour, tiles);
-                completingTask = true;
-                bestTask.reserved = true;
-                currentTask = bestTask;
-                return true;
-//                currentTaskLoc = new Vector2(bestTask.getX(), bestTask.getY());
+                if (pathToComplete.size() != 0) {
+                    completingTask = true;
+                    bestTask.reserved = true;
+                    currentTask = bestTask;
+                }
+                return pathToComplete.size() != 0;
             }
             else {
                 return false;

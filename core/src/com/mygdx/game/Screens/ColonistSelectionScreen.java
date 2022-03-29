@@ -73,6 +73,7 @@ public class ColonistSelectionScreen implements Screen {
         this.game = game;
         this.map = map;
         Json json = new Json();
+        Colonist.setupNames();
         colonistTemplates = json.fromJson(ArrayList.class, Colonist.class, Gdx.files.internal("ColonistInformation/Backstories"));
 
         Entity.setHealthFromType();
