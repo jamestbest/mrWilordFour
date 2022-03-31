@@ -115,7 +115,14 @@ public class RLE {
                 } else if (Objects.equals(thingClassType.get(type), "ConnectedThing")) {
                     output.get((count / mapDims)).add(new ConnectedThings(count / mapDims, count % mapDims, (int) dimsComplete.x, (int) dimsComplete.y, type, (int) GameScreen.TILE_DIMS));
                 }
-                count++;
+                count = count + 1;
+                /*********************************************************************
+                 *                                                                   *
+                 *                                                                   *
+                 *                          Add one to count                         *
+                 *                                                                   *
+                 *                                                                   *
+                 *********************************************************************/
             }
         }
 
