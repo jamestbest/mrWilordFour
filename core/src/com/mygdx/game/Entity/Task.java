@@ -102,19 +102,16 @@ public class Task {
             case "Mine" -> {
                 map.changeTileType(x, y, "dirt");
                 emitTileChange(socket, x, y, "dirt");
-//                changeResources(resources, "Mine", "");
                 map.addFloorDrop(x, y, "stone", getRandomAmount(4), socket, isHost);
             }
             case "CutDown" -> {
                 map.clearThing(x, y);
                 emitThingChange("", x, y, 1, false, socket);
-//                changeResources(resources, "CutDown", "");
                 map.addFloorDrop(x, y, "wood", getRandomAmount(4), socket, isHost);
             }
             case "Plant" -> {
                 map.changeThingType(x, y, "tree", (int) (GameScreen.TILE_DIMS * 2), true);
                 emitThingChange("tree", x, y, (int) (GameScreen.TILE_DIMS * 2), false, socket);
-//                changeResources(resources, "Plant", "");
             }
             case "Demolish" -> {
                 map.addFloorDrop(x, y, GameScreen.getResourceFromBuilding(map.things.get(x).get(y).type), 1, socket, isHost);

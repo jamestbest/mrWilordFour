@@ -70,14 +70,6 @@ public class CameraTwo {
         }
     }
 
-    public void translate(Vector3 vector3){
-        this.position.add(vector3);
-    }
-
-    public void translate(float a, float b, float c){
-        this.position.add(new Vector3(a,b,c));
-    }
-
     public Vector2 unproject(Vector2 coords){
         int screenWidth = Gdx.graphics.getWidth();
         int screenHeight = Gdx.graphics.getHeight();
