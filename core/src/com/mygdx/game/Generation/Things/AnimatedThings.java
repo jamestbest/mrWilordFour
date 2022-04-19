@@ -14,6 +14,10 @@ public class AnimatedThings extends Thing{
         super(x, y, width, height, type, dims);
     }
 
+    public AnimatedThings(Thing t, String type){
+        super(t, type);
+    }
+
     public void draw(SpriteBatch batch, TextureAtlas atlas, int drawLayer) {
         if (drawLayer == this.drawLayer) {
             updateTimer(atlas);

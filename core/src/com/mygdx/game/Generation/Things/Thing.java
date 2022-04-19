@@ -2,7 +2,10 @@ package com.mygdx.game.Generation.Things;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.math.Vector2;
 import com.mygdx.game.Generation.MapComponent;
+import com.mygdx.game.Lighting.Light;
+import com.mygdx.game.Screens.GameScreen;
 
 import java.util.ArrayList;
 
@@ -14,7 +17,13 @@ public class Thing extends MapComponent {
 
     public boolean canConnect = false;
 
-    int drawLayer = 1;
+    public int drawLayer = 1;
+
+    public boolean emitsLight = false;
+    public boolean hasBeenSetup = false;
+    public String lightTextureName = "default";
+
+    public boolean builtByColonist;
 
     public Thing(int x, int y, int width, int height, String type, int tileDims) {
         this.x = x;
@@ -24,6 +33,7 @@ public class Thing extends MapComponent {
         this.tileDims = tileDims;
 
         this.type = type;
+        setup();
     }
 
     public Thing(Thing t){
@@ -32,14 +42,35 @@ public class Thing extends MapComponent {
         this.width = t.width;
         this.height = t.height;
         this.tileDims = t.tileDims;
+        setup();
+    }
+
+    public Thing(Thing t, String type){
+        this(t);
+        this.type = type;
+        setup();
     }
 
     public Thing(){
 
     }
 
+    public void setup(){
+        if (emitsLight){
+            GameScreen.lightManager.addLight(new Light((int) (x * GameScreen.TILE_DIMS + (GameScreen.TILE_DIMS / 2f)),
+                    (int) (y * GameScreen.TILE_DIMS + (GameScreen.TILE_DIMS / 2f)), (int) (GameScreen.TILE_DIMS * GameScreen.TILES_ON_X), lightTextureName));
+            hasBeenSetup = true;
+        }
+    }
+
     public void update(ArrayList<ArrayList<Thing>> t){
 
+    }
+
+    public void updateDims(){
+        Vector2 mults = GameScreen.getMultiplierFromThings(this.type);
+        this.width = (int) (mults.x * GameScreen.TILE_DIMS);
+        this.height = (int) (mults.y * GameScreen.TILE_DIMS);
     }
 
     public void draw(SpriteBatch batch, TextureAtlas textureAtlas, int drawLayer) {

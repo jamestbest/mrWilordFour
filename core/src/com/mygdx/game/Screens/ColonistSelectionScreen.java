@@ -27,8 +27,6 @@ import java.util.HashMap;
 import java.util.Random;
 import java.util.Scanner;
 
-import static com.badlogic.gdx.math.MathUtils.random;
-
 @SuppressWarnings("unchecked")
 public class ColonistSelectionScreen implements Screen {
     final MyGdxGame game;
@@ -146,8 +144,9 @@ public class ColonistSelectionScreen implements Screen {
             setupLoadsOfColonists();
         }
 
-        if (Gdx.input.isKeyPressed(Input.Keys.ESCAPE)){
-            game.setScreen(game.mainMenu);
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
+//            game.setScreen(game.mainMenu);
+            game.escapeScreen();
         }
 
         continueButton.setText("Continue " + colonistsSelected.size() + "/" + numberOfColonistsToSelect);

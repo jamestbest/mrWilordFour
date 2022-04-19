@@ -3,25 +3,34 @@ package com.mygdx.game.DataStructures;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.Array;
 
-public class Stack {
+public class Stack<T> {
 
-    int top = 0;
+    public int top = 0;
     int bottom = 0;
 
     int size;
 
-    Array<Object> array;
+    Array<T> array;
+
+    public boolean eraseOld;
 
     public Stack(int size){
         this.size = size;
+        setupArray();
+    }
+
+    public void setupArray(){
         array = new Array<>();
         for (int i = 0; i < size; i++) {
             array.add(null);
         }
     }
 
-    public void enStack(Object item){
+    public void enStack(T item){
         if (top == size){
+            if (eraseOld){
+                bottom++;
+            }
             stackMaintenance();
         }
 
@@ -34,7 +43,7 @@ public class Stack {
         }
     }
 
-    public Object deStack(){
+    public T deStack(){
         if (top != bottom){
             top --;
             return array.get(top);
@@ -45,8 +54,9 @@ public class Stack {
         }
     }
 
-    public Object pop(){
+    public T pop(){
         if (top != bottom){
+            top--;
             return array.get(top);
         }
         else{
@@ -62,13 +72,17 @@ public class Stack {
             bottom = 0;
         }
         else{
-            Array<Object> tempArray = new Array<>();
+            Array<T> tempArray = new Array<>(size);
             for (int i = bottom; i < top; i++) {
                 tempArray.add(array.get(i));
             }
+            int endTop = tempArray.size;
+            for (int i = endTop; i < size; i++) {
+                tempArray.add(null);
+            }
             array = tempArray;
             bottom = 0;
-            top = tempArray.size;
+            top = endTop;
         }
     }
 
@@ -76,5 +90,11 @@ public class Stack {
         for (int i = bottom; i < top; i++) {
             System.out.println(array.get(i));
         }
+    }
+
+    public void clear(){
+        setupArray();
+        top = 0;
+        bottom = 0;
     }
 }

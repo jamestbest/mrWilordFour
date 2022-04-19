@@ -1,6 +1,8 @@
 package com.mygdx.game.Saving;
 
 import com.badlogic.gdx.math.Vector2;
+import com.mygdx.game.Entity.Entity;
+import com.mygdx.game.Entity.Task;
 import com.mygdx.game.Generation.*;
 import com.mygdx.game.Generation.Things.AnimatedThings;
 import com.mygdx.game.Generation.Things.ConnectedThings;
@@ -17,7 +19,7 @@ import static com.mygdx.game.Generation.Map.tileInformationHashMap;
 public class RLE {
     static HashMap<String, String> tileNameCode;
     static HashMap<String, String> thingNameCode;
-    static HashMap<String, String> thingClassType;
+    public static HashMap<String, String> thingClassType;
 
     public static String encodeTiles(Map map) {
         setupTileNameCodes();
@@ -115,6 +117,13 @@ public class RLE {
                 } else if (Objects.equals(thingClassType.get(type), "ConnectedThing")) {
                     output.get((count / mapDims)).add(new ConnectedThings(count / mapDims, count % mapDims, (int) dimsComplete.x, (int) dimsComplete.y, type, (int) GameScreen.TILE_DIMS));
                 }
+
+                boolean emitsLight = Task.doesEmitLight(type);
+                if (emitsLight) {
+                    Thing t = output.get(count / mapDims).get(count % mapDims);
+                    t.emitsLight = true;
+                    t.lightTextureName = Task.getLightTextureName(type);
+                }
                 count = count + 1;
                 /*********************************************************************
                  *                                                                   *
@@ -159,11 +168,23 @@ public class RLE {
         thingNameCode.put("", "n");
         thingNameCode.put("tree", "t");
         thingNameCode.put("stoneWall", "s");
+        thingNameCode.put("woodWall", "w");
+        thingNameCode.put("stoneDoor", "d");
+        thingNameCode.put("edgeBouncer", "e");
+        thingNameCode.put("lamp", "l");
+        thingNameCode.put("torch", "o");
+        thingNameCode.put("berryBush", "b");
 
         thingClassType = new HashMap<>();
         thingClassType.put("", "Thing");
+        thingClassType.put("edgeBouncer", "Thing");
         thingClassType.put("tree", "AnimatedThing");
         thingClassType.put("stoneWall", "ConnectedThing");
+        thingClassType.put("woodWall", "ConnectedThing");
+        thingClassType.put("stoneDoor", "Door");
+        thingClassType.put("lamp", "AnimatedThing");
+        thingClassType.put("torch", "AnimatedThing");
+        thingClassType.put("berryBush", "Thing");
     }
 
     public static ArrayList<String> getSplitArray(String input){

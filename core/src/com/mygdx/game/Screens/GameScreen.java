@@ -1,47 +1,58 @@
 package com.mygdx.game.Screens;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.*;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Json;
+import com.mygdx.game.AStar.AStar;
 import com.mygdx.game.Entity.*;
 import com.mygdx.game.Game.MyGdxGame;
-import com.mygdx.game.Game.SoundManager;
-import com.mygdx.game.Game.Task;
 import com.mygdx.game.Generation.Map;
 import com.mygdx.game.Generation.MapSettings;
-import com.mygdx.game.Generation.Things.Door;
+import com.mygdx.game.Generation.Things.*;
+import com.mygdx.game.Generation.Tile;
+import com.mygdx.game.Lighting.EdgeController;
+import com.mygdx.game.Lighting.LightManager;
 import com.mygdx.game.Math.CameraTwo;
 import com.mygdx.game.Saving.RLE;
+import com.mygdx.game.Sound.Sound;
+import com.mygdx.game.Sound.SoundManager;
 import com.mygdx.game.Weapons.Weapon;
-import com.mygdx.game.ui.elements.Button;
-import com.mygdx.game.ui.elements.ImgButton;
-import com.mygdx.game.ui.elements.ImgTextButton;
-import com.mygdx.game.ui.elements.TextButton;
+import com.mygdx.game.floorDrops.FloorDrop;
+import com.mygdx.game.floorDrops.Zone;
+import com.mygdx.game.ui.elements.*;
 import com.mygdx.game.ui.extensions.ButtonCollection;
+import com.mygdx.game.ui.extensions.NotificationCollection;
+import com.mygdx.game.ui.extensions.TutorialTracker;
+import com.mygdx.game.ui.items.Clock;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.function.Function;
 
 @SuppressWarnings("unchecked")
 public class GameScreen implements Screen {
     public static int TILES_ON_X = 250;
     public static float TILE_DIMS = 20;
+    public static int MAX_GAME_SPEED = 100;
+
+    int count = 0;
+    int nextEntityID;
+    int nextEntityGroupID = 0;
 
     SpriteBatch batch;
     SpriteBatch batchWithNoProj;
@@ -58,10 +69,13 @@ public class GameScreen implements Screen {
     ArrayList<EntityGroup> barbarians = new ArrayList<>();
     ArrayList<EntityGroup> mobs = new ArrayList<>();
 
+    ArrayList<Entity> allEntities = new ArrayList<>();
+
     MyGdxGame game;
 
     boolean isHost;
     boolean isMultiplayer;
+    boolean endGame;
     private Socket socket;
     String socketID;
 
@@ -71,6 +85,8 @@ public class GameScreen implements Screen {
     HashMap<String, TextureAtlas> mobTextures = new HashMap<>();
     HashMap<String, Texture> actionSymbols = new HashMap<>();
     HashMap<String, Weapon> weaponPresets = new HashMap<>();
+    HashMap<String, Texture> floorDropTextures = new HashMap<>();
+    public static HashMap<String, ArrayList<Texture>> fireMap = new HashMap<>();
 
     String[] listOfColonistClothes;
 
@@ -81,8 +97,8 @@ public class GameScreen implements Screen {
     float delta = 0f;
     boolean allowUpdate = true;
 
-    public static float gameSpeed = 2f; //game speed
-    public float lastGameSpeed = gameSpeed;
+    public static int gameSpeed = 2; //game speed
+    public static int lastGameSpeed = gameSpeed;
 
     static Random random = new Random();
 
@@ -91,11 +107,24 @@ public class GameScreen implements Screen {
     ButtonCollection buildingButtons;
     ButtonCollection resourceButtons;
     ButtonCollection optionsButtons;
+    ButtonCollection gameSpeedButtons;
+    ButtonCollection zoneButtons;
+    ButtonCollection selectedColonistButtons;
+    ButtonCollection selectedColonistSkills;
+    ButtonCollection priorityButtons;
+    public static NotificationCollection notifications;
+    ButtonCollection startMultiplayerButtons;
+
+    TutorialTracker tutorialTracker;
+
+    int priorityStart;
+    int priorityHeight = 7;
+
+    Label gameSpeedLabel;
 
     HashMap<String, ArrayList<String>> orderTypes;
-    HashMap<String, Integer> resources;
 
-    String selectionMode = ""; //can be "building" or "orders"
+    String selectionMode = ""; //can be "building" or "orders" or "zones", "zoneDemolish", "priorities"
     String taskTypeSelected = "Mine";
     String buildingSelected = "stoneWall";
 
@@ -110,14 +139,24 @@ public class GameScreen implements Screen {
     boolean showCanSpawnOverlay;
     boolean showTaskOverlay;
 
-    boolean paused;
+    public static boolean updateMobDrops;
+
+    static boolean paused;
 
     boolean deanNorrisMode;
     Texture neanDorris;
 
     String lastMouseType = "";
 
-    SoundManager soundManager = new SoundManager();
+    public static SoundManager soundManager = new SoundManager();
+    boolean addSounds;
+    String[] soundsToAdd;
+
+    EdgeController ec;
+    public static LightManager lightManager;
+    boolean shouldSetupLights = false;
+
+    Clock clock;
 
     // FIXED: 30/01/2022 add the selection rect and then add tasks based on the type and if the tile type is a match
     // TODO: 02/02/2022 Some of the tasks need to be drawn above the things and others below - gl
@@ -125,6 +164,35 @@ public class GameScreen implements Screen {
 
     Vector2 minSelecting = new Vector2(0, 0);
     Vector2 maxSelecting = new Vector2(0, 0);
+
+    public static Entity selectedColonist;
+    boolean shouldRemoveSelectedColonist = false;
+    public boolean shouldShowSelectedColonistInfo = false;
+    public static boolean followingSelected;
+    public boolean showSelectedSkills;
+    public boolean attackSelection;
+    public boolean healSelection;
+    BitmapFont font;
+    GlyphLayout glyphLayout;
+
+    float raidChance;
+
+    boolean shouldUpdatePriorities = false;
+
+    public static int score;
+
+    public boolean autoSave = false;
+
+    float totalTime;
+    float timeSinceLastAutoSave;
+    float timeSinceLastTimeSycn;
+    float timeSinceLastCorpseRemoval;
+    int autoSaveCount;
+    String saveDir = "";
+
+    public static final Json json = new Json();
+
+    InputMultiplexer inputMultiplexer;
 
     InputProcessor gameInputProcessor = new InputProcessor() {
         @Override
@@ -150,6 +218,17 @@ public class GameScreen implements Screen {
                 maxSelecting = minSelecting;
             }
             lastMouseType = (Gdx.input.isButtonPressed(0) ? "left" : "right");
+
+            if (lastMouseType.equals("right")){
+                if (attackSelection) {
+                    attackSelection = false;
+                    setCursorDefault();
+                }
+                if (healSelection) {
+                    healSelection = false;
+                    setCursorDefault();
+                }
+            }
             return false;
         }
 
@@ -164,6 +243,12 @@ public class GameScreen implements Screen {
                     if (selectionMode.equals("Orders")) {
                         setTasksFromSelection(taskTypeSelected);
                     }
+                    if (selectionMode.equals("Zones")) {
+                        changeZone(minSelecting.x, minSelecting.y, maxSelecting.x, maxSelecting.y, true);
+                    }
+                    if (selectionMode.equals("ZoneDemolish")) {
+                        changeZone(minSelecting.x, minSelecting.y, maxSelecting.x, maxSelecting.y, false);
+                    }
                 }
             }
             cancelSelection = false;
@@ -172,6 +257,7 @@ public class GameScreen implements Screen {
 
         @Override
         public boolean touchDragged(int screenX, int screenY, int pointer) {
+            GameScreen.followingSelected = false;
             if (Gdx.input.isButtonPressed(1) && !paused) {
                 Vector2 temp = camera.unproject(new Vector2(screenX, screenY));
                 camera.move(moveOrigin.x - temp.x, moveOrigin.y - temp.y);
@@ -194,15 +280,32 @@ public class GameScreen implements Screen {
         public boolean scrolled(float amountX, float amountY) {
             //this moves the camera making sure that the tile that the mouse is over is always under the mouse when scrolling
             //allow you to scroll into a position - see ref/cameraZoom.png
-            if (!paused) {
+            if (!paused && !priorityButtons.showButtons) {
                 Vector2 startPos = camera.unproject(new Vector2(Gdx.input.getX(), Gdx.input.getY()));
                 camera.handleZoom(amountY);
                 Vector2 endPos = camera.unproject(new Vector2(Gdx.input.getX(), Gdx.input.getY()));
                 camera.move(startPos.x - endPos.x, startPos.y - endPos.y);
             }
+            else if (priorityButtons.showButtons){
+                System.out.println("Scrolling while priority buttons are showing");
+                System.out.println(priorityStart);
+                priorityStart = amountY > 0 ? priorityStart - 1 : priorityStart + 1;
+                if (priorityStart + priorityHeight > colonists.size()){
+                    priorityStart = colonists.size() - priorityHeight;
+                }
+                if (priorityStart < 0){
+                    priorityStart = 0;
+                }
+                shouldUpdatePriorities = true;
+            }
             return false;
         }
     };
+
+    public GameScreen(MyGdxGame game, ArrayList<Colonist> colonists, Map map, String dirName, String saveName){
+        this(game, colonists, map);
+        loadEntities(dirName, saveName);
+    }
 
     public GameScreen(MyGdxGame game, ArrayList<Colonist> colonists, Map map) {
         MyGdxGame.initialRes = new Vector2(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -213,6 +316,9 @@ public class GameScreen implements Screen {
 
         this.map = map;
 
+        int radius = (int) (Gdx.graphics.getWidth() * 0.05);
+        clock = new Clock(Gdx.graphics.getWidth() - radius, Gdx.graphics.getHeight() - radius, radius, "old");
+
         Gdx.graphics.setForegroundFPS(game.fpsCap);
         Gdx.graphics.setVSync(game.vsyncEnabled);
 
@@ -221,13 +327,16 @@ public class GameScreen implements Screen {
         System.out.println("hello world");
     }
 
-    public GameScreen(MyGdxGame game, String ip){
+    public GameScreen(MyGdxGame game, String ip, Map map){
         MyGdxGame.initialRes = new Vector2(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         this.isHost = false;
 
         this.game = game;
         game.currentGameScreen = this;
         this.isMultiplayer = true;
+        this.map = map;
+        int radius = (int) (Gdx.graphics.getWidth() * 0.05);
+        clock = new Clock(Gdx.graphics.getWidth() - radius, Gdx.graphics.getHeight() - radius, radius, "old");
         connectSocket(ip);
         createSocketListeners();
 
@@ -237,6 +346,13 @@ public class GameScreen implements Screen {
     }
 
     public void setup(){
+        font = new BitmapFont(Gdx.files.internal("Fonts/" + MyGdxGame.fontName + ".fnt"));
+        glyphLayout = new GlyphLayout(font, "");
+
+        RLE.setThingNameCode();
+
+        tutorialTracker = new TutorialTracker();
+
         Colonist.deanTexture = new Texture(Gdx.files.internal("core/assets/Textures/msc/deanNorris.jpg"));
         selectionIcon = new Texture(Gdx.files.internal("core/assets/Textures/ui/selection/selectedIcon.png"));
 
@@ -244,28 +360,37 @@ public class GameScreen implements Screen {
 
         listOfColonistClothes = ColonistSelectionScreen.getListOfClothes();
 
+        FloorDrop.font = new BitmapFont(Gdx.files.internal("Fonts/" + MyGdxGame.fontName + ".fnt"));
+        FloorDrop.font.getData().setScale(0.2f);
+
+        Zone.font = new BitmapFont(Gdx.files.internal("Fonts/" + MyGdxGame.fontName + ".fnt"));
+        Zone.font.getData().setScale(0.5f);
+
         initialiseAllTextures();
-        setupResourceHashMap();
-        setupResourceButtons();
+
         setupWeaponPresets();
-        giveAllConsistsRandomWeapons();
+
+        fireMap = Fire.setupFireMap();
 
         if (isHost) {
             setColonistIDs();
+            giveAllConsistsRandomWeapons();
         }
-        else {
-            MapSettings mapSettings = new MapSettings(seed);
-            map = new Map(mapSettings);
-            map.generateBlank();
-            colonists = new ArrayList<>();
-            System.out.println("Generating blank map");
-        }
+
+        map.setupResourceHashMap();
+        setupResourceButtons();
+
+        inputMultiplexer = new InputMultiplexer();
 
         setupBBB();
         setupOrdersButtons();
         setupOptionsButtons();
         setupBuildButtons();
         setupOrderTypes();
+        setupGameSpeedButtons(clock);
+        setupZoneButtons();
+        setupSelectedColonistsButtonCollection();
+        setupNotifications();
 
         optionsButtons.showButtons = paused;
 
@@ -275,32 +400,83 @@ public class GameScreen implements Screen {
         shapeRendererWithNoProj = new ShapeRenderer();
         camera = new CameraTwo();
         camera.setMinMax(new Vector2(0,0), new Vector2(GameScreen.TILES_ON_X * TILE_DIMS, GameScreen.TILES_ON_X * TILE_DIMS));
+        camera.update();
 
         neanDorris = new Texture(Gdx.files.internal("core/assets/Textures/msc/neanDorris.jpg"));
 
-        Gdx.input.setInputProcessor(gameInputProcessor);
+        inputMultiplexer.addProcessor(gameInputProcessor);
+        Gdx.input.setInputProcessor(inputMultiplexer);
+
+        setupLights();
+        refreshAllLights();
+
+        setupPriorityButtons();
+
+        if (isHost) {
+            map.addFloorDrop(2, 2, "stone", 100, socket, true);
+            map.addFloorDrop(2, 3, "wood", 100, socket, true);
+            map.addFloorDrop(2, 4, "berry", 100, socket, true);
+        }
     }
 
     @Override
     public void show() {
-        Gdx.input.setInputProcessor(gameInputProcessor);
+        Gdx.input.setInputProcessor(inputMultiplexer);
         gameSpeed = 2;
+        paused = false;
+        optionsButtons.showButtons = false;
+        gameSpeedLabel.setText(gameSpeed + "x");
     }
 
     @Override
     public void render(float delta) {
-        Gdx.gl.glClearColor(1, 0, 0, 1);
+        Gdx.gl.glClearColor(79/255f, 109/255f, 158/255f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-//        for (int i = 0; i < colonists.size(); i++) {
-//            System.out.println(colonists.get(i).getHealth() + " " + i);
-//        }
+        this.delta += delta;
+        totalTime += delta;
+        timeSinceLastAutoSave += delta;
+        timeSinceLastTimeSycn += delta;
+        timeSinceLastCorpseRemoval += delta;
 
-        this.delta += Gdx.graphics.getDeltaTime();
+        if ((int) totalTime % 300 == 0 && autoSave && timeSinceLastAutoSave > 2){
+            autoSaveGame();
+            timeSinceLastAutoSave = 0;
+        }
+
+        if ((int) totalTime % 60 == 0 && isMultiplayer && isHost && timeSinceLastTimeSycn > 2){
+            socket.emit("syncTime", clock.getTime());
+            timeSinceLastTimeSycn = 0;
+        }
+
+        if ((int) totalTime % 120 == 0 && timeSinceLastCorpseRemoval > 2){
+            removeCorpses();
+            System.out.println("removing corpses");
+            timeSinceLastCorpseRemoval = 0;
+        }
+
+        if (shouldRemoveSelectedColonist){
+            shouldShowSelectedColonistInfo = false;
+            selectedColonist = null;
+            showSelectedSkills = false;
+        }
+        
+        boolean isLeftJustClicked = Gdx.input.isButtonJustPressed(Input.Buttons.LEFT);
+        boolean isRightJustClicked = Gdx.input.isButtonJustPressed(Input.Buttons.RIGHT);
+        
+        Vector2 mousePos = new Vector2(Gdx.input.getX(), Gdx.input.getY());
+        Vector2 unprojectedMousePos = camera.unproject(mousePos);
 
         camera.allowMovement = !paused;
-
         camera.update();
+
+        updateRaids();
+        map.update(delta);
+
+        updateAttackSelection();
+        updateHealSelection();
+
+        calculateResources();
         updateResourceButtons();
 
         batch.begin();
@@ -313,24 +489,41 @@ public class GameScreen implements Screen {
             drawDeanOver(batch);
         }
 
-        drawAllMobs(batch);
-        drawAllBarbarians(batch);
+        map.drawThings(batch, thingTextures, camera, 0, 1);
+        drawAllMobs(batch, shapeRenderer);
+        drawAllBarbarians(batch, shapeRenderer);
         allowUpdate = true;
         if (!deanNorrisMode){
-            drawAllColonists(batch);
+            drawAllColonists(batch, shapeRenderer);
         }
         else {
             drawAllColonistsAsDeanNorris(batch);
 
         }
 
-        map.drawThings(batch, thingTextures, camera);
+        map.drawThings(batch, thingTextures, camera, 1, 3);
 
         drawTaskType(batch);
+
+        map.drawFires(batch, fireMap);
+        map.updateFires(map);
+
+        map.drawFloorDrops(batch, floorDropTextures);
 
         batch.end();
 
         shapeRenderer.setProjectionMatrix(camera.projViewMatrix.getGdxMatrix());
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        if (attackSelection){
+            highLightAttackAble(shapeRenderer);
+        }
+        else if (healSelection){
+            highLightHealAble(shapeRenderer);
+        }
+        shapeRenderer.end();
+
+        map.drawZones(shapeRenderer, batch, floorDropTextures);
+
         drawAllTaskPercentages(shapeRenderer);
 
         if (showReservedOverlay){
@@ -351,20 +544,25 @@ public class GameScreen implements Screen {
         drawAllMobsPaths(shapeRenderer);
 
         batchWithNoProj.begin();
-
-//        if (deanNorrisMode && (counter < counterMax / 2f) && random.nextInt(10) < 3) {
-//            batchWithNoProj.draw(Colonist.deanTexture, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-//        }
-
-//        batchWithNoProj.setProjectionMatrix(camera.projViewMatrix.getGdxMatrix());
         bottomBarButtons.drawButtons(batchWithNoProj);
         ordersButtons.drawButtons(batchWithNoProj);
         buildingButtons.drawButtons(batchWithNoProj);
         resourceButtons.drawButtons(batchWithNoProj);
+        gameSpeedButtons.drawButtons(batchWithNoProj);
+        gameSpeedLabel.draw(batchWithNoProj, 0);
+        zoneButtons.drawButtons(batchWithNoProj);
+        notifications.draw(batchWithNoProj, shapeRenderer, map, allEntities);
+        priorityButtons.drawButtons(batchWithNoProj);
 
         drawColonistsAtTop(batchWithNoProj, shapeRendererWithNoProj);
 
         batchWithNoProj.end();
+
+        if (shouldShowSelectedColonistInfo) {
+            drawSelectedColonistUI(batchWithNoProj, shapeRendererWithNoProj);
+        }
+        updateSelectedColonist(batchWithNoProj);
+
         if (paused) {
             Gdx.gl.glEnable(GL30.GL_BLEND);
             Gdx.gl.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
@@ -382,16 +580,53 @@ public class GameScreen implements Screen {
         }
 
         batchWithNoProj.begin();
-
-        optionsButtons.drawButtons(batchWithNoProj);
+        clock.draw(delta, batchWithNoProj, shapeRendererWithNoProj);
         batchWithNoProj.end();
+
+        drawTimeCover(shapeRendererWithNoProj, clock);
+
+        lightManager.updateLights(ec, GameScreen.TILE_DIMS);
+        lightManager.drawLights(batch);
+
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        ec.drawEdges(shapeRenderer, GameScreen.TILE_DIMS);
+        shapeRenderer.end();
+
+        batchWithNoProj.begin();
+        optionsButtons.drawButtons(batchWithNoProj);
+        startMultiplayerButtons.drawButtons(batchWithNoProj);
+        batchWithNoProj.end();
+
+        if (map.lightShouldBeUpdated){
+            map.lightShouldBeUpdated = false;
+            lightManager.setAllToShouldUpdate();
+            ec.update(map.things);
+        }
+
+        if (shouldSetupLights){
+            setupNewLights();
+            shouldSetupLights = false;
+        }
+
+        soundManager.updateSounds(camera.position.x / GameScreen.TILE_DIMS, camera.position.y / GameScreen.TILE_DIMS);
 
         Gdx.graphics.setTitle(MyGdxGame.title + "     FPS: " + (Gdx.graphics.getFramesPerSecond()));
 
+        boolean notisClicked = false;
+        if (isLeftJustClicked || isRightJustClicked) {
+            notisClicked = notifications.updateNotis(Gdx.input.isButtonJustPressed(0), Gdx.input.isButtonJustPressed(1),
+                    Gdx.input.getX(), (int) (MyGdxGame.initialRes.y - Gdx.input.getY()), camera, map, allEntities);
+        }
+
         if (Gdx.input.isButtonPressed(0)) {
             if (!paused){
-                if (!(bottomBarButtons.updateButtons(camera, Gdx.input.isButtonJustPressed(0)) || ordersButtons.updateButtons(camera, Gdx.input.isButtonJustPressed(0))
-                                                                                               || buildingButtons.updateButtons(camera, Gdx.input.isButtonJustPressed(0)))){
+                if (!(bottomBarButtons.updateButtons(camera, isLeftJustClicked)
+                        || ordersButtons.updateButtons(camera, isLeftJustClicked)
+                        || buildingButtons.updateButtons(camera, isLeftJustClicked)
+                        || gameSpeedButtons.updateButtons(camera, isLeftJustClicked)
+                        || zoneButtons.updateButtons(camera, isLeftJustClicked)
+                        || notisClicked
+                        || priorityButtons.updateButtons(camera, isLeftJustClicked))){
                     drawSelectionScreen(shapeRenderer, camera);
                     batch.begin();
                     batch.setProjectionMatrix(camera.projViewMatrix.getGdxMatrix());
@@ -401,49 +636,71 @@ public class GameScreen implements Screen {
                 else {
                     cancelSelection = true;
                 }
+                if (selectedColonistButtons.updateButtons(camera, Gdx.input.isButtonJustPressed(0)) && shouldShowSelectedColonistInfo){
+                    cancelSelection = true;
+                }
+                gameSpeedLabel.setText(gameSpeed + "x");
             }
             else {
-                optionsButtons.updateButtons(camera, Gdx.input.isButtonJustPressed(0));
+                if (!startMultiplayerButtons.updateButtons(camera, isLeftJustClicked)) {
+                    optionsButtons.updateButtons(camera, Gdx.input.isButtonJustPressed(0));
+                }
             }
         }
 
-        if (Gdx.input.isButtonJustPressed(0)){
+        if (isLeftJustClicked && !attackSelection) {
+            Entity toSelect = getEntityAtUsingFull(unprojectedMousePos.x, unprojectedMousePos.y);
+            if (toSelect != null) {
+                selectedColonist = toSelect;
+                shouldShowSelectedColonistInfo = true;
+                followingSelected = true;
+                hideAllButtons();
+            }
+        }
+
+        if (isLeftJustClicked){
             if (!paused) {
-                if (bottomBarButtons.updateButtons(camera, Gdx.input.isButtonJustPressed(0))) {
-                    if (bottomBarButtons.pressedButtonName.equals("OrdersButton")) {
-                        selectionMode = "Orders";
-                        updateShowingButtons(ordersButtons);
+                if (bottomBarButtons.updateButtons(camera, true)) {
+                    switch (bottomBarButtons.pressedButtonName) {
+                        case "OrdersButton" -> {
+                            selectionMode = "Orders";
+                            updateShowingButtons(ordersButtons);
+                        }
+                        case "BuildingButton" -> {
+                            selectionMode = "Building";
+                            updateShowingButtons(buildingButtons);
+                        }
+                        case "ZonesButton" -> {
+                            selectionMode = "Zones";
+                            updateShowingButtons(zoneButtons);
+                        }
+                        case "PrioritiesButton" -> {
+                            tutorialTracker.prioritiesButtonsPressed = true;
+                            selectionMode = "Priority";
+                            updateShowingButtons(priorityButtons);
+                        }
                     }
-                    else if (bottomBarButtons.pressedButtonName.equals("BuildingButton")) {
-                        selectionMode = "Building";
-                        updateShowingButtons(buildingButtons);
+                    if (!ordersButtons.showButtons || !buildingButtons.showButtons) {
+                        setCursorDefault();
                     }
                 }
 
-                if (ordersButtons.updateButtons(camera, Gdx.input.isButtonJustPressed(0))) {
+                if (ordersButtons.updateButtons(camera, true)) {
                     inCancelTaskMode = false;
-                    switch (ordersButtons.pressedButtonName) {
-                        case "MineButton" -> taskTypeSelected = "Mine";
-                        case "CutDownButton" -> taskTypeSelected = "CutDown";
-                        case "PlantButton" -> taskTypeSelected = "Plant";
-                        case "HarvestButton" -> taskTypeSelected = "Harvest";
-                        case "DemolishButton" -> taskTypeSelected = "Demolish";
-                        case "CancelButton" -> {
-                            taskTypeSelected = "Cancel";
-                            inCancelTaskMode = true;
-                        }
+                    taskTypeSelected = ordersButtons.pressedButtonName.replace("Button", "");
+                    if (taskTypeSelected.equals("Cancel")) {
+                        inCancelTaskMode = true;
                     }
+                    setCustomCursor(taskTypeSelected);
                 }
-                if (buildingButtons.updateButtons(camera, Gdx.input.isButtonJustPressed(0))) {
+                if (buildingButtons.updateButtons(camera, true)) {
                     inCancelTaskMode = false;
-                    switch (buildingButtons.pressedButtonName) {
-                        case "stoneWallButton" -> buildingSelected = "stoneWall";
-                        case "woodWallButton" -> buildingSelected = "woodWall";
-                        case "stoneDoorButton" -> buildingSelected = "stoneDoor";
-                    }
-                }
+                    buildingSelected = buildingButtons.pressedButtonName.replace("Button", "");
+                } // TODO: 09/04/2022 remove button from the name
+
+//                gameSpeedButtons.updateButtons(camera, Gdx.input.isButtonJustPressed(0));
             }
-            if (optionsButtons.updateButtons(camera, Gdx.input.isButtonJustPressed(0))){
+            if (optionsButtons.updateButtons(camera, false)){
                 switch (optionsButtons.pressedButtonName) {
                     case "ResumeButton" -> {
                         optionsButtons.showButtons = false;
@@ -454,26 +711,45 @@ public class GameScreen implements Screen {
                         game.setScreen(new SettingsScreen(game, true));
                     }
                     case "SaveButton" -> {
-                        Scanner sc = new Scanner(System.in);
-                        System.out.println("Enter name of the save file: ");
-                        String name = sc.nextLine();
-                        saveGame(name);
+                        game.setScreen(new SaveScreen(game, map, colonists, this));
                         setPause(false);
                     }
                     case "LoadButton" -> game.setScreen(new LoadSaveScreen2(game));
-                    case "MainMenuButton" -> game.setScreen(game.mainMenu);
+                    case "MainMenuButton" -> {
+                        if (isMultiplayer){
+                            if (isHost){
+                                socket.emit("endGame", "");
+                            }
+                            socket.disconnect();
+                        }
+                        game.setScreen(game.mainMenu);
+                    }
                     case "ExitButton" -> Gdx.app.exit();
                 }
             }
             System.out.println(optionsButtons.showButtons);
         }
 
+        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+            if (gameSpeed == 0){
+                gameSpeed = lastGameSpeed;
+                gameSpeedLabel.setText(gameSpeed + "x");
+            }
+            else {
+                lastGameSpeed = gameSpeed;
+                gameSpeed = 0;
+                gameSpeedLabel.setText(gameSpeed + "x");
+            }
+            if (isMultiplayer) {
+                socket.emit("updateGameSpeed", GameScreen.gameSpeed);
+            }
+        }
+
         if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
-            Vector2 mousePos = camera.unproject(new Vector2(Gdx.input.getX(), Gdx.input.getY()));
-            int x = (int) (mousePos.x / TILE_DIMS);
-            int y = (int) (mousePos.y / TILE_DIMS);
+            int x = (int) (unprojectedMousePos.x / TILE_DIMS);
+            int y = (int) (unprojectedMousePos.y / TILE_DIMS);
             if (map.isWithinBounds(x, y)) {
-                colonists.get(0).setMoveToPos(x,y, map);
+                colonists.get(0).setMoveToPos(x,y, map, allEntities);
             }
         }
 
@@ -481,49 +757,8 @@ public class GameScreen implements Screen {
             drawColonistPath = !drawColonistPath;
         }
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.M)) {
-            Gdx.app.log("Multiplayer", "enabling multiplayer");
-            connectSocket("localhost:8080");
-            createSocketListeners();
-            socket.emit("joinRoom", "test1");
-            isMultiplayer = true;
-        }
-
         if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
-            Scanner sc = new Scanner(System.in);
-            String saveName = sc.nextLine();
-            saveGame(saveName);
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.L)) {
-            Scanner sc = new Scanner(System.in);
-            String saveName = sc.nextLine();
-            Map.loadMap(saveName, map);
-            colonists = Map.loadColonists(saveName);
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.C)) {
-            setCustomCursor(taskTypeSelected);
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.V)) {
-            setCursorDefault();
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.T)){
-            System.out.println(colonists.get(0).getNextTask(map.tiles, map.tasks));
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.N)){
-            gameSpeed += 2;
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.B)){
-            gameSpeed -= 2;
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.H)){
-            gameSpeed = 0;
+            spawnRaid(5);
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.G)){
@@ -531,50 +766,42 @@ public class GameScreen implements Screen {
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.F)){
-            Vector2 mousePos = camera.unproject(new Vector2(Gdx.input.getX(), Gdx.input.getY()));
-            int x = (int) (mousePos.x / TILE_DIMS);
-            int y = (int) (mousePos.y / TILE_DIMS);
+            int x = (int) (unprojectedMousePos.x / TILE_DIMS);
+            int y = (int) (unprojectedMousePos.y / TILE_DIMS);
 
             if (map.isWithinBounds(x, y)) {
-//                ConnectedThings stone = new ConnectedThings(x,y, (int) TILE_DIMS, (int) TILE_DIMS, "stoneWall", (int) TILE_DIMS);
-//                map.addThing(stone, x, y);
-
                 Door door = new Door(x, y, (int) TILE_DIMS, (int) TILE_DIMS, "stoneDoor", (int) TILE_DIMS);
-                map.addThing(door, x, y);
+                map.addThing(door, x, y, false, socket, isHost);
                 door.triggerOpen();
             }
         }
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.T)){
-            System.out.println(colonists.get(1).getHealth());
-            colonists.get(0).attack(colonists.get(1), colonists.get(0));
-            System.out.println(colonists.get(1).getHealth() + " new health");
-        }
-
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)){
-            spawnMobs("sheep", 10, 50, 50);
+            if (isHost) {
+                spawnMobs("poong", 10, 50, 50);
+            }
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)){
-            spawnBarbarians("barbarian", 10, 20, 50);
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_3)){
-            colonists.get(0).setDefender(colonists.get(1));
-            colonists.get(1).setDefender(colonists.get(0));
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_4)){
-            Entity.haveLineOfSight(colonists.get(0), colonists.get(1), map);
+            if (isHost) {
+                spawnRaid(3);
+                notifications.add(socket, isHost, new Notification(notifications.getNextId(), "Raid", "raid"));
+//                spawnBarbarians("barbarian", 4, 20, 50);
+            }
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_5)){
             for (EntityGroup eg : barbarians) {
                 for (Entity b : eg.entities) {
-                    b.setDefender(colonists.get(0));
+                    if (b.isAlive()) {
+                        b.setDefender(colonists.get(count));
+                    }
                 }
             }
+            count++;
         }
+
+//        System.out.println(colonists.get(0).getHealth());
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_6)){
             drawBarbarianPath = !drawBarbarianPath;
@@ -601,14 +828,51 @@ public class GameScreen implements Screen {
             System.out.println("showTaskOverlay: " + showTaskOverlay);
         }
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.Q)) {
-            Sound s = Gdx.audio.newSound(Gdx.files.internal("Music/#FreeFortnite.mp3"));
-            s.play();
-            soundManager.addSound(s);
+        if (Gdx.input.isKeyJustPressed(Input.Keys.M) || totalTime % 5 == 0 && isHost && isMultiplayer) {
+            Json json = new Json();
+            String colonistsJson = json.toJson(colonists);
+            socket.emit("checkMovementSync", colonistsJson);
+        }
+
+        if (Gdx.input.isKeyPressed(Input.Keys.E)) {
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+            shapeRenderer.setColor(Color.RED);
+            for (Sound s : soundManager.soundEffects) {
+                shapeRenderer.circle(s.getX() * GameScreen.TILE_DIMS, s.getY() * GameScreen.TILE_DIMS, s.getRadius() * GameScreen.TILE_DIMS);
+            }
+            shapeRenderer.end();
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.T)) {
+            int x = (int) (unprojectedMousePos.x / GameScreen.TILE_DIMS);
+            int y = (int) (unprojectedMousePos.y / GameScreen.TILE_DIMS);
+            map.addFloorDrop(x,y, "stone", socket, isHost);
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.U)){
+            addNotification("Fire", "fire");
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.I)){
+            addNotification("Raid", "raid");
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.Y)){
+            System.out.println("endiong game");
+            game.setScreen(new EndScreen(game, this));
+        }
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.J)){
+            game.setScreen(new SaveScreen(game, map, colonists, this));
+        }
+
+        if (endGame){
+            game.setScreen(new MainMenu(game));
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
             optionsButtons.showButtons = !optionsButtons.showButtons;
+            startMultiplayerButtons.showButtons = false;
             setPause(optionsButtons.showButtons);
         }
     }
@@ -617,29 +881,55 @@ public class GameScreen implements Screen {
         moveColonists();
         moveMobs();
         moveBarbarians();
+
+        checkNotEnd();
+
+        if (updateMobDrops){
+            dropFoodForDeadMobs();
+            updateMobDrops = false;
+        }
+
+        if (isHost){
+            randomlySpawnMobs();
+            destroyMobs();
+        }
+
         if (isHost && isMultiplayer){
             try {
                 sendColonistMovement();
+                // TODO: 13/04/2022 send mob movement
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+        }
+        if (shouldUpdatePriorities){
+            updatePriorityButtons();
+            shouldUpdatePriorities = false;
         }
     }
 
     public void setPause(boolean pause){
         if (pause){
             lastGameSpeed = gameSpeed;
-            gameSpeed = 0f;
+            gameSpeed = 0;
         }
         else {
             gameSpeed = lastGameSpeed;
+        }
+        if (isMultiplayer){
+            socket.emit("updateGameSpeed", GameScreen.gameSpeed);
         }
         paused = pause;
     }
 
     @Override
     public void resize(int width, int height) {
+        boolean keepShow = false;
+        if (optionsButtons.showButtons){
+            keepShow = true;
+        }
         setupOptionsButtons();
+        optionsButtons.showButtons = keepShow;
     }
 
     @Override
@@ -659,7 +949,9 @@ public class GameScreen implements Screen {
 
     @Override
     public void dispose() {
-
+        soundManager.dispose();
+        shapeRenderer.dispose();
+        batch.dispose();
     }
 
     public void initialiseAllTextures(){
@@ -667,6 +959,7 @@ public class GameScreen implements Screen {
         setupActionSymbols();
         setupColonistClothes();
         setupMobTextures();
+        setupFloorDropHashMap();
     }
 
     public void initialiseTextures(){
@@ -697,7 +990,21 @@ public class GameScreen implements Screen {
         }
     }
 
-    public void connectSocket(String ip){
+    public void setupNewLights(){
+        for (int i = 0; i < TILES_ON_X; i++) {
+            for (int j = 0; j < TILES_ON_X; j++) {
+                Thing t = map.things.get(i).get(j);
+                if (t != null){
+                    if (t.emitsLight && !t.hasBeenSetup){
+                        t.setup();
+                        map.lightShouldBeUpdated = true;
+                    }
+                }
+            }
+        }
+    }
+
+    public boolean connectSocket(String ip){
 //        Scanner sc = new Scanner(System.in);
 //        System.out.println("Enter IP address: ");
 //        String ip = sc.nextLine();
@@ -705,10 +1012,15 @@ public class GameScreen implements Screen {
         try {
             socket = IO.socket("http://" + ip);
             socket.connect();
+            return true;
         }
         catch (URISyntaxException e) {
             e.printStackTrace();
         }
+        catch (RuntimeException e){
+            System.out.println("Could not connect to server");
+        }
+        return false;
     }
 
     public void createSocketListeners() {
@@ -726,7 +1038,17 @@ public class GameScreen implements Screen {
                 data.put("tileDims", GameScreen.TILE_DIMS);
                 data.put("colonists", json.toJson(colonists));
                 data.put("settings", json.toJson(map.settings));
-                data.put("resources", json.toJson(resources));
+                data.put("resources", json.toJson(map.resources));
+                data.put("tasks", json.toJson(map.tasks));
+                data.put("time", json.toJson(clock.getTime()));
+                data.put("mapFloorDrops", json.toJson(map.floorDrops));
+                data.put("zones", json.toJson(map.zones));
+                data.put("nextZoneID", map.getZoneID());
+                data.put("mobs", json.toJson(mobs));
+                data.put("barbarians", json.toJson(barbarians));
+                data.put("nextEntityGroupID", nextEntityGroupID);
+                data.put("gameSpeed", gameSpeed);
+                data.put("fire", json.toJson(map.fire));
 
                 socket.emit("loadWorld", data);
             }
@@ -735,12 +1057,186 @@ public class GameScreen implements Screen {
             }
         });
 
-        socket.on("getUpdatedColonists", args -> {
+        socket.on("endGame", args -> {
+            System.out.println("Game ended");
+            endGame = true;
+        });
+
+        socket.on("playSound", args -> {
+            String soundName = (String) args[0];
+            int x = (int) args[1];
+            int y = (int) args[2];
+            soundManager.addSound(soundName, x, y, socket, false);
+//            soundManager.updateSounds(camera.position.x, camera.position.y);
+        });
+
+        socket.on("stopSound", args -> {
+            String soundName = (String) args[0];
+            int x = (int) args[1];
+            int y = (int) args[2];
+            soundManager.removeSound(soundName, x, y);
+//            soundManager.updateSounds(camera.position.x, camera.position.y);
+        });
+
+        socket.on("updateHealth", args -> {
+            Entity e = getEntityWithId((int) args[0]);
+            if (e != null) {
+                e.setHealth((int) args[1]);
+            }
+        });
+
+        socket.on("updatePriority", args -> {
+            int colonistID = (int) args[0];
+            String priority = (String) args[1];
+            int value = (int) args[2];
+            Colonist c = getColonistWithID(colonistID);
+            if (c != null) {
+                c.setPriorityValue(priority, value);
+            }
+        });
+
+        socket.on("addNoti", args -> {
+            String noti = (String) args[0];
+            Notification notis = json.fromJson(Notification.class, noti);
+            notifications.add(socket, false, notis);
+        });
+
+        socket.on("removeNoti", args -> {
+            Notification n = json.fromJson(Notification.class, (String) args[0]);
+            notifications.remove(n, socket, false);
+        });
+
+        socket.on("updateGameSpeed", args -> {
+            gameSpeed = (int) args[0];
+            gameSpeedLabel.setText(gameSpeed + "x");
+        });
+
+        socket.on("addFloorDrop", args -> {
+            int x = (int) args[0];
+            int y = (int) args[1];
+            String type = (String) args[2];
+            int amount = (int) args[3];
+            map.addFloorDrop(x, y, type, amount, socket, false);
+        });
+
+        socket.on("entityAttacking", args -> {
+            int attackerID = (int) args[0];
+            int defenderID = (int) args[1];
+            Entity attacker = null;
+            Entity defender = null;
+            for (Entity e : allEntities) {
+                if (e.getEntityID() == attackerID) {
+                    attacker = e;
+                    e.isAttacking = true;
+                }
+                if (e.getEntityID() == defenderID) {
+                    defender = e;
+                    e.isAttacking = true;
+                }
+            }
+            assert attacker != null;
+            attacker.defender = defender;
+            assert defender != null;
+            defender.addAttacker(attacker);
+        });
+
+        socket.on("setTasksFromSelection", args -> {
+            String type = (String) args[0];
+            String subType = (String) args[1];
+            int minXCoord = (int) args[2];
+            int minYCoord = (int) args[3];
+            int maxXCoord = (int) args[4];
+            int maxYCoord = (int) args[5];
+            setTasksFromInput(type, subType, minXCoord, minYCoord, maxXCoord, maxYCoord);
+        });
+
+        socket.on("cancelTasksFromSelection", args -> {
+            int minXCoord = (int) args[0];
+            int minYCoord = (int) args[1];
+            int maxXCoord = (int) args[2];
+            int maxYCoord = (int) args[3];
+            boolean past = inCancelTaskMode;
+            inCancelTaskMode = true;
+            setTasksFromInput("", "", minXCoord, minYCoord, maxXCoord, maxYCoord);
+            inCancelTaskMode = past;
+        });
+
+        socket.on("spawnMobs", args -> {
+            EntityGroup eg = json.fromJson(EntityGroup.class, args[0].toString());
+            allEntities.addAll(eg.entities);
+            mobs.add(eg);
+        });
+
+        socket.on("destroyMobs", args -> {
+            int Id = (int) args[0];
+            EntityGroup eg = getEntityGroupWithID(Id, mobs);
+            if (eg != null) {
+                mobs.remove(eg);
+                for (Entity e : eg.entities) {
+                    allEntities.remove(e);
+                }
+            }
+        });
+
+        socket.on("spawnBarbarians", args -> {
+            EntityGroup eg = json.fromJson(EntityGroup.class, args[0].toString());
+            allEntities.addAll(eg.entities);
+            barbarians.add(eg);
+        });
+
+        socket.on("taskReservation", args -> {
+            int x = (int) args[0];
+            int y = (int) args[1];
+            String type = (String) args[2];
+            map.getTaskAt(x, y, type).reserved = true;
+        });
+
+        socket.on("completeTask", args -> {
+            JSONObject data = (JSONObject) args[0];
             try {
-                JSONObject data = (JSONObject) args[0];
-                getColonistMovement(data);
+                int x = data.getInt("x");
+                int y = data.getInt("y");
+                String type = data.getString("type");
+                map.tasks.remove(map.getTaskAt(x, y, type));
             } catch (JSONException e) {
                 e.printStackTrace();
+            }
+        });
+
+        socket.on("getUpdatedEntities", args -> {
+            try {
+                JSONObject data = (JSONObject) args[0];
+                getEntityMovement(data);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        });
+
+        socket.on("checkMovementSync", args -> {
+            String data = (String) args[0];
+            ArrayList<Colonist> colonistList = json.fromJson(ArrayList.class, data);
+            boolean desynchronized = false;
+            for (Colonist colonist : colonistList) {
+                for (Colonist colonist2 : colonists) {
+                    if (colonist.getEntityID() == colonist2.getEntityID()) {
+                        float distance = (float) Math.sqrt(Math.pow(colonist.getX() - colonist2.getX(), 2) + Math.pow(colonist.getY() - colonist2.getY(), 2));
+                        if (distance > 0.1f) {
+                            desynchronized = true;
+                            System.out.println("Colonist "+ colonist.getEntityID() + " is out of sync");
+                            if (isHost){
+                                System.out.println("hosts colonists is at " + colonist.getX() + " " + colonist.getY());
+                                System.out.println("others colonists is at " + colonist2.getX() + " " + colonist2.getY());
+                                System.out.println("distance is " + distance);
+                                System.out.println("re-syncing to host");
+                                colonist2.setX(colonist.getX());
+                                colonist2.setY(colonist.getY());
+                            }
+                        }
+                    }
+                }
+            }
+            if (!desynchronized) {
+                System.out.println("Colonists are in sync");
             }
         });
 
@@ -762,29 +1258,113 @@ public class GameScreen implements Screen {
                 colonists = json.fromJson(ArrayList.class, data.get("colonists").toString());
                 setColonistIDs();
 
-                ArrayList<String> packagedTiles = json.fromJson(ArrayList.class, data.get("tiles").toString());
-                ArrayList<String> packagedThings = json.fromJson(ArrayList.class, data.get("things").toString());
+                mobs = json.fromJson(ArrayList.class, EntityGroup.class, data.get("mobs").toString());
+                barbarians = json.fromJson(ArrayList.class, EntityGroup.class, data.get("barbarians").toString());
+
+                String packagedTiles = json.fromJson(String.class, data.get("tiles").toString());
+                String packagedThings = json.fromJson(String.class, data.get("things").toString());
                 int mapWidth = data.getInt("mapWidth");
                 int tileDims = data.getInt("tileDims");
                 GameScreen.TILES_ON_X = mapWidth;
                 GameScreen.TILE_DIMS = tileDims;
 
                 map.settings = json.fromJson(MapSettings.class, data.get("settings").toString());
-                map.unPackageTiles(packagedTiles);
+                map.tiles = RLE.decodeTiles(packagedTiles, GameScreen.TILES_ON_X);
+                map.things = RLE.decodeThings(packagedThings, GameScreen.TILES_ON_X);
 
-                map.unPackageThings(packagedThings);
+                map.updateAllTilesWithNewThings();
 
-                this.resources = json.fromJson(HashMap.class, data.get("resources").toString());
+                map.tasks = json.fromJson(ArrayList.class, data.get("tasks").toString());
+                map.resources = json.fromJson(HashMap.class, data.get("resources").toString());
+                map.floorDrops = json.fromJson(ArrayList.class, FloorDrop.class, data.get("mapFloorDrops").toString());
+                map.refreshFloorDrops();
+                map.zones = json.fromJson(ArrayList.class, Zone.class, data.get("zones").toString());
+                map.setZoneID(json.fromJson(Integer.class, data.get("nextZoneID").toString()));
+                map.fire = json.fromJson(ArrayList.class, Fire.class, data.get("fire").toString());
+
+                nextEntityGroupID = json.fromJson(Integer.class, data.get("nextEntityGroupID").toString());
+
+                clock.setTime(json.fromJson(String.class, data.get("time").toString()));
 
                 game.currentGameScreen = this;
+                gameSpeed = data.getInt("gameSpeed");
                 System.out.println("Loaded world" + colonists.size());
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         });
 
-        socket.on("testTwo", args -> System.out.println("testTwo: " + args[0]));
+        socket.on("syncTime", args -> {
+            String time = (String) args[0];
+            clock.setTime(time);
+        });
 
+        socket.on("colonistTask", args -> {
+           JSONObject data = (JSONObject) args[0];
+           try {
+               int colonistID = data.getInt("colonistID");
+               String task = data.getString("task");
+               Task t = json.fromJson(Task.class, task);
+               for (Colonist colonist : colonists) {
+                   if (colonist.colonistID == colonistID) {
+                       colonist.completingTask = true;
+                       Task fromMap = map.getTaskAt(t.getX(), t.getY(), t.type);
+                       if (fromMap != null) {
+                           fromMap.reserved = true;
+                           colonist.setCurrentTask(fromMap);
+                       }
+                   }
+               }
+           } catch (JSONException e) {
+               e.printStackTrace();
+           }
+        });
+
+        socket.on("addDropToZone", args -> {
+            int colX = (int) args[0];
+            int colY = (int) args[1];
+            String type = (String) args[2];
+            int amount = (int) args[3];
+            Zone z = map.findNearestZone(colX, colY, type, amount);
+            if (z != null) {
+                z.addFloorDrop(new FloorDrop(0,0,type, amount), map, colX, colY);
+            }
+        });
+
+        socket.on("updateTaskPercentage", args -> {
+            JSONObject data = (JSONObject) args[0];
+            try {
+                int x = data.getInt("x");
+                int y = data.getInt("y");
+                String type = data.getString("type");
+                float percentage = (float) data.getDouble("percentage");
+                Task t = map.getTaskAt(x, y, type);
+                t.setPercentageComplete(percentage);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        });
+
+        socket.on("addTask", args -> {
+            String type = (String) args[0];
+            String subType = (String) args[1];
+            int x = (int) args[2];
+            int y = (int) args[3];
+            map.tasks.add(new Task(type, subType, x, y));
+        });
+
+        socket.on("addFire", args -> {
+            int x = (int) args[0];
+            int y = (int) args[1];
+            String name = (String) args[2];
+            map.fire.add(new Fire(x, y, name, fireMap.get(name).size()));
+        });
+
+        socket.on("removeFire", args -> {
+            int x = (int) args[0];
+            int y = (int) args[1];
+            map.removeFire(x, y, socket, false);
+        });
 
         socket.on("loadColonists", args -> {
             colonists = json.fromJson(ArrayList.class, Colonist.class, args[0].toString());
@@ -805,23 +1385,100 @@ public class GameScreen implements Screen {
         });
 
         socket.on("changeThingType", args -> {
+            int x = (int) args[0];
+            int y = (int) args[1];
+            String type = (String) args[2];
+            int height = (int) args[3];
+            boolean emitsLight = (boolean) args[4];
+            String thingType = RLE.thingClassType.get(type);
+            switch (thingType) {
+                case "Thing" -> {
+                    Thing t = new Thing(x, y, (int) GameScreen.TILE_DIMS, (int) (height * GameScreen.TILE_DIMS), type, (int) GameScreen.TILE_DIMS);
+                    map.addThing(t, x, y, true, socket, isHost);
+                }
+                case "AnimatedThing" -> {
+                    AnimatedThings at = new AnimatedThings(x, y, (int) GameScreen.TILE_DIMS, (int) (height * GameScreen.TILE_DIMS), type, (int) GameScreen.TILE_DIMS);
+                    map.addThing(at, x, y, true, socket, isHost);
+                }
+                case "ConnectedThing" -> {
+                    ConnectedThings ct = new ConnectedThings(x, y, (int) GameScreen.TILE_DIMS, (int) (height * GameScreen.TILE_DIMS), type, (int) GameScreen.TILE_DIMS);
+                    map.addThing(ct, x, y, true, socket, isHost);
+                }
+                case "Door" -> {
+                    Door d = new Door(x, y, (int) GameScreen.TILE_DIMS, (int) (height * GameScreen.TILE_DIMS), type, (int) GameScreen.TILE_DIMS);
+                    map.addThing(d, x, y, true, socket, isHost);
+                }
+            }
+            if (emitsLight) {
+                shouldSetupLights = true;
+                map.things.get(x).get(y).emitsLight = true;
+//                Task.setupLight(type, map.things.get(x).get(y), map);
+            }
+//            map.changeThingType(x, y, type, height, true);
+        });
+
+        socket.on("addZone", args -> {
+            int x = (int) args[0];
+            int y = (int) args[1];
+            int x2 = (int) args[2];
+            int y2 = (int) args[3];
+            addZonePartTwo(x, y, x2, y2);
+        });
+
+        socket.on("removeZone", args -> {
+            int x = (int) args[0];
+            int y = (int) args[1];
+            int x2 = (int) args[2];
+            int y2 = (int) args[3];
+            removeZonePartTwo(x, y, x2, y2);
+        });
+
+        socket.on("removeFloorDrop", args -> {
+            int x = (int) args[0];
+            int y = (int) args[1];
+            String type = (String) args[2];
+            map.removeFloorDrop(x, y, type);
+        });
+
+        socket.on("getTasks", args -> {
             JSONObject data = (JSONObject) args[0];
             try {
-                int x = (int) data.get("x");
-                int y = (int) data.get("y");
-                String type = (String) data.get("type");
-                int height = (int) data.get("height");
-                map.changeThingType(x, y, type, height);
-            } catch (JSONException e) {
+                ArrayList<Task> tasks = json.fromJson(ArrayList.class, Task.class, data.get("tasks").toString());
+                map.tasks.clear();
+                map.tasks.addAll(tasks);
+            }
+            catch (JSONException e) {
                 e.printStackTrace();
             }
         });
     }
 
-    public void drawAllColonists(SpriteBatch batch){
+    public void startMultiplayer(String ip) {
+        Gdx.app.log("Multiplayer", "enabling multiplayer");
+        if(connectSocket(ip)) {
+            createSocketListeners();
+            socket.emit("joinRoom", "test1");
+            isMultiplayer = true;
+        }
+    }
+
+    public void drawAllColonists(SpriteBatch batch, ShapeRenderer shapeRenderer) {
         for (Colonist c : colonists) {
             c.draw(batch, GameScreen.TILE_DIMS, colonistClothes);
         }
+        batch.end();
+
+        Gdx.gl.glEnable(GL30.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(0, 0.2f, 1f, 0.5f);
+        for (Colonist c : colonists) {
+            c.drawPathOutline(shapeRenderer);
+        }
+        shapeRenderer.end();
+        Gdx.gl.glDisable(GL30.GL_BLEND);
+
+        batch.begin();
     }
 
     public void drawAllColonistsAsDeanNorris(SpriteBatch batch){
@@ -833,7 +1490,7 @@ public class GameScreen implements Screen {
     public void moveColonists(){
         if (isHost) {
             for (Colonist c : colonists) {
-                c.moveColonist(map, resources, socket);
+                c.moveColonist(map, socket, allEntities, isHost);
             }
         }
     }
@@ -841,7 +1498,7 @@ public class GameScreen implements Screen {
     public void moveMobs(){
         if (isHost) {
             for (EntityGroup eg : mobs) {
-                eg.moveGroup(map);
+                eg.moveGroup(map, allEntities, socket, isHost);
             }
         }
     }
@@ -849,7 +1506,7 @@ public class GameScreen implements Screen {
     public void moveBarbarians(){
         if (isHost) {
             for (EntityGroup eg : barbarians) {
-                eg.moveGroup(map);
+                eg.moveGroup(map, allEntities, socket, isHost);
             }
         }
     }
@@ -874,13 +1531,17 @@ public class GameScreen implements Screen {
         }
     }
 
-    public void saveGame(String saveName){
+    public boolean saveGame(String dirName, String saveName){
         Json json = new Json();
 
         String tileSave = RLE.encodeTiles(map);
         String thingSave = RLE.encodeThings(map);
         String colonistSave = json.toJson(colonists);
-        String resourcesSave = json.toJson(resources);
+        String mobSave = json.toJson(mobs);
+        String barbarianSave = json.toJson(barbarians);
+        String resourcesSave = json.toJson(map.resources);
+        String zonesSave = json.toJson(map.zones);
+        String fireSave = json.toJson(map.fire);
 
         String mapInfo = MyGdxGame.initialRes.x + " " + MyGdxGame.initialRes.y;
         String mapDims = String.valueOf(GameScreen.TILES_ON_X);
@@ -892,18 +1553,37 @@ public class GameScreen implements Screen {
         LocalDateTime now = LocalDateTime.now();
         String time = dtf.format(now);
 
-        File file = new File("core/assets/Saves/" + saveName);
-        System.out.println(file.mkdir());
+        File file = new File("core/assets/Saves/" + dirName);
+        file.mkdir();
 
-        FileHandle fileHandle = Gdx.files.local("core/assets/Saves/" + saveName + "/save.sve");
-        fileHandle.writeString("date: " + time + "\nmapDims: " + mapDims + "\ntiles: "
-                + tileSave + "\nthings: " + thingSave + "\ncolonists: "
-                + colonistSave + "\nmapInfo: " + mapInfo + "" + "\nresources:"
-                + resourcesSave, false);
 
-//        String s = "d1g2d4g2d5g1d5g1d5g2d4g2d5g1d5g5d7g2d5g5d7g2d4g2d5g5d4g2d7g2d5g5d4g2d7g2d5g1d5g5d7g5d5g2d7g2d4g2d5g5d4g2d7g5d8g5d5g1d5g1d5g2d4g2d13g4d2g3d16g4d1g6d8g2d5g5d13g3d3g5d5g3d6g3d2g6d5g3d5g5d1g4d5g5d7g6d11g4d3g2d5g6d1g5d6g5d9g5d2g4d9g4d1g4d13g4d2g2d17g10d9g2d5g5d13g3d3g5d4g5d5g11d4g5d3g11d5g5d7g7d10g5d2g2d5g13d5g4d10g5d2g4d9g9d1g1d12g3d15g2d5g9d16g5d13g2d5g5d3g6d8g7d3g7d2g11d4g5d8g7d11g4d10g13d38g9d1g2d11g3d15g2d5g9d15g5d21g5d3g6d8g7d1g8d3g10d4g6d5g2d1g7d4g2d6g3d6g2d4g11d10g1d27g5d2g5d11g4d14g2d5g6d18g5d21g5d3g4d11g5d2g7d5g8d5g5d5g3d2g5d5g3d5g3d5g3d6g7d12g3d23g6d6g2d11g4d14g2d5g5d19g5d21g5d4g2d13g3d3g6d7g6d6g6d4g3d3g3d6g3d4g5d4g3d6g6d13g3d23g5d13g3d3g6d3g4d12g5d5g3d2g4d7g5d3g4d6g3d3g5d11g3d14g4d8g4d9g5d24g7d14g3d5g3d12g4d2g4d3g3d3g5d12g14d3g4d8g9d4g11d7g11d5g4d3g4d12g4d14g2d10g1d11g5d23g9d14g1d6g3d11g12d2g3d3g5d10g16d4g5d5g9d4g13d7g12d2g5d3g4d12g6d38g2d3g3d18g10d21g2d10g13d9g4d10g15d5g6d3g9d3g9d1g6d6g11d3g5d4g3d6g2d5g8d13g1d25g5d6g3d8g9d34g13d11g3d8g15d8g4d3g7d5g7d4g6d5g10d5g4d4g3d6g3d4g8d12g3d24g5d6g4d8g8d35g12d11g3d7g6d3g3d13g2d4g6d6g6d7g5d5g2d4g2d7g2d5g4d5g2d7g6d13g2d23g6d6g5d8g6d7g4d26g3d4g5d11g2d7g5d11g2d14g4d8g5d8g5d25g6d14g4d5g2d13g3d3g3d3g3d4g5d8g5d7g5d7g6d4g2d4g3d6g3d10g6d3g3d12g5d12g2d14g3d10g3d10g4d24g9d13g3d4g4d12g7s8g1d2g5d10g4d8g3d8g6d2g11d5g4d11g12d12g3d13g2d14g2d10g5d9g4d23g12d12g2d4g5d11g7s8g1d3g5d10g3d9g1d9g6d2g11d4g6d11g12d32g2d8g4d8g6d9g3d23g13d12g3d4g5d11g6s8g1d3g6d10g1d21g3d4g7d7g9d9g12d31g5d6g4d8g7d8g3d25g12d11g3d5g4d11g6s8d5g5d16g3d6g2d12g5d11g7d10g10d5g3d23g6d6g5d7g7d7g4d26g3d3g5d11g3d6g3d11g5d1s8d4g6d16g3d6g2d11g6d12g6d10g3d3g3d6g4d3g2d4g3d3g3d3g6d8g5d7g5d7g6d3g3d4g2d7g2d11g5d4g3d19g2d4g5d2s8d4g5d4g3d3g3d19g3d3g6d7g2d5g4d5g2d25g4d2g4d3g4d1g6d10g5d7g3d8g6d3g4d1g5d6g2d12g5d2g5d17g5d1g6d2s8d3g5d5g4d1g5d17g5d2g5d8g2d6g3d5g3d25g9d3g10d11g6d17g6d1g13d5g2d11g17d9g2d3g11d2s8d4g4d5g14d12g6d2g4d9g2d7g2d5g6d26g5d4g9d12g6d16g4d3g14d11g1d5g17d8g4d4g9d6s4d4g3d6g15d11g6d3g2d10g1d8g3d4g6d26g5d4g8d14g6d22g14d10g3d3g8d3g8d6g5d4g10d5s4d5g3d5g5d2g9d11g4d24g4d5g6d8g6d12g4d4g6d17g5d22g6d1g5d12g3d3g7d5g7d6g5d5g4d1g4d5s4d5g3d5g4d5g7d11g4d23g5d6g5d8g6d13g2d5g5d4g2d5g1d8g5d4g2d7g2d5g5d4g2d5g1d8g1d5g5d7g5d8g5d5g1d5g1d6s4d4g5d5g1d8g5d5g1d8g1d5g1d5g2d4g2d5g5d7g5d8g5d6g1d11g6d5g3d1g5d7g6d2g4d5g4d3g5d11g3d14g3d9g3d10g5d24g7d14g3d5g3d12g4d2g5d1g4d3g5d9g5d7g4d7g1d9g7d6g10d7g11d4g6d2g4d13g2d14g3d9g3d10g7d20g9d14g2d6g4d11g4d2g11d2g4d9g7d6g3d17g8d6g11d7g5d7g8d19g1d15g4d7g3d11g7d20g7d25g4d11g4d4g8d15g8d5g3d17g7d8g10d7g5d6g8d9g4d13g2d3g3d2g4d7g4d10g6d5g3d13g6d9g6d11g4d12g3d4g7d9g2d5g8d4g4d2g2d12g6d11g8d8g4d7g6d11g5d11g3d3g3d3g4d6g5d9g5d6g5d13g3d10g6d12g3d12g3d5g4d11g4d2g7d6g4d2g3d11g5d13g6d10g2d7g6d12g6d10g3d3g3d4g2d7g5d8g5d7g5d14g2d10g6d13g2d11g5d4g3d12g3d4g6d6g3d3g3d3g4d3g5d5g2d7g5d4g3d12g5d5g3d7g6d2g4d26g5d6g6d8g5d6g3d10g2d5g4d5g3d12g3d3g7d9g3d14g3d20g5d2g5d4g4d7g3d5g4d11g5d5g4d7g11d26g5d6g5d9g5d5g4d8g5d6g1d6g3d12g4d2g8d8g3d15g2d18g7d3g4d4g5d5g4d4g6d9g6d5g6d5g10d11g1d15g5d6g6d8g4d5g6d6g6d28g4d3g7d8g3d33g8d6g3d3g5d5g4d2g7d10g6d6g8d4g6d12g3d13g5d8g5d7g3d7g6d6g5d18g5d7g3d5g5d8g2d7g4d18g3d2g7d7g3d3g4d5g5d2g7d10g6d7g7d5g4d12g4d13g5d9g5d6g3d8g6d5g5d18g5d7g4d4g4d8g3d7g5d16g4d2g4d10g3d3g3d7g2d4g6d13g5d7g6d7g2d11g5d13g5d8g5d7g2d10g6d4g3d19g6d7g4d5g2d8g4d7g6d14g5d4g2d4g3d26g4d7g3d4g6d7g4d14g3d3g5d5g2d8g5d6g6d13g3d4g5d10g3d3g3d7g5d7g6d13g6d7g5d4g3d6g5d11g5d24g3d7g4d5g5d7g4d12g12d6g3d8g4d6g5d13g4d5g9d5g10d5g5d7g7d12g8d7g5d2g4d5g6d10g9d21g2d8g4d6g4d8g3d12g12d7g1d10g3d6g6d11g5d4g10d5g11d5g4d6g8d11g9d9g2d2g5d4g6d11g10d19g4d7g4d6g3d9g4d11g11d31g3d11g6d2g13d2g12d5g4d5g8d5g2d5g10d12g4d4g7d8g1d2g10d19g4d7g4d5g3d5g3d2g4d12g8d13g2d11g2d6g3d11g5d2g13d2g11d12g11d5g3d5g8d13g3d5g4d5g3d3g1d2g4d3g3d8g3d8g5d7g3d5g4d4g3d3g3d13g6d13g4d9g4d5g3d12g3d3g4d2g7d3g3d3g3d13g3d3g5d5g3d6g6d13g5d4g3d6g3d22g6d8g5d13g6d16g2d8g4d7g3d4g6d6g6d10g3d19g5d20g2d11g5d14g4d5g2d7g6d37g7d7g5d12g7d16g3d8g2d8g4d2g7d6g6d10g3d20g3s4d16g3d12g5d14g2d6g2d6g8d34g10d7g4d8g11d15g5d17g15d4g6d10g5d21s4d14g5d13g7d19g2d4g11d12g4d15g13d17g11d5g1d9g6d19g13d5g3d13g4d21s4d14g5d13g7d23g13d11g9d3g3d3g19d12g12d4g3d6g8d20g6d2g5d11g2d7g4d21s4d4g2d6g7d14g6d23g13d10g10d3g3d3g7d1g5d2g4d12g4d2g5d5g3d6g7d14g3d5g3d5g4d11g3d7g3d12g3d2s12g3d5g5d18g5d22g5d1g6d11g4d3g2d4g2d5g5d4g2d5g1d8g1d5g1d5g5d5g1d8g5d5g1d8g5d4g2d7g2d5g1d5g5d7g2d5g1d5g5d1s12d1g1d5g5d5g1d5g1d8g5d5g1d8g1d5g5d5g1d5g1d8g1d18g3d20g4d11g5d14g3d5g3d6g7d17g5d2g7d11g5d1g8s12d6g5d5g4d1g5d7g5d2g4d6g4d1g6d11g4d25g3d20g4d11g5d14g3d5g3d6g8d13g8d2g8d9g15s12d2g1d3g5d4g11d7g5d1g6d5g11d11g4d25g2d13g2d5g5d11g4d33g7d11g10d4g7d8g11s20d10g13d12g7d8g6d11g6d5g1d9g2d6g3d12g4d4g5d6g3d3g2d13g1d7g2d11g7d11g10d5g10d4g11s20d9g8d1g6d11g7d8g6d11g6d4g2d8g3d6g3d11g5d5g4d5g5d16g2d6g3d11g6d12g7d9g3d2g4d5g5d1g4s20g1d7g7d5g4d11g6d11g5d9g6d5g3d7g3d6g3d10g6d6g3d4g5d17g2d7g2d11g5d13g6d10g2d4g3d6g3d3g3s20g1d8g6d6g3d10g6d12g6d8g5d6g3d3g1d18g4d2g6d13g5d5g3d3g3d19g3d3g5d7g3d5g4d5g2d24s27d7g3d14g4d2g6d4g3d7g6d6g5d13g1d18g4d2g5d13g6d5g9d17g5d3g4d8g3d6g2d6g2d24s27d22g6d2g5d5g4d7g5d4g7d12g1d26g5d11g6d5g10d4g1d10g7d3g4d7g5d39s27d21g8d3g2d5g7d4g17d11g2d12g1d15g4d11g5d5g9d5g2d5g1d2g7d5g3d7g5d9g2d15g2d4g2d5s27d21g7d9g9d3g19d10g2d11g2d16g3d11g4d5g7d8g2d4g3d2g5d6g3d8g5d8g3d5g2d6g3d3g3d1s35d17g5d11g10d2g19d11g1d10g3d16g3d12g3d4g6d10g2d4g2d4g3d7g4d8g5d7g3d4g5d4g3d3g3d1s35g1d8g4d5g2d13g3d3g3d3g6d4g3d3g3d16g3d10g2d4g2d10g3d13g5d4g3d25g6d7g6d12g6d14s35g1d7g6d10g2d20g5d19g3d3g7d9g11d8g4d11g5d5g3d25g7d7g6d9g10d12s35g2d6g6d10g3d21g2d20g3d3g7d9g12d7g5d11g3d6g3d25g8d5g8d7g11d12s35g1d7g6d10g4d42g2d4g4d12g12d8g7d17g2d18g2d9g6d4g11d3g12d12s35g1d8g4d5g2d4g5d47g3d6g2d5g11d10g7d15g3d10g1d6g3d11g5d2g13d2g11d12g1s35d9g4d5g2d5g4d12g2d8g3d13g1d8g3d5g4d5g2d3g4d12g6d14g4d9g3d5g3d12g4d2g4d3g6d3g3d3g4d12g1s35d9g4d5g2d6g3d11g4d7g3d11g4d14g6d16g3d7g4d8g2d4g6d6g6d10g3d20g4d20g2d1s43d4g6d19g3d3g6d13g3d3g6d4g2d7g6d16g3d7g3d8g4d3g7d5g7d9g3d20g4d19g4s43d4g7d18g4d1g7d12g5d1g8d1g4d7g6d3g2d11g5d15g5d3g8d4g10d7g2d21g1d20g5s43d4g9d16g12d8g23d7g4d4g4d11g6d12g5d4g8d6g8d50g5d1s43d6g7d18g10d7g25d13g5d11g8d10g4d6g7d4s19d4g2d3g4d2g4d6g4d11g3s47d8g5d12g2d5g7d8g4s16g6d13g5d12g7d10g3d7g6d5s19d4g2d3g4d2g4d6g5d9g4s47d9g4d11g3d5g4d11g4s16g3d9g2d5g5d4g2d7g5d5g2d4g2d7g5d5g2s19d4g2d4g2d5g1d8g5d7g5s47d2g1d8g1d5g1d5g5d5g1d5g2d7g2d1s16g1d11g3d3g5d5g3d8g2d5g4d12g4d6g2s19d26g5d6g5d1s47d1g3d11g5d2g8d8g4d9s16d12g3d3g5d5g3d15g5d11g4s35d18g5d5s54d1g4d9g6d2g9d7g5d4s25d7g2d5g5d4g2d16g6d10g2d2s35d18g5d5s54d1g5d8g6d3g8d7g5d4s25d1g1d12g5d22g5d15s35d17g5d6s54d1g5d9g5d3g8d7g9s25g3d11g5d20g6d16s35d17g5d6s54d1g4d11g3d5g6d8g4d2g3s25d1g2d11g5d20g5d9s51d9g3s62d1g3d12g3d4g6d10g2d4g2s25d7g3d3g5d5g3d6g3d3g5d5g3d2s51d3g2d5g2s62d7g3d12g6d4g3d12s25d7g10d6g4d5g10d6g3d2s51g1d2g2d5g2s62d7g4d10g6d5g5d10s25d8g9d6g5d4g10d3s133d7g6d4g11d3g9d11s21d10g6d8g4d5g8d4s133d8g5d3g13d2g10d10s21d10g5d10g3d5g7d5s133d9g5d2g13d2g10d10s21d10g3d13g2d5g5d7s133d10g3d3g3d4g6d3g3d3g3d10s21d4g3d10g2d13g5d1s136d5g3d19g5d20g2d1s21g7d10g2d11g7d1s136d5g3d20g3d20g3d1s21g7d11g1d9g8d2s136d5g3d44g2d1s21g6d16g2d3g8d3s136g1d23g2d14g2d13s21g5d16g5d2g5d1s136g6d9g3d8g5d12g4d12g3d1s17g6d14g6d2g4d2s136g6d9g3d8g5d12g5d11g3d1s17d1g6d3g3d6g6d9s136g5d4g3d12g6d4g3d7g5d4g2d8s17d2g6d1g5d5g5d10s136d1g3d5g3d12g5d5g3d8g4d3g4d7s17d3g12d4g4d7s137d4g1d8g2d11g5d7g2d9g3d3g6d5s17d4g11d5g2d8s137d3g2d21g5d19g2d4g5d5s17d5g9d16s137d2g3d12g1d8g4d27g4d5s17d6g8d13g3s137d2g3d11g3d8g3d11g3d14g3d5s17d7g5d8g1d5g4s129d2g1d8g1d5g2d4g5d8g1d5g2d4g5d5g2d7g2d4g5d4s9g1d8g2d8g4d2g5s129d16g4d2g8d11g4d3g6d3g3d13g5d4s9g1d16g13s129d16g14d11g5d2g6d2g4d13g4d5s9d16g14s129d2g1d18g9d12g4d10g4d21g1s9d16g6d1g3s47d3g2d6s51g1d6g5d4g5d4g3d4g2d11g9d13g3d10g3d6g1d13g7s5d15g5d5g1s47d2g3d6s51g2d7g3d5g3d5g3d3g3d12g8d13g3d9g4d5g3d12g4d1g2s5d14g5d7s47d3g2d5g1s51g2d7g3d4g5d4g3d3g3d13g6d13g5d8g4d5g2d13g3d3g1s5g1d2g4d6g5d8s47d9g2s51g3d12g7d16g3d7g4d7g4d2g7d6g6d10g3d13s5g1d2g5d5g5d8s39d2g2d11g6d6s35d6g5d12g8d15g4d7g2d7g5d2g7d5g9d8g3d17s1d2g7d5g3d9s39d14g7d6s35d6g4d14g8d13g7d13g6d3g5d5g11d27s1d2g7d10g3d4s39d6g4d5g6d6s35d5g3d18g6d10g13d6g10d4g1d8g11d12g4d11s1d2g6d11g4d3s39d6g5d5g5d6s35d5g3d11g3d4g5d11g13d6g9d15g10d11g5d11s1d1g6d12g3s35g5d8g5d7g5d13s20d12g2d11g5d4g3d12g3d4g6d6g3d3g3d16g3d3g3d11g5d13g5d4g3d7g2s35d1g5d6g6d8g5d6g3d3s20d3g2d13g3d3g6d10g3d13g5d20g2d4g2d17g2d4g5d7g3d3g5d5g4d7g1s35d2g5d5g5d9g5d5g4d3s20d3g3d10g17d7g3d14g3d18g6d3g2d15g5d3g4d7g4d3g6d4g4d6g2s35d2g6d4g5d10g4d4g5d3s20d3g2d8g21d7g2d14g3d17g7d3g2d15g5d3g3d7g5d3g7d2g6d4g3s31d6g7d4g3d3g5d3g3d5g5d11g2d7g2d13g23d21g4d17g6d5g1d4g3d8g5d4g1d7g6d3g7d2g5d5g3s31d8g5d9g7d11g4d11g3d6g2d13g14d3g6d2g2d16g5d2g2d12g5d12g4d8g3d12g6d4g1d2g4d3g3d6g3s31d10g3d9g7d12g3d11g4d5g2d13g3d3g6d6g4d3g2d16g4d3g2d12g5d12g5d7g3d11g5d26g2s31d4g2d10g3d4g5d4g3d13g2d4g6d10g2d14g4d20g3d3g3d16g3d3g6d7g2d5g5d13g3d3g5d5g2d18s31g2d5g4d8g4d5g3d5g4d11g4d3g6d10g3d13g3d21g3d3g3d16g4d1g6d8g2d5g5d13g4d1g6d5g2d18s31g1d5g5d7g5d13g4d10g6d2g6d3g2d5g4d12g3d21g2d4g4d15g10d9g2d5g5d13g11d5g2d5g1d5g1d6s31g1d5g7d5g5d12g6d9g6d10g4d4g5d11g3d28g4d16g7d17g5d13g12d4g2d5g2d3g3d5s31d6g8d5g4d12g6d9g6d9g5d5g4d10g4d7g2d20g5d8g2d5g5d17g5d15g11d5g1d4g3d3g3d1s35d7g7d6g3d11g6d11g5d9g5d6g3d10g5d5g3d20g5d8g3d4g4d7g3d8g5d15g6d1g4d11g1d5g1d2s35g1d7g5d8g1d5g2d4g5d5g2d7g5d8g5d7g2d4g2d5g5d4g2d5g1d5g1d8g5d7g5d5g2d7g5d8g5d4g2d7g5d5g2d6g1d13s35g2d7g4d13g4d3g5d4g4d7g5d6g5d13g4d5g4d10g4d1g4d6g5d7g7d12g7d7g5d3g4d6g5d13g1d3g1d9s31d1g6d6g4d11g7d2g4d5g5d6g5d6g5d12g5d6g3d10g9d5g6d6g8d12g8d7g4d2g6d5g4d16g4d8s31d1g7d4g5d11g7d9g7d5g4d9g5d11g5d11g4d4g7d6g6d7g7d14g7d8g3d3g5d5g3d17g5d7s31d3g6d3g6d10g7d8g8d5g3d10g5d11g5d11g4d5g5d7g6d6g8d14g7d8g2d4g5d6g2d9g3d5g5d7s31d5g4d3g6d12g5d8g7d5g3d11g5d12g6d9g5d5g4d8g6d5g4d19g5d8g3d5g3d7g3d8g5d2g6d3s32g2d7g2d4g6d13g5d7g6d7g2d11g5d13g5d8g5d7g2d10g6d4g3d19g6d7g4d5g2d8g4d7g12d4s32d16g4d7g3d5g5d7g4d14g3d3g5d5g3d7g5d6g5d14g3d5g5d9g3d3g3d6g6d7g6d13g6d8g9d5s32d16g3d8g3d5g6d8g1d11g15d5g3d8g5d4g6d12g5d5g7d7g9d6g5d8g6d12g7d8g9d5s32g1d15g2d9g3d6g6d17g17d16g14d11g7d6g7d6g8d8g5d8g4d11g9d10g5d4g3s28g6d13g2d12g1d6g6d10g2d5g9d1g7d1g2d14g13d11g6d7g8d6g5d10g6d21g9d13g2d5g3s28g6d13g2d12g2d6g4d11g3d3g8d4g5d2g3d14g11d12g5d9g7d7g4d11g5d20g9d21g3s28g6d13g2d11g5d4g3d12g3d4g6d6g3d3g3d16g3d3g3d11g5d13g5d7g3d10g6d19g6d26g2s28d1g4d5g2d13g3d3g6d10g3d13g5d20g2d4g2d17g2d4g5d7g3d4g6d12g3d4g5d4g3d6g3d4g5d4g3d6g3d11g2s28d1g4d5g3d12g3d3g7d9g4d14g2d20g4d3g2d15g12d8g3d5g6d11g11d5g3d5g5d2g5d5g4d4g5d11g1s28d1g4d5g2d13g3d3g6d10g4d37g2d4g2d14g13d8g2d6g7d10g11d6g2d4g7d2g3d6g5d2g6d11g1s28g6d13g2d11g3d11g6d4g3d11g4d36g13d17g6d11g9d11g8d12g5d2g6d2g1d3g3d3s28g6d13g2d25g5d5g5d8g6d8g3d25g12d12g3d4g4d12g6d5g2d1w4g7d14g4d4g4d3g1d2g4d3s20g2d6g6d13g2d24g5d6g5d8g6d8g4d25g4d3g5d11g3d6g2d11g6d6g2w6g4d16g3d6g3d13s20d9g4d5g2d13g3d3g3d4g2d4g5d8g5d8g4d7g6d4g3d3g3d6g3d11g5d3g3d19g3d3g6d8w8g2d5g2d4g3d28s20d10g3d5g3d11g5d2g4d2g4d3g5d9g5d8g3d7g7d2g4d2g5d5g3d11g5d3g3d18g5d2g5d8w10g1d5g3d2g4d28s20d18g2d10g7d2g2d5g2d4g5d11g2d19g13d2g6d4g2d12g5d3g3d17g7d1g4d8w4d3g1w4d5g9d15g3d14s8g1d36g8d9g2d4g5d34g10d3g6d5g1d11g5d5g2d17g7d12w4d6w4d4g8d16g6d11s8d10g3d9g3d12g7d17g5d25g4d7g6d5g4d18g5d16g4d5g6d11w4d8w4d3g7d8g2d6g7d11s8d10g4d8g3d11g6d19g5d25g5d7g5d5g4d18g5d15g5d5g6d10w4d10w4d2g3d12g3d5g4d1g2d4g2d5s8d4g2d4g5d8g1d5g2d4g5d5g2d7g2d4g5d5g2d7g2d4g2d5g5d7g5d5g1d8g1d5g2d4g5d5g2d7g5d8g5d4g2d2w4d5g1d5g1w4d1g2d5g1d8g1d5g5d6g5d1g6d7g3d5g6d11g4d3g5d4g4d5g5d1g6d5g3d5g4d3g2d5g5d8g6d11g5d1g3d5g5d3g3d6g5d9g6d1g5w4d5g4d1g4w4d6g3d11g6d3g16d6g4d6g5d9g7d2g4d5g5d3g12d6g4d4g4d3g2d6g4d8g8d8g10d6g4d3g3d6g4d10g11w4d6g10w4d6g2d10g6d3g18d5g5d5g6d8g6d3g3d6g5d2g12d7g5d4g2d4g1d20g7d8g10d6g3d5g2d20g10w4d7g11w4d17g6d3g9d1g8d5g5d6g9d5g5d4g2d6g3w19d4g5d24g4d4g2w16g5d7g3d26g10w4d8g5d1g6w4d8g4d4g6d2g7d5g7d6g5d5g4d2g3d6g3d5g3d5g2w29d24g5d4w18g3d8g3d26g4d1g4w4d9g4d5g3d1w4d6g5d6g3d4g6d6g6d7g5d4g3d3g3d7g2d5g4d5w31d22g5d4w20g1d8g4d26g3d3g2w4d10g3d6g3d2w4d5g5d6g3d5g3d9g4d8g6d25g6d3w33d1g4d3g3d3g3d3g5d4w22d7g6d3g3d3g4d6g2d11w4g2d2g4d18w4d3g5d16g2d10g2d10g9d21g4w8d8g3d5g3w12g11d2g11w7d3g5d8w4d6g12d4g3d6g2d10w4g9d18g1w4g6d40g11d20g3w8d8g2d19w33d4g6d8w4d5g12d13g2d5g1d3w4g10d4g1d14g1w4g5d26g1d13g12d6g2d5g2d6w8d2g2d5g2d12g4d4w31d5g6d9w4d5g10d20g4w4d2g8d4g3d14g1w4g4d17g2d6g2d12g13d6g3d3g3d5w8d3g3d3g3d11g5d5w29d6g5d11w4d4g7d23g3w4d5g5d5g3d16w4g3d15g5d4g3d13g2d4g6d6g3d4g2w8d8g3d4g2d11g5d6w24d9g5d13w4d3g5d25g2w4d7g5d4g3d17w4g3d14g6d10g2d14g4d15w8d3g3d16g3d3g5d8g2d5g5d13g2d4g5d5g2d7g1w4d1g5d5g2d7g2d4g2d5w4g1d7g6d12g3d4g2d3w4g3d3g3d6g7d10g2d15g3d14w8g2d2g3d16g11d7g3d5g6d10g13d4g3d5g4w4g5d5g2d6g10d3w4g3d7g7d10g4d2g3d4w4g10d5g6d10g2d15g3d13w8g4d1g2d17g11d8g1d6g7d8g13d5g3d4g6w4g3d6g2d7g9d2w4g5d7g6d10g3d4g2d5w4g10d4g3d22g1d7g4d7w8d2g7d21g11d13g11d5g12d4g4d5g7w4g1d18g6d2w4g6d8g6d24w4g11d10g2d14g3d6g4d6w8d4g6d21g11d13g12d6g8d5g5d5g8w5d2g3d5g3d5g4d2w4g7d10g4d7s16d1g1w4d4g6d9g4d13g3d5g5d5w8d6g5d21g5d3g3d13g3d3g6d6g7d6g5d5g3d2g4w5d1g3d4g5d4g3d2w4g6d13g2d8s16g3w4d4g6d1g2d4g6d3g3d13g5d2w11d8g5d3g3d7g2d4g5d11g2d14g4d8g5d8g5d14w5d6g6d8w4d2g4d5g2d13g3d1s16g4w4d4g10d1g7d3g3d13g5d1w7d2g4d7g6d1g5d5g5d1g6d11g3d14g3d9g3d10g4d15w12g5d6w4d3g3d6g3d12s25w4d4g17d3g3d13g4d1w7g6d8g29d11g5d13g2d8g5d10g3d17w11g3d6w4d4g2d8g1d13s26w4d4g14d21g3d1w7g7d7g30d11g5d4g2d8g2d7g5d24g1d6w11g1d6w4d5g2d22s27w4d4g11d24g2w4d2g7d9g31d10g6d3g4d6g2d6g7d14g2d7g2d6w11d3g2w4d5g3d22s28w4d4g8d14g3d9g1w4d3g4d12g4d1g5d1g8d2g5d1g4d12g4d3g4d6g2d6g7d14g3d5g3d6g3d5w11d6g3d11g3d4s32d1w4d5g5d8g1d5g5d7g1w4d5g2d4g2d7g2d5g1d5g5d5g1d5g1d8g1d5g2d4g5d5g2d7g5d5g1d8g5d5g1d8g1d5g1d1w9d8g1d5g1d5g5d3s32d1g1w4d5g3d7g5d1g8d5g1w4g3d9g3d20g3d20g3d12g5d13g3d5g3d6g7d18g4w7g2d11g5d2g7d2s32g3w4d5g2d7g14d4g1w4g6d7g4d19g2d21g3d12g8d11g2d6g2d4g9d18g5w5g4d9g7d1g7d2s32g3d1w4d12g13d6w4g7d6g5d18g2d7g2d14g4d11g9d10g2d9g10d21g13d8g7d9g1s32g1d4w4d7g16d6w4g8d6g5d17g3d6g4d13g5d11g8d10g3d8g9d8g3d12g16d4g7d9g1s32d6w3d7g3d2g5d1g4d6w4g4d1g4d5g5d18g3d5g5d14g5d11g7d10g3d7g6d12g4d12g3d1g6d1g4d6g5d9g1s32d7w2d7g3d3g3d3g3d5w4d1g3d3g3d4g5d19g3d4g6d13g5d13g6d10g3d7g5d13g5d11g2d4g3d3g3d6g6d8g1s32d8w1g3d22g1w4d14g6d4g3d6g3d9g6d7g3d3g5d5g3d7g4d5g3d12g5d5g3d7g5d3g3d26g6d5s31d7g3d2w1g3d18g4w4d15g5d5g4d5g3d9g5d8g3d3g5d5g3d7g3d6g4d11g5d5g3d8g4d3g3d27g6d3g1s31d5g5d2w1g4d16g4w4d17g5d4g5d4g2d12g2d9g3d3g4d7g2d7g2d6g6d11g3d5g3d21g4d20g11s31d3g7d2w1g4d7g2d6g4w4g1d13g1d5g3d5g5d22g2d11g3d15g3d6g6d16g6d21g4d4g3d12g12s31g1d2g6d3w1g5d5g3d6g3w4g1d13g2d6g3d4g5d11g3d8g2d12g3d14g3d5g6d17g5d22g5d2g4d12g8s35g1d2g6d3w1d1g5d4g3d6g2w4d14g4d5g2d7g2d11g5d7g2d11g5d13g3d4g5d19g6d20g5d4g3d12g3d4g1s35g1d3g3d5w1d1g6d13w4g1d4g3d6g6d19g3d3g6d13g3d3g6d4g3d12g6d4g3d3g3d7g5d4g3d6g3d3g6d10g3d13g1s35d12w1d2g5d12w4g1d5g3d6g8d16g5d2g7d11g5d2g7d2g5d10g6d5g3d2g5d7g5d2g4d5g5d2g5d11g4d13s35d12w1d2g5d2g3d6w4d6g4d6g11d12g7d1g6d11g7d1g6d2g7d8g8d4g3d3g5d7g3d2g5d4g6d2g5d10g5d13s31d16w1d9g4d4w4d5g5d9g10d11g7d10g2d6g7d10g6d8g8d10g6d11g4d4g7d15g8d4g3d4g1s31d8g3d5w1g1d7g5d3w4d5g5d11g10d3g3d5g6d9g5d5g6d12g4d9g8d11g4d11g3d5g5d10g4d3g7d5g4d2g2s31d7g4d5w1g1d7g5d2w4d6g6d10g3d3g4d2g4d6g5d8g6d6g5d14g2d10g7d12g3d10g5d4g3d12g4d3g6d6g4d2g2s31d6g5d5w1d7g5d2w4g1d7g6d3g3d26g5d7g5d8g5d7g2d10g3d4g5d4g3d12g3d4g6d10g2d14g4d11s31d3g3d3g5d14g5d1w4g3d7g6d1g4d26g6d5g5d9g5d6g3d10g3d5g3d5g3d11g6d1g8d9g3d13g3d12s31d2g4d3g5d14g5w4g5d7g10d27g6d5g4d10g4d7g1d6g2d3g2d13g6d8g17d7g5d12g2d13s31d1g5d3g5d14g4w4d2g4d7g9d5g2d21g6d5g3d28g4d17g6d8g17d7g6d4g2d4g2d11g1d2s31g6d4g5d14g2w4d3g5d7g8d5g2d21g4s15d2g2d8g3d8g5d16g10d1s4g15d9g6d2g4d3g2d10s35d1g5d4g5d14g1w4d6g3d9g6d5g2d20g5s15d1g3d8g3d8g5d15g6d1g4d1s4d1g7d1g5d11g5d2g4d3g2d10s35d2g4d4g5d13g1w4d8g1d5g2d4g5d5g2d4g2d5g1d8g5s15d2g1d8g5d7g5d5g2d7g5d5g1d2s4d2g5d5g1d8g1d5g1d5g2d4g2d5g1d4s35d3g2d5g5d6g1d6w4g1d13g3d5g5d10g3d2g4d5g6d1s15d10g7d7g5d3g4d5g5d9s4d3g3d13g4d21g4d3s35d9g4d8g2d4w4g1d12g5d6g4d3g1d6g9d4s27d6g7d8g4d2g6d2g7d5s20d6g5d20s39g3d6g1d3g4d7g6w4d14g5d12g4d4g7d4g2s27d7g4d16g14d6s20d4g6d11g2d8s39d7g4d12g6w4d10g1d5g4d12g4d4g6d5g2s27g2d12g5d9g13d6s20d2g8d11g3d7s39d7g4d11g6w4d10g2d6g3d11g5d6g3d5g3s27g3d11g5d11g8d9s20d2g7d11g5d6s39d7g5d9g4d1g1w4d11g2d7g2d11g5d7g2d4s35d9g6d12g6d10g3d1s28d9g2s47d7g5d8g5d1w4g2d3g3d19g3d3g5d14s35d2g4d2g5d8g3d4g4d5g3d7s28d2g3d4g2s47g1d7g5d6g6w4g3d3g3d17g6d2g4d13g2s35g6d2g5d7g4d5g2d6g3d7s28d1g4d5g1s47g1d7g5d6g5d1w3d1g3d3g3d13g11d2g2d12s39g7d2g2d8g5d4g2d12g3d2s82g6d6g4d7g6w2d24g11d12g1d3s39g6d12g5d4g3d12g4d1s82g6d5g3d10g5w1d24g12d11g3d2s39g4d14g4d5g3d11g5d1s82g5d6g3d11g4d26g2d4g5d11g2d3s39g2d16g3d6g3d11g5d1s82g4d7g2d11g5d4g3d3g3d6g3d11g5d3g3d9s39g1d5g2d4g3d19g2d4g5d2s82g4d13g3d3g13d2g5d5g3d12g10d9s39d6g10d15g6d3g5d2s82g2d15g11d1g7d2g6d4g2d13g10d9s39d5g12d13g7d3g4d3s82d17g18d3g7d18g6d13s39d5g12d5g4d3g7d5g3d3s82d21g13d5g4d20g5d7g2d5s39d4g12d5g6d2g5d12g5s74d11g4d11g13d4g3d20g5d7g4d4s39d4g5d2g4d6g6d3g4d12g3d2s74d10g5d12g6d1g6d10g2d4g2d7g5d7g6d3s39d2g6d14g4d14g2d9s74d2g3d4g5d4g3d7g5d2g5d9g3d3g4d6g4d8g7d2s39d2g5d15g4d14g2d9s74d2g4d2g5d5g3d8g3d4g4d9g3d4g2d7g3d7g11s39g6d18g1d15g2d9s70d4g6d3g4d6g2d16g2d9g4d4g2d7g2d7g12s39g6d7g1d37s70d2g7d4g3d34g5d22g13s39d1g6d6g2d3g3d6g2d14g3d5s70g8d6g3d33g5d22g5d1g5d2s39d2g5d5g3d3g3d6g3d5g3d5g3d5s70g7d7g3d25g1d8g5d4g2d7g2d5g5d4g2d3s35d7g5d5g1d5g1d8g1d5g5d5g1d6s63d8g5d7g5d5g1d5g2d6g1d2g4d7g6d1g5d5g4d3g4d11s35d8g5d24g7d11s63g1d7g3d8g7d2g5d1g5d5g1d2g6d5g13d3g6d2g4d11s35d8g7d22g7d11s63g1d7g3d8g7d2g12d8g5d5g21d4g2d12s35d10g5d40s63d8g3d16g15d7g5d3g8d2g12d16g6s31g3d7g5d13g3d22g3d3s51d15g4d16g7d1g8d7g4d3g7d5g5d1g4d15g5d1g1s31g4d8g3d12g4d21g4d3s51d15g5d15g6d5g5d8g3d3g6d7g2d4g2d17g2d4s31g5d8g2d11g5d20g5d3s51d15g5d15g5d6g7d13g4d20g3d3g3d10s31d1g5d13g3d3g5d5g3d6g3d3g5d4s51d2g4d3g2d5g5d3g4d6g5d9g5d14g2d17g8d2g3d14s23d5g7d9g12d6g3d5g11d5s43d10g5d2g2d6g4d2g5d6g4d10g7d30g9d19s23d5g9d6g13d13g12d5s43d8g7d11g2d3g7d19g7d15g2d11g10d9g2d8s23d4g12d5g11d14g11d6s43d7g7d17g7d19g8d14g2d11g8d10g3d8s23d4g13d5g10d14g11d6s43d6g7d18g6d21g2d1g5d13g3d10g6d13g2d11g4d1s12d7g3d3g6d7g3d3g3d16g3d3g3d6s35g2d11g5d20g5d26g6d6g3d10g2d5g4d5g2d13g3d3g6s12g1d13g5d19g3d4g2d16g3s35d6g3d3g6d4g3d6g3d3g6d4g3d6g3d3g3d5g5d5g4d8g4d6g2d5g4d12g12s12g1d14g2d20g10d14g5s35d5g12d6g2d6g11d5g3d6g4d2g3d6g4d4g5d8g4d13g5d11g12s12g1d35g12d12g6s35d4g12d7g2d6g11d6g2d6g4d2g2d7g3d5g6d7g4d13g6d14g10d46g12d3g5d3g3s35d8g12d18g7d16g3d10g3d7g5d8g3d6g2d5g10d11g8d14g1d11g2d7g2d11g11d3g6d2g3s35d1g3d5g9d13g2d5g5d4g3d11g4d9g4d7g5d7g3d5g4d5g2d3g4d12g6d14g4d9g3d5g3d12g4d2g4d3g6d3g2s35d1g3d6g6d14g4d5g2d6g3d11g4d8g6d7g5d13g6d16g3d7g4d8g2d4g6d6g6d10g3d20g4d6s35d11g4d5g2d7g6d19g3d3g6d6g7d7g6d12g7d15g3d7g4d7g5d1g8d5g7d9g4d19g3d7s31g2d14g3d5g3d5g8d18g4d1g7d6g7d9g5d11g9d14g2d8g3d6g16d4g10d6g5d18g2d8s31g3d14g2d5g2d5g10d17g12d6g5d11g5d13g8d23g4d5g16d5g10d4g6d11g2d4g2d8g1s31g3d14g3d4g2d5g11d16g12d6g2d14g5d7g2d6g6d17g4d2g4d5g15d7g9d2g9d9g4d3g2d6g3s31g3d13g4d11g10d9g2d7g9d8g1d7g3d5g4d7g3d7g6d15g5d3g3d6g8d1g5d11g4d3g4d1g4d9g4d3g2d5s35g2d13g5d12g8d9g3d7g6d11";
-//        GameScreen.TILES_ON_X = 250;
-//        map.tiles = RLE.decodeTiles(s, 250);
+        if (!file.mkdir()){
+            File save = new File("core/assets/Saves/" + dirName + "/" + saveName);
+            save.delete();
+        }
+
+        FileHandle fileHandle = Gdx.files.local("core/assets/Saves/" + dirName + "/" + saveName);
+        fileHandle.writeString("date: " + time + "\nmapDims: " + mapDims
+                + "\ntiles: " + tileSave + "\nthings: " + thingSave
+                + "\ncolonists: " + colonistSave + "\nmobs: " + mobSave
+                + "\nbarbarians: " + barbarianSave + "\nmapInfo: " + mapInfo
+                + "\nresources: " + resourcesSave + "\nzones: " + zonesSave
+                + "\nfires: " + fireSave, false);
+
+        File save = new File("core/assets/Saves/" + dirName + "/" + saveName);
+        return save.exists();
+    }
+
+    public void autoSaveGame(){
+        String[] autoSaveNames = new String[]{"autoSave1", "autoSave2", "autoSave3"};
+        String name = autoSaveNames[autoSaveCount];
+        autoSaveCount++;
+        if (autoSaveCount > 2){
+            autoSaveCount = 0;
+        }
+        if (!saveDir.equals("")) {
+            saveGame(saveDir, name);
+        }
     }
 
     public void setupBBB(){
@@ -911,15 +1591,14 @@ public class GameScreen implements Screen {
         bottomBarButtons.useWorldCoords = false;
         TextButton orders = new TextButton("Orders", "OrdersButton");
         TextButton building = new TextButton("Building", "BuildingButton");
+        TextButton zones = new TextButton("Zones", "ZonesButton");
+        TextButton priorities = new TextButton("Priorities", "PrioritiesButton");
 
-        bottomBarButtons.add(orders, building);
+        bottomBarButtons.add(orders, building, zones, priorities);
 
         for (int i = 0; i < bottomBarButtons.buttons.size(); i++) {
-//            int size = bottomBarButtons.buttons.size();
             Button b = bottomBarButtons.buttons.get(i);
-//            b.setPos((int) ((MyGdxGame.initialRes.x / 2f) / size * i), 5);
             b.setPos((int) ((MyGdxGame.initialRes.x / 4f) * i), 5);
-//            b.setSize((int) (MyGdxGame.initialRes.x / 4f / size), (int) (MyGdxGame.initialRes.y / 12f));
             b.setSize((int) (MyGdxGame.initialRes.x / 4f), (int) (MyGdxGame.initialRes.y / 12f));
         }
     }
@@ -936,10 +1615,13 @@ public class GameScreen implements Screen {
         ImgButton mine = new ImgButton("MineButton", "Mine");
         ImgButton demolish = new ImgButton("DemolishButton", "Demolish");
         ImgButton cancel = new ImgButton("CancelButton", "Cancel");
+        ImgButton move = new ImgButton("PickUpButton", "PickUp");
+        ImgButton pickBerries = new ImgButton("PickBerriesButton", "PickBerries");
+        ImgButton fishing = new ImgButton("FishingButton", "Fishing");
 
-        ordersButtons.add(cutDown, plant, harvest, mine, demolish, cancel);
+        ordersButtons.add(cutDown, plant, mine, demolish, cancel, move, pickBerries, fishing);
 
-        int numberOfButtonsPerRow = 3;
+        int numberOfButtonsPerRow = 5;
         int row = 0;
         int size = ordersButtons.buttons.size();
         for (int i = 0; i < size; i++) {
@@ -962,8 +1644,12 @@ public class GameScreen implements Screen {
         ImgButton stoneWall = new ImgButton("stoneWallButton", "stoneWall");
         ImgButton woodWall = new ImgButton("woodWallButton", "woodWall");
         ImgButton stoneDoor = new ImgButton("stoneDoorButton", "stoneDoor");
+        ImgButton torch = new ImgButton("torchButton", "torch");
+        ImgButton lamp = new ImgButton("lampButton", "lamp");
+        ImgButton woodFloor = new ImgButton("woodFloorButton", "woodFloor");
+        ImgButton stoneFloor = new ImgButton("stoneFloorButton", "stoneFloor");
 
-        buildingButtons.add(stoneWall, woodWall, stoneDoor);
+        buildingButtons.add(stoneWall, stoneFloor, woodWall, woodFloor, stoneDoor, torch, lamp);
 
         for (int i = 0; i < buildingButtons.buttons.size(); i++) {
             Button b = buildingButtons.buttons.get(i);
@@ -977,36 +1663,52 @@ public class GameScreen implements Screen {
         optionsButtons.useWorldCoords = false;
         optionsButtons.showButtons = false;
 
-        TextButton resumeButton = new TextButton("Resume", "ResumeButton");
+        TextButton resumeButton = new TextButton("Resume", "ResumeButton", () -> startMultiplayerButtons.showButtons = false);
         TextButton optionsButton = new TextButton("Options", "OptionsButton");
+        TextButton multiplayerButton = new TextButton("Start Multiplayer", "MultiplayerButton", () -> {
+            if (socket == null) startMultiplayerButtons.showButtons = true;
+        });
         TextButton saveButton = new TextButton("Save", "SaveButton");
         TextButton loadButton = new TextButton("Load", "LoadButton");
         TextButton mainMenuButton = new TextButton("Main Menu", "MainMenuButton");
         TextButton exitButton = new TextButton("Exit", "ExitButton");
+        TextButton tutorialButton = new TextButton("Tutorial", "TutorialButton", () -> game.setScreen(new TutorialsScreen(game)));
 
         optionsButtons.buttons.clear();
-        optionsButtons.add(exitButton, mainMenuButton, loadButton, saveButton, optionsButton, resumeButton);
+        optionsButtons.add(exitButton, mainMenuButton, tutorialButton, loadButton, saveButton, multiplayerButton, optionsButton, resumeButton);
         float buttonWidth = MyGdxGame.initialRes.x / 5f;
         float buttonHeight = MyGdxGame.initialRes.y / 12f;
 
         float x = (MyGdxGame.initialRes.x / 2f) - (buttonWidth / 2f);
-        float y = (MyGdxGame.initialRes.y / 12f) * 3;
+        float y = (MyGdxGame.initialRes.y / 12f) * 2f;
         for (int i = 0; i < optionsButtons.buttons.size(); i++) {
             Button b = optionsButtons.buttons.get(i);
             b.setSize((int) buttonWidth, (int) buttonHeight);
             b.setPos((int) x, (int) (y + (i * buttonHeight)));
         }
+
+        setupStartMultiplayerButtons(x, y + (buttonHeight * 5), buttonHeight, buttonWidth);
     }
 
-    public void setupResourceHashMap(){
-        resources = new HashMap<>();
-        File dir = new File("core/assets/Textures/Resources");
-        String[] files = dir.list();
-        for (int i = 0; i < (files != null ? files.length : 0); i++) {
-            String file = files[i];
-            resources.put(file.split("\\.")[0], 0);
-        }
-        System.out.println(resources);
+    public void setupStartMultiplayerButtons(float x, float y, float height, float width){
+        startMultiplayerButtons = new ButtonCollection();
+        startMultiplayerButtons.useWorldCoords = false;
+        startMultiplayerButtons.showButtons = false;
+
+        InputButtonTwo ipInput = new InputButtonTwo("localhost:8080", "ipInputButton", inputMultiplexer);
+        ipInput.setSize(width, height);
+        ipInput.setPos(x, y);
+
+        Button connectButton = new Button("connectButton", "RefreshButton", () -> startMultiplayer(ipInput.text));
+        connectButton.setSize(height / 2f, height / 2f);
+        connectButton.setPos(x + ipInput.width + 10, y + (height / 4f));
+
+        Label ipLabel = new Label("ipLabel", "enter IP:");
+        ipLabel.setSize(width, height);
+        ipLabel.autoSize();
+        ipLabel.setPos(x - ipLabel.width - 10, y);
+
+        startMultiplayerButtons.add(ipLabel, ipInput, connectButton);
     }
 
     public void setupResourceButtons(){
@@ -1016,7 +1718,7 @@ public class GameScreen implements Screen {
         float length = MyGdxGame.initialRes.x / 50f;
         float height = MyGdxGame.initialRes.y / 50f;
 
-        String[] resourceNames = resources.keySet().toArray(new String[0]);
+        String[] resourceNames = map.resources.keySet().toArray(new String[0]);
         for (int i = 0; i < resourceNames.length; i++) {
             ImgTextButton t = new ImgTextButton(resourceNames[i] + "Button", "0", resourceNames[i]);
             t.setPos(5, (int) (MyGdxGame.initialRes.y - (height * (i + 2))));
@@ -1031,13 +1733,20 @@ public class GameScreen implements Screen {
         orderTypes.put("Plant", new ArrayList<>(Arrays.asList("dirt", "grass")));
         orderTypes.put("CutDown", new ArrayList<>(Arrays.asList("tree")));
         orderTypes.put("Harvest", new ArrayList<>(Arrays.asList()));
-        orderTypes.put("Demolish", new ArrayList<>(Arrays.asList("stoneWall", "woodWall", "stoneDoor")));
+        orderTypes.put("Demolish", new ArrayList<>(Arrays.asList("stoneWall", "woodWall", "stoneDoor", "lamp", "torch", "stoneFloor", "woodFloor")));
         orderTypes.put("Build", new ArrayList<>(Arrays.asList("dirt", "grass")));
         orderTypes.put("Cancel", new ArrayList<>(List.of()));
+        orderTypes.put("PickUp", new ArrayList<>(List.of()));
+        orderTypes.put("PickBerries", new ArrayList<>(List.of("berryBush")));
     }
 
-    public boolean canUseOrderOnType(String order, String thingType, String tileType){
-        return orderTypes.get(order).contains(tileType) && (orderTypes.get(order).contains(thingType) || thingType.equals(""));
+    public boolean canUseOrderOnType(String order, Thing thing, Tile tile){
+        if (order.equals("Fishing")){
+            return (!tile.hasBeenFished && tile.type.equals("water"));
+        }
+        String thingType = thing.type;
+        String tileType = tile.type;
+        return (orderTypes.get(order).contains(tileType) || (orderTypes.get(order).contains(thingType))) && !thingType.equals("edgeBouncer");
     }
 
     public void setCustomCursor(String name){
@@ -1080,18 +1789,25 @@ public class GameScreen implements Screen {
         for (int i = minXCoord; i < maxXCoord; i++) {
             for (int j = minYCoord; j < maxYCoord; j++) {
                 if (selectionMode.equals("Orders")){
-                    if (canUseOrderOnType(taskTypeSelected, map.things.get(i).get(j).type, map.tiles.get(i).get(j).type)) {
-                        batch.draw(selectionIcon, i * TILE_DIMS, j * TILE_DIMS, TILE_DIMS, TILE_DIMS);
+                    if (taskTypeSelected.equals("PickUp")){
+                        if (map.tiles.get(i).get(j).hasFloorDropOn){
+                            batch.draw(selectionIcon, i * TILE_DIMS, j * TILE_DIMS, TILE_DIMS, TILE_DIMS);
+                        }
+                    }
+                    else {
+                        if (canUseOrderOnType(taskTypeSelected, map.things.get(i).get(j), map.tiles.get(i).get(j))) {
+                            batch.draw(selectionIcon, i * TILE_DIMS, j * TILE_DIMS, TILE_DIMS, TILE_DIMS);
+                        }
                     }
                 }
                 else if (selectionMode.equals("Building")){
-                    if (canUseOrderOnType("Build", map.things.get(i).get(j).type, map.tiles.get(i).get(j).type)) {
+                    if (canUseOrderOnType("Build", map.things.get(i).get(j), map.tiles.get(i).get(j))) {
                         batch.draw(selectionIcon, i * TILE_DIMS, j * TILE_DIMS, TILE_DIMS, TILE_DIMS);
                     }
                 }
                 if (inCancelTaskMode){
-                    if (map.tiles.get(i).get(j).task != null){
-                        if (!map.tiles.get(i).get(j).task.reserved){
+                    if (findTaskAtLocation(i,j) != null){
+                        if (!findTaskAtLocation(i,j).reserved){
                             batch.draw(selectionIcon, i * TILE_DIMS, j * TILE_DIMS, TILE_DIMS, TILE_DIMS);
                         }
                     }
@@ -1100,11 +1816,20 @@ public class GameScreen implements Screen {
         }
     }
 
+    public Task findTaskAtLocation(int x, int y){
+        for (Task t : map.tasks) {
+            if (t.getX() == x && t.getY() == y) {
+                return t;
+            }
+        }
+        return null;
+    }
+
     public void setTasksFromSelection(String taskType){
         setTasksFromSelection(taskType, "");
     }
 
-    public void setTasksFromSelection(String taskType, String taskSubType){
+    public void setTasksFromSelection(String taskType, String taskSubType) {
         float minX = Math.min(minSelecting.x, maxSelecting.x);
         float minY = Math.min(minSelecting.y, maxSelecting.y);
         float maxX = Math.max(minSelecting.x, maxSelecting.x);
@@ -1120,70 +1845,146 @@ public class GameScreen implements Screen {
         maxXCoord = Math.min(TILES_ON_X, maxXCoord);
         maxYCoord = Math.min(TILES_ON_X, maxYCoord);
 
+        if (isMultiplayer) {
+            if (!inCancelTaskMode) {
+                socket.emit("setTasksFromSelection", taskType, taskSubType, minXCoord, minYCoord, maxXCoord, maxYCoord);
+            }else {
+                socket.emit("cancelTasksFromSelection", minXCoord, minYCoord, maxXCoord, maxYCoord);
+            }
+        }
+
+        setTasksFromInput(taskType, taskSubType, minXCoord, minYCoord, maxXCoord, maxYCoord);
+    }
+    public void setTasksFromInput(String taskType, String taskSubType, int minXCoord, int minYCoord, int maxXCoord, int maxYCoord){
+        ArrayList<Task> toAdd = new ArrayList<>();
+        ArrayList<Task> toRemove = new ArrayList<>();
+
         if (!inCancelTaskMode) {
             for (int i = minXCoord; i < maxXCoord; i++) {
                 for (int j = minYCoord; j < maxYCoord; j++) {
-                    if (canUseOrderOnType(taskType, map.things.get(i).get(j).type, map.tiles.get(i).get(j).type)) {
-                        Task t = new Task(taskType, taskSubType, i, j);
-                        ArrayList<Task> copy = new ArrayList<>(map.tasks);
-                        for (Task t2 : copy) {
-                            if (t2.getX() == t.getX() && t2.getY() == t.getY()) {
-                                if (!t2.isIndependent){
-                                    map.tasks.remove(t2);
+                    if (taskType.equals("PickUp")){
+                        if (map.tiles.get(i).get(j).hasFloorDropOn){
+                            Task t = new Task(taskType, taskSubType, i,j);
+                            ArrayList<Task> copy = new ArrayList<>(map.tasks);
+                            boolean shouldAdd = true;
+                            for (Task t2 : copy) {
+                                if (t2.getX() == t.getX() && t2.getY() == t.getY()) {
+                                    if (!t2.isIndependent) {
+                                        boolean shouldRemove = true;
+                                        for (Colonist c : colonists) {
+                                            Task t3 = c.getCurrentTask();
+                                            if (t3 != null) {
+                                                if (t3.getX() == t2.getX() && t3.getY() == t2.getY()) {
+                                                    if (t3.type.equals(t2.type)) {
+                                                        shouldRemove = false;
+                                                        shouldAdd = false;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        if (shouldRemove) {
+                                            toRemove.add(t2);
+                                        }
+                                    }
                                 }
                             }
+                            if (shouldAdd) {
+                                toAdd.add(t);
+                            }
                         }
-                        map.tasks.add(t);
+                    }
+                    else {
+                        if (canUseOrderOnType(taskType, map.things.get(i).get(j), map.tiles.get(i).get(j))) {
+                            boolean shouldExchange = true;
+                            for (Colonist c : colonists) {
+                                Task t = c.getCurrentTask();
+                                if (t != null) {
+                                    if (t.getX() == i && t.getY() == j) {
+                                        if (t.type.equals(taskType)) {
+                                            shouldExchange = false;
+                                        }
+                                    }
+                                }
+                            }
+                            if (shouldExchange) {
+                                if (taskType.equals("Build") || taskType.equals("Plant")) {
+                                    String resource = getResourceFromBuilding(taskSubType);
+                                    if (map.resources.get(resource) < 1) {
+                                        continue;
+                                    } else {
+                                        map.decreaseResource(resource, 1);
+                                        calculateResources();
+                                    }
+                                }
+                                Task t = new Task(taskType, taskSubType, i, j);
+                                ArrayList<Task> copy = new ArrayList<>(map.tasks);
+                                for (Task t2 : copy) {
+                                    if (t2.getX() == t.getX() && t2.getY() == t.getY()) {
+                                        if (!t2.isIndependent) {
+                                            toRemove.add(t2);
+                                        }
+                                    }
+                                }
+                                toAdd.add(t);
+                            }
+                        }
                     }
                 }
             }
-            System.out.println("Tasks: " + map.tasks.size());
-
-//            for (int i = minXCoord; i < maxXCoord; i++) {
-//                for (int j = minYCoord; j < maxYCoord; j++) {
-//                    System.out.println(taskType + " " + map.tiles.get(i).get(j).type + " " + map.things.get(i).get(j).type);
-//                    if (canUseOrderOnType(taskType, map.tiles.get(i).get(j).type, map.things.get(i).get(j).type)) {
-//                        Task t = map.tiles.get(i).get(j).task;
-//                        if (t != null) {
-//                            if (!map.tiles.get(i).get(j).task.reserved) {
-//                                map.tiles.get(i).get(j).setTask(taskType, taskSubType);
-//                            }
-//                        } else {
-//                            map.tiles.get(i).get(j).setTask(taskType, taskSubType);
-//                        }
-//                    }
-//                }
-//            }
         }
-        else {
-//            for (int i = minXCoord; i < maxXCoord; i++) {
-//                for (int j = minYCoord; j < maxYCoord; j++) {
-//                    if (map.tiles.get(i).get(j).task != null){
-//                        if (!map.tiles.get(i).get(j).task.reserved){
-//                            map.tiles.get(i).get(j).task = null;
-//                        }
-//                    }
+        if (inCancelTaskMode){
             ArrayList<Task> copy = new ArrayList<>(map.tasks);
             for (Task t : copy) {
                 if (t.getX() >= minXCoord && t.getX() < maxXCoord && t.getY() >= minYCoord && t.getY() < maxYCoord) {
-                    if (t.reserved){
+                    if (t.reserved) {
                         for (Colonist c : colonists) {
-                            if (c.getCurrentTask() == t){
-                                c.removeCurrentTask();
+                            if (c.getCurrentTask() == t) {
+                                if (!t.type.equals("FireFight")) {
+                                    c.removeCurrentTask();
+                                    if (isMultiplayer) {
+                                        JSONObject json = new JSONObject();
+                                        try {
+                                            json.put("colonistID", c.colonistID);
+                                        } catch (JSONException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
-                    map.tasks.remove(t);
+                    if (!t.type.equals("FireFight")) {
+                        if (t.type.equals("Build")) {
+                            String resource = getResourceFromBuilding(t.subType);
+                            if (!resource.equals("")) {
+                                map.addFloorDrop(t.getX(), t.getY(), resource, 1, socket, isHost);
+                            }
+                        }
+                        toRemove.add(t);
+                    }
                 }
             }
-//                }
-//            }
         }
+        map.tasks.addAll(toAdd);
+        map.tasks.removeAll(toRemove);
+    }
+
+    public static String getResourceFromBuilding(String subType){
+        switch (subType){
+            case "lamp", "stoneWall", "stoneDoor", "stoneFloor":
+                return "stone";
+            case "woodWall", "torch", "woodFloor":
+                return "wood";
+        }
+        return "";
     }
 
     public void drawTaskType(SpriteBatch batch) {
         for (Task t : map.tasks) {
             Texture tx;
+            if (Objects.equals(t.type, "FireFight")){
+                continue;
+            }
             if (t.type.equals("Build")) {
                 tx = actionSymbols.get(t.subType);
             } else {
@@ -1207,47 +2008,57 @@ public class GameScreen implements Screen {
     public void updateResourceButtons(){
         for (Button button : resourceButtons.buttons) {
             ImgTextButton b = (ImgTextButton) button;
-            b.updateText(resources.get(b.imgName).toString());
+            b.updateText(map.resources.get(b.imgName).toString());
         }
     }
 
     public void setColonistIDs(){
         for (int i = 0; i < colonists.size(); i++) {
             Colonist c = colonists.get(i);
+            allEntities.add(c);
             System.out.println(i + " showing colonist id");
             c.colonistID = i;
+            c.setEntityID(getNextEntityID());
         }
     }
 
     public void sendColonistMovement() throws JSONException {
-        Json json = new Json();
         JSONObject obj = new JSONObject();
-        for (Colonist c : colonists
+        for (Entity e : allEntities
              ) {
-            System.out.println("Colonist: " + c.colonistID + " " + c.getX() + " " + c.getY());
+            System.out.println("Colonist: " + e.getEntityID() + " " + e.getX() + " " + e.getY());
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put("x", c.getX());
-            jsonObject.put("y", c.getY());
-            jsonObject.put("nextX", c.getNextX());
-            jsonObject.put("nextY", c.getNextY());
-            jsonObject.put("timer", c.getTimer());
-//            jsonObject.put("pathToComplete", json.toJson(c.pathToComplete));
-            obj.put(String.valueOf(c.colonistID), jsonObject);
+            jsonObject.put("x", e.getX());
+            jsonObject.put("y", e.getY());
+            jsonObject.put("nextX", e.getNextX());
+            jsonObject.put("nextY", e.getNextY());
+            jsonObject.put("timer", e.getTimer());
+            int endX = -1;
+            int endY = -1;
+            if (e.pathToComplete.size() > 1) {
+                endX = (int) e.pathToComplete.get(e.pathToComplete.size() - 1).x;
+                endY = (int) e.pathToComplete.get(e.pathToComplete.size() - 1).y;
+            }
+            jsonObject.put("endX", endX);
+            jsonObject.put("endY", endY);
+            obj.put(String.valueOf(e.getEntityID()), jsonObject);
         }
-        socket.emit("getUpdatedColonists", obj);
+        socket.emit("getUpdatedEntities", obj);
     }
 
-    public void getColonistMovement(JSONObject jsonObject) throws JSONException {
-        Json json = new Json();
-
-        for (Colonist c : colonists) {
-            JSONObject colonistInput = jsonObject.getJSONObject(String.valueOf(c.colonistID));
-            c.setX(colonistInput.getInt("x"));
-            c.setY(colonistInput.getInt("y"));
-            c.setNextX(colonistInput.getInt("nextX"));
-            c.setNextY(colonistInput.getInt("nextY"));
-            c.setTimer(colonistInput.getInt("timer"));
-//            c.pathToComplete = json.fromJson(ArrayList.class, Vector2.class, colonistInput.getString("pathToComplete"));
+    public void getEntityMovement(JSONObject jsonObject) throws JSONException {
+        for (Entity e : allEntities) {
+            JSONObject colonistInput = jsonObject.getJSONObject(String.valueOf(e.getEntityID()));
+            e.setX(colonistInput.getInt("x"));
+            e.setY(colonistInput.getInt("y"));
+            e.setNextX(colonistInput.getInt("nextX"));
+            e.setNextY(colonistInput.getInt("nextY"));
+            e.setTimer(colonistInput.getInt("timer"));
+            int endX = colonistInput.getInt("endX");
+            int endY = colonistInput.getInt("endY");
+            if (endX != -1 && endY != -1) {
+                e.pathToComplete = AStar.pathFindForEntities(new Vector2(e.getX(), e.getY()), new Vector2(endX, endY), map.tiles, allEntities, e.getEntityID());
+            }
         }
     }
 
@@ -1267,7 +2078,9 @@ public class GameScreen implements Screen {
             shapeRenderer.setProjectionMatrix(camera.projViewMatrix.getGdxMatrix());
             shapeRenderer.setColor(0, 0, 1, 0.5f);
             for (Colonist colonist : colonists) {
+                colonist.drawPath = true;
                 colonist.drawPathOutline(shapeRenderer);
+                colonist.drawPath = false;
             }
             shapeRenderer.end();
             Gdx.gl.glDisable(GL30.GL_BLEND);
@@ -1297,7 +2110,9 @@ public class GameScreen implements Screen {
         shapeRenderer.setProjectionMatrix(camera.projViewMatrix.getGdxMatrix());
         shapeRenderer.setColor(color);
         for (Entity e : entities) {
+            e.drawPath = true;
             e.drawPathOutline(shapeRenderer);
+            e.drawPath = false;
         }
         shapeRenderer.end();
         Gdx.gl.glDisable(GL30.GL_BLEND);
@@ -1314,11 +2129,14 @@ public class GameScreen implements Screen {
     public void hideAllButtons(){
         buildingButtons.showButtons = false;
         ordersButtons.showButtons = false;
+        zoneButtons.showButtons = false;
+        priorityButtons.showButtons = false;
     }
 
     public void updateShowingButtons(ButtonCollection b){
         if (b.showButtons) {
             b.showButtons = false;
+            selectionMode = "";
         } else {
             hideAllButtons();
             b.showButtons = true;
@@ -1332,6 +2150,22 @@ public class GameScreen implements Screen {
 
         if (colonists.size() > ((MyGdxGame.initialRes.x * 0.8f) / dims)) {
             dims = (MyGdxGame.initialRes.x * 0.8f) / colonists.size();
+        }
+
+        if (Gdx.input.isButtonJustPressed(0)) {
+            Colonist colonistSelected = getSelectedColonist(Gdx.input.getX(), (int) (MyGdxGame.initialRes.y - Gdx.input.getY()), dims, x, y);
+            if (colonistSelected != null) {
+                shouldShowSelectedColonistInfo = true;
+                hideAllButtons();
+                if (selectedColonist != colonistSelected){
+                    selectedColonist = colonistSelected;
+                }
+                followingSelected = true;
+                camera.moveTo(selectedColonist.getFullX(), selectedColonist.getFullY());
+            }
+            else {
+                checkIfShouldCloseColonistInfo();
+            }
         }
 
         batch.end();
@@ -1352,37 +2186,133 @@ public class GameScreen implements Screen {
         }
     }
 
+    public Colonist getSelectedColonist(int MouseX, int MouseY, float dims, float x, float y){
+        int index = (int) ((MouseX - x) / (dims * 1.1f));
+        if (MouseY > y && MouseY < y + dims) {
+            if (index < colonists.size() && index >= 0) {
+                return colonists.get(index);
+            }
+        }
+        return null;
+    }
+
+
     public void setupWeaponPresets(){
         Json json = new Json();
         ArrayList<Weapon> weaponPresetsArray = json.fromJson(ArrayList.class, Weapon.class, Gdx.files.internal("core/assets/info/weaponInfo/weaponInfo.txt"));
         for (Weapon w : weaponPresetsArray) {
             weaponPresets.put(w.getName(), w);
         }
+        System.out.println("test");
     }
 
     public void giveAllConsistsRandomWeapons(){
         for (Colonist c: colonists) {
-            c.setWeapon(getRandomWeapon());
+            c.copyWeapon(getRandomWeapon());
         }
+    }
+
+    public void randomlySpawnMobs(){
+        String[] mobNames = {"sheep", "poong"};
+        int chance = random.nextInt(300);
+        if (chance == 0){
+            String type = mobNames[random.nextInt(mobNames.length)];
+            ArrayList<Vector2> spawnLocs = map.canSpawnHere(random.nextInt(TILES_ON_X), random.nextInt(TILES_ON_X), 10, 10);
+            if (spawnLocs.size() <= 0){
+                return;
+            }
+            EntityGroup eg = new EntityGroup(type, (int) spawnLocs.get(0).x, (int) spawnLocs.get(0).y, 10, getNextEntityGroupID());
+            for (int i = 0; i < random.nextInt(6) + 1; i++) {
+                Mob m = new Mob((int) spawnLocs.get(i).x, (int) spawnLocs.get(i).y, type, (int) GameScreen.TILE_DIMS, (int) GameScreen.TILE_DIMS);
+                m.copyWeapon(weaponPresets.get("punch"));
+                m.setEntityID(getNextEntityID());
+                eg.add(m);
+                allEntities.add(m);
+            }
+            mobs.add(eg);
+            if (isMultiplayer && isHost){
+                socket.emit("spawnMobs", json.toJson(eg));
+            }
+        }
+    }
+
+    public void destroyMobs(){
+        if (mobs.size() > 4){
+            EntityGroup toDestroy = getEntityGroupFurthestFromPlayer(mobs);
+            if (toDestroy != null){
+                if (isMultiplayer && isHost){
+                    socket.emit("destroyMobs", json.toJson(toDestroy.getId()));
+                }
+                mobs.remove(toDestroy);
+                for (Entity e : toDestroy.entities) {
+                    allEntities.remove(e);
+                }
+            }
+        }
+    }
+
+    public EntityGroup getEntityGroupFurthestFromPlayer(ArrayList<EntityGroup> groups){
+        float maxDistance = 0;
+        EntityGroup toDestroy = null;
+        for (EntityGroup eg : groups){
+            float minDistanceFromAll = Float.MAX_VALUE;
+            for (Colonist c : colonists){
+                float dist = distance(c.getX(), c.getY(), eg.getX(), eg.getY());
+                if (dist < minDistanceFromAll){
+                    minDistanceFromAll = dist;
+                }
+            }
+            if (minDistanceFromAll > maxDistance){
+                maxDistance = minDistanceFromAll;
+                toDestroy = eg;
+            }
+        }
+        return toDestroy;
     }
 
     public void spawnMobs(String type, int amount, int x, int y){
-        EntityGroup group = new EntityGroup(type);
+        EntityGroup group = new EntityGroup(type,x , y, 10, getNextEntityGroupID());
         for (int i = 0; i < amount; i++) {
             Mob b = new Mob(x + random.nextInt(10) - 5, y + random.nextInt(10) - 5, type,
                     (int) GameScreen.TILE_DIMS, (int) GameScreen.TILE_DIMS);
-            b.setWeapon(weaponPresets.get("Fists"));
+            b.copyWeapon(weaponPresets.get("punch"));
+            b.setEntityID(getNextEntityID());
+            allEntities.add(b);
             group.add(b);
         }
         mobs.add(group);
+
+        if (isMultiplayer && isHost){
+            socket.emit("spawnMobs", json.toJson(group));
+        }
     }
 
     public void spawnBarbarians(String type, int amount, int x, int y){
-        EntityGroup group = new EntityGroup(type);
+        EntityGroup group = new EntityGroup(type, x, y, 10, getNextEntityGroupID());
         for (int i = 0; i < amount; i++) {
-            group.add(createBarbarian(x + random.nextInt(10) - 5, y + random.nextInt(10) - 5, type));
+            Barbarian b = createBarbarian(x + random.nextInt(10) - 5, y + random.nextInt(10) - 5, type);
+            group.add(b);
+            allEntities.add(b);
         }
         barbarians.add(group);
+        if (isHost && socket != null){
+            socket.emit("spawnBarbarians", json.toJson(group));
+        }
+    }
+
+    public void spawnBarbarians(String type, ArrayList<Vector2> locs, int amount){
+        Colonist target = colonists.get(random.nextInt(colonists.size()));
+        EntityGroup group = new EntityGroup(type, target.getX(), target.getY(), 10, getNextEntityGroupID());
+        for (int i = 0; i < amount; i++) {
+            Vector2 loc = locs.get(i);
+            Barbarian b = createBarbarian((int) loc.x, (int) loc.y, type);
+            group.add(b);
+            allEntities.add(b);
+        }
+        barbarians.add(group);
+        if (isHost && socket != null){
+            socket.emit("spawnBarbarians", json.toJson(group));
+        }
     }
 
     public Weapon getRandomWeapon(){
@@ -1390,23 +2320,32 @@ public class GameScreen implements Screen {
         return weaponPresets.get(t[random.nextInt(t.length)]);
     }
 
-    public void drawAllMobs(SpriteBatch batch){
+    public void drawAllMobs(SpriteBatch batch, ShapeRenderer shapeRenderer){
         for (EntityGroup e : mobs) {
-            e.draw(batch, mobTextures);
+            e.draw(batch, mobTextures, shapeRenderer);
         }
     }
 
-    public void drawAllBarbarians(SpriteBatch batch){
+    public void drawAllBarbarians(SpriteBatch batch, ShapeRenderer shapeRenderer){
         for (EntityGroup e : barbarians) {
-            e.draw(batch, colonistClothes);
+            e.draw(batch, colonistClothes, shapeRenderer);
         }
     }
 
     public Barbarian createBarbarian(int x, int y, String type){
         Barbarian b = new Barbarian(x, y, type, (int) GameScreen.TILE_DIMS, (int) GameScreen.TILE_DIMS);
-        b.setWeapon(getRandomWeapon());
+        b.copyWeapon(getRandomWeapon());
         b.setClotheName(listOfColonistClothes[random.nextInt(listOfColonistClothes.length)]);
+        b.setEntityID(getNextEntityID());
         return b;
+    }
+
+    public int getNextEntityID(){
+        return nextEntityID++;
+    }
+
+    public int getNextEntityGroupID(){
+        return nextEntityGroupID++;
     }
 
     public void drawAllTaskPercentages(ShapeRenderer shapeRenderer){
@@ -1429,6 +2368,14 @@ public class GameScreen implements Screen {
                         GameScreen.TILE_DIMS * 0.9f, GameScreen.TILE_DIMS * 0.2f);
             }
         }
+
+        for (Entity e : allEntities) {
+            if (e instanceof Barbarian){
+                if (e.getCurrentTask() != null){
+                    ((Barbarian) e).drawTaskPercentageBoundBox(shapeRenderer);
+                }
+            }
+        }
     }
 
     public void drawTaskPercentagesFillBox(ShapeRenderer shapeRenderer){
@@ -1436,10 +2383,21 @@ public class GameScreen implements Screen {
             if (t.getPercentageComplete() > 0) {
                 shapeRenderer.rect(t.getX() * GameScreen.TILE_DIMS + GameScreen.TILE_DIMS * 0.05f + 1,
                         t.getY() * GameScreen.TILE_DIMS + 1 + GameScreen.TILE_DIMS * 0.05f,
-                        (GameScreen.TILE_DIMS * 0.9f - 2) * (t.getPercentageComplete() / 100), GameScreen.TILE_DIMS * 0.2f - 2);
+                        (GameScreen.TILE_DIMS * 0.9f - 2) * ((t.getPercentageComplete() / t.getMaxPercentage())), GameScreen.TILE_DIMS * 0.2f - 2);
+            }
+        }
+
+        for (Entity e : allEntities) {
+            if (e instanceof Barbarian){
+                Barbarian b = (Barbarian) e;
+                if (b.getCurrentTask() != null){
+                    b.drawTaskPercentageFillBox(shapeRenderer);
+                }
             }
         }
     }
+
+    // FIXED: 14/04/2022  : when going to options menu and then returning the gamespeed is changed to one but not updated for the clock
 
     public void highlightAllReserved(ShapeRenderer shapeRenderer){
         Gdx.gl.glEnable(GL30.GL_BLEND);
@@ -1501,5 +2459,807 @@ public class GameScreen implements Screen {
         }
         shapeRenderer.end();
         Gdx.gl.glDisable(GL30.GL_BLEND);
+    }
+
+    public void drawTimeCover(ShapeRenderer shapeRenderer, Clock clock){
+        Gdx.gl.glEnable(GL30.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL30.GL_SRC_ALPHA, GL30.GL_ONE_MINUS_SRC_ALPHA);
+
+        float hour = clock.getHour();
+        float minute = clock.getMinute();
+        float totalHours = (hour + minute / 60);
+        float alpha = 1;
+        if (hour >= 6 && hour <= 18) {
+            alpha = 0;
+        }
+        else if (hour > 18){
+            alpha = (totalHours - 18) / 6;
+        }
+        else if (hour < 6){
+            alpha = (6 - totalHours) / 6;
+        }
+        if (alpha > 0.85f) {
+            alpha = 0.85f;
+        }
+
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(0,0,0,alpha);
+        shapeRenderer.rect(0,0,MyGdxGame.initialRes.x, MyGdxGame.initialRes.y);
+        shapeRenderer.end();
+
+        Gdx.gl.glDisable(GL30.GL_BLEND);
+    }
+
+    public void setupLights(){
+        ec = new EdgeController();
+        ec.setupEdgeBouncers(map.things);
+        ec.update(map.things); //update must be called when a new Thing is added to the map
+
+        lightManager = new LightManager();
+        lightManager.updateLights(ec, GameScreen.TILE_DIMS);
+
+        lightManager.setAllToShouldUpdate();
+        ec.update(map.things);
+    }
+
+    public void setupGameSpeedButtons(Clock clock){
+        gameSpeedButtons = new ButtonCollection();
+        gameSpeedButtons.useWorldCoords = false;
+        Function<Integer, Void> changeSpeed = (Integer f) -> {
+            if (GameScreen.gameSpeed == 0) {
+                GameScreen.gameSpeed = GameScreen.lastGameSpeed + f;
+            } else {
+                GameScreen.gameSpeed += f;
+            }
+            if (GameScreen.gameSpeed < 0) {
+                GameScreen.gameSpeed = 0;
+            }
+            if (GameScreen.gameSpeed > GameScreen.MAX_GAME_SPEED) {
+                GameScreen.gameSpeed = GameScreen.MAX_GAME_SPEED;
+            }
+            GameScreen.lastGameSpeed = GameScreen.gameSpeed;
+            if (isMultiplayer) {
+                socket.emit("updateGameSpeed", GameScreen.gameSpeed);
+            }
+            return null;
+        };
+        ImgOnlyButton btwo = new ImgOnlyButton("btwo", "backwardDouble", () -> changeSpeed.apply(-2));
+        ImgOnlyButton bone = new ImgOnlyButton("bone", "backwardSingle", () -> changeSpeed.apply(-1));
+        ImgOnlyButton paulay = new ImgOnlyButton("pulay", "pausePlay", () -> {
+            if (GameScreen.gameSpeed == 0) {
+                GameScreen.gameSpeed = GameScreen.lastGameSpeed;
+            }
+            else {
+                GameScreen.lastGameSpeed = GameScreen.gameSpeed;
+                GameScreen.gameSpeed = 0;
+            }
+            if (isMultiplayer) {
+                socket.emit("updateGameSpeed", GameScreen.gameSpeed);
+            }
+        });
+        ImgOnlyButton fone = new ImgOnlyButton("fone", "forwardSingle", () -> changeSpeed.apply(1));
+        ImgOnlyButton ftwo = new ImgOnlyButton("ftwo", "forwardDouble", () -> changeSpeed.apply(2));
+        gameSpeedLabel = new Label("gameSpeedLabel", gameSpeed + "x");
+
+        gameSpeedButtons.add(btwo, bone, paulay, fone, ftwo);
+
+        float width = (clock.getRadius() * 2) / 5f;
+        float height = MyGdxGame.initialRes.y * 0.02f;
+        float x = (clock.getX() - clock.getRadius());
+        float y = (clock.getY() - clock.getRadius());
+
+        for (int i = 0; i < gameSpeedButtons.buttons.size(); i++) {
+            Button b = gameSpeedButtons.buttons.get(i);
+            b.setPos(x + width * i, y - height);
+            b.setSize(width, height);
+        }
+
+        gameSpeedLabel.setPos(x - width, y - height);
+        gameSpeedLabel.setSize(width / 2f, height);
+    }
+
+    // FIXED: 08/04/2022 the lights are not properly saved and so dont appear
+    // BUG: 08/04/2022 when you save and a colonist is completing a task it has a weird effect of just standing there for a while
+
+    public void setupZoneButtons(){
+        zoneButtons = new ButtonCollection();
+        zoneButtons.useWorldCoords = false;
+        zoneButtons.showButtons = false;
+
+        ImgButton zoneButton = new ImgButton("zoneButton", "zone", () -> selectionMode = "Zones");
+        ImgButton zoneDemolishButton = new ImgButton("zoneDemolishButton", "zoneDemolish", () -> selectionMode = "ZoneDemolish");
+
+        zoneButtons.add(zoneButton, zoneDemolishButton);
+        float y = (MyGdxGame.initialRes.y / 12f) + 5;
+        for (int i = 0; i < zoneButtons.buttons.size(); i++) {
+            Button b = zoneButtons.buttons.get(i);
+            b.setPos((int) ((MyGdxGame.initialRes.y / 12f) * i + 5), (int) y);
+            b.setSize((int) (MyGdxGame.initialRes.y / 12f), (int) (MyGdxGame.initialRes.y / 12f));
+        }
+    }
+
+    public void changeZone(float x, float y, float x2, float y2, boolean isAddZone){
+        float minX = Math.min(x, x2);
+        float minY = Math.min(y, y2);
+        float maxX = Math.max(x, x2);
+        float maxY = Math.max(y, y2);
+
+        int minXCoord = (int) (minX / TILE_DIMS);
+        int minYCoord = (int) (minY / TILE_DIMS);
+        int maxXCoord = (int) (maxX / TILE_DIMS) + 1;
+        int maxYCoord = (int) (maxY / TILE_DIMS) + 1;
+
+        minXCoord = Math.max(0, minXCoord);
+        minYCoord = Math.max(0, minYCoord);
+        maxXCoord = Math.min(TILES_ON_X, maxXCoord);
+        maxYCoord = Math.min(TILES_ON_X, maxYCoord);
+
+        if (isAddZone) {
+            addZone(minXCoord, minYCoord, maxXCoord, maxYCoord);
+        }
+        else {
+            removeZone(minXCoord, minYCoord, maxXCoord, maxYCoord);
+        }
+    }
+
+    public void addZone(int minXCoord, int minYCoord, int maxXCoord, int maxYCoord){
+        addZonePartTwo(minXCoord, minYCoord, maxXCoord, maxYCoord);
+        if (isMultiplayer) {
+            socket.emit("addZone", minXCoord, minYCoord, maxXCoord, maxYCoord);
+        }
+    }
+
+    public void addZonePartTwo(int minXCoord, int minYCoord, int maxXCoord, int maxYCoord) {
+        Zone z1 = new Zone(minXCoord, minYCoord, maxXCoord - minXCoord, maxYCoord - minYCoord, map.getNextZoneColor());
+        int[][] verts = new int[][]{{minXCoord, minYCoord}, {maxXCoord, minYCoord}, {maxXCoord, maxYCoord}, {minXCoord, maxYCoord}};
+        boolean notInZone = true;
+        for (Zone z : map.zones) {
+            int[][] zVerts = new int[][]{{z.getX(), z.getY()}, {z.getX() + z.getWidth(), z.getY()},
+                                        {z.getX() + z.getWidth(), z.getY() + z.getHeight()}, {z.getX(), z.getY() + z.getHeight()}};
+            for (int[] v : verts) {
+                if (z.isInZone(v[0], v[1], map)) {
+                    notInZone = false;
+                }
+            }
+            for (int[] v : zVerts) {
+                if (z1.isInZone(v[0], v[1], map)) {
+                    notInZone = false;
+                }
+            }
+        }
+
+        boolean isAllowed = (maxXCoord - minXCoord) > 1 && (maxYCoord - minYCoord) > 1;
+        if (notInZone && isAllowed) {
+            z1.setup(map.getNextZoneID());
+            map.addZone(z1);
+        }
+    }
+
+    public void removeZone(int minXCoord, int minYCoord, int maxXCoord, int maxYCoord){
+        removeZonePartTwo(minXCoord, minYCoord, maxXCoord, maxYCoord);
+        if (isMultiplayer) {
+            socket.emit("removeZone", minXCoord, minYCoord, maxXCoord, maxYCoord);
+        }
+    }
+
+    public void removeZonePartTwo(int minXCoord, int minYCoord, int maxXCoord, int maxYCoord) {
+        ArrayList<Zone> toRemove = new ArrayList<>();
+
+        Zone z1 = new Zone(minXCoord, minYCoord, maxXCoord - minXCoord, maxYCoord - minYCoord, map.getNextZoneColor());
+        int[][] verts = new int[][]{{minXCoord, minYCoord}, {maxXCoord, minYCoord}, {maxXCoord, maxYCoord}, {minXCoord, maxYCoord}};
+        for (Zone z : map.zones) {
+            int[][] zVerts = new int[][]{{z.getX(), z.getY()}, {z.getX() + z.getWidth(), z.getY()},
+                    {z.getX() + z.getWidth(), z.getY() + z.getHeight()}, {z.getX(), z.getY() + z.getHeight()}};
+            for (int[] v : verts) {
+                if (z.isInZone(v[0], v[1], map)) {
+                    toRemove.add(z);
+                    break;
+                }
+            }
+            for (int[] v : zVerts) {
+                if (z1.isInZone(v[0], v[1], map)) {
+                    toRemove.add(z);
+                    break;
+                }
+            }
+        }
+
+        if (isHost) {
+            for (Zone z : toRemove) {
+                for (FloorDrop f : z.getDrops()) {
+                    map.addFloorDrop(f, socket, isHost);
+                }
+            }
+        }
+        map.removeZones(toRemove);
+    }
+
+    public void setupFloorDropHashMap(){
+        floorDropTextures = new HashMap<>();
+        File dir = new File("core/assets/Textures/Resources");
+        String[] files = dir.list();
+        assert files != null;
+        for (String file : files) {
+            if (file.endsWith(".png")) {
+                String[] split = file.split("\\.");
+                String name = split[0];
+                floorDropTextures.put(name, new Texture("Textures/Resources/" + file));
+            }
+        }
+    }
+
+    public void calculateResources(){
+        map.resources.replaceAll((k, v) -> 0);
+        for (Zone z : map.zones) {
+            z.calculateResources(map.resources);
+        }
+    }
+
+    // FIXED: 09/04/2022 sometimes the colonists will ignore the available tasks and move randomly
+    // FIXED: 09/04/2022 building no longer works
+
+    public void updateSelectedColonist(SpriteBatch batch){
+        if (selectedColonist != null) {
+            batch.begin();
+            if (shouldShowSelectedColonistInfo) {
+                selectedColonistButtons.drawButtons(batch);
+            }
+            if (showSelectedSkills) {
+                changeSkills();
+                selectedColonistSkills.drawButtons(batch);
+            }
+            batch.end();
+        }
+    }
+
+    public void drawSelectedColonistUI(SpriteBatch batch, ShapeRenderer shapeRenderer) {
+        int x = 10;
+        int y = (int) ((MyGdxGame.initialRes.y / 12f) * 1.1f);
+        int width = (int) (MyGdxGame.initialRes.x / 3f);
+        int height = (int) (MyGdxGame.initialRes.y / 4f);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+        shapeRenderer.setColor(Color.BLACK);
+        shapeRenderer.rect(x - 2, y, width + 4, height + 4);
+        shapeRenderer.end();
+
+        batch.begin();
+        if (selectedColonist != null) {
+            HashMap<String, TextureAtlas> temp;
+            if (selectedColonist instanceof Mob) {
+                temp = mobTextures;
+            } else {
+                temp = colonistClothes;
+            }
+            selectedColonist.drawMini(batch, x, y + height - width / 3, width / 4, temp);
+
+            if (selectedColonist instanceof Colonist) {
+                Colonist c = (Colonist) selectedColonist;
+                glyphLayout.setText(font, "Name: " + c.firstName + " " + c.lastName);
+                font.draw(batch, glyphLayout, x + width / 4f, y + (height * 0.85f) - (glyphLayout.height));
+
+                glyphLayout.setText(font, "Age: " + c.age);
+                font.draw(batch, glyphLayout, x + width / 4f, y + (height * 0.7f) - (glyphLayout.height));
+
+                glyphLayout.setText(font, "Health: " + c.getHealth() + "\\" + Colonist.getHealthFromType(c.getEntityType()));
+                font.draw(batch, glyphLayout, x + width / 4f, y + (height * 0.55f) - (glyphLayout.height));
+
+                glyphLayout.setText(font, "Level: " + c.getLevel());
+                font.draw(batch, glyphLayout, x + width / 4f, y + (height * 0.4f) - (glyphLayout.height));
+
+                glyphLayout.setText(font, getCurrentAction(c));
+                font.draw(batch, glyphLayout, x + width / 4f, y + (height * 0.25f) - (glyphLayout.height));
+            } else if (selectedColonist instanceof Mob || selectedColonist instanceof Barbarian) {
+                glyphLayout.setText(font, "Type: " + selectedColonist.getEntityType());
+                font.draw(batch, glyphLayout, x + width / 4f, y + (height * 0.85f) - (glyphLayout.height));
+
+                glyphLayout.setText(font, "Health: " + selectedColonist.getHealth() + "\\" + selectedColonist.getMaxHealth());
+                font.draw(batch, glyphLayout, x + width / 4f, y + (height * 0.7f) - (glyphLayout.height));
+
+                glyphLayout.setText(font, "Level: " + selectedColonist.getLevel());
+                font.draw(batch, glyphLayout, x + width / 4f, y + (height * 0.55f) - (glyphLayout.height));
+            }
+            batch.end();
+        }
+    }
+
+    public void setupSelectedColonistsButtonCollection(){
+        selectedColonistButtons = new ButtonCollection();
+        selectedColonistButtons.useWorldCoords = false;
+        selectedColonistButtons.firstCheck = true;
+        ImgButton followButton = new ImgButton("followButton", "follow", () -> GameScreen.followingSelected = !GameScreen.followingSelected);
+        TextButton skillsButton = new TextButton("Show Skills", "skillsButton", () -> showSelectedSkills = !showSelectedSkills);
+        ImgButton closeButton = new ImgButton("closeButton", "close", () -> {
+            shouldShowSelectedColonistInfo = false;
+            showSelectedSkills = false;
+        });
+        ImgButton pathButton = new ImgButton("pathButton", "path", () -> selectedColonist.drawPath = !selectedColonist.drawPath);
+        ImgButton attackButton = new ImgButton("attackButton", "attack", () -> {
+            attackSelection = !attackSelection;
+            if (attackSelection){
+                setCustomCursor("attack");
+            }
+            else {
+                setCursorDefault();
+            }
+        });
+        ImgButton healButton = new ImgButton("healButton", "heal", () -> {
+            healSelection = !healSelection;
+            if (healSelection){
+                setCustomCursor("heal");
+            }
+            else {
+                setCursorDefault();
+            }
+        });
+
+        followButton.setPos(10 + (MyGdxGame.initialRes.x / 3f) - (MyGdxGame.initialRes.y / 4f / 8f),
+                ((MyGdxGame.initialRes.y / 12f) * 1.1f) + (MyGdxGame.initialRes.y / 4f) - (MyGdxGame.initialRes.y / 4f / 8f));
+        followButton.setSize((MyGdxGame.initialRes.y / 4f / 8f), (MyGdxGame.initialRes.y / 4f / 8f));
+
+        pathButton.setPos(followButton.x - followButton.width - 2, followButton.y);
+        pathButton.setSize(followButton.width, followButton.height);
+
+        attackButton.setPos(pathButton.x - pathButton.width - 2, pathButton.y);
+        attackButton.setSize(pathButton.width, pathButton.height);
+
+        healButton.setPos(attackButton.x - attackButton.width - 2, attackButton.y);
+        healButton.setSize(attackButton.width, attackButton.height);
+
+        int widtht = (int) (MyGdxGame.initialRes.x / 10f);
+        skillsButton.setPos(healButton.x - widtht, healButton.y);
+        skillsButton.setSize(widtht, healButton.height);
+
+        closeButton.setPos(10, followButton.y);
+        closeButton.setSize(followButton.width, followButton.height);
+
+        selectedColonistButtons.add(followButton, skillsButton, closeButton, pathButton, attackButton, healButton);
+
+        selectedColonistSkills = new ButtonCollection();
+        selectedColonistSkills.useWorldCoords = false;
+        String[] skills = new String[]{"Mining", "FireFighting", "Deconstruction", "Construction",
+                "Shooting", "Moving", "Foraging", "Melee", "Chopping trees", "Fishing", "Planting"};
+        float x = 10;
+        float y = ((MyGdxGame.initialRes.y / 12f) * 1.1f) + (MyGdxGame.initialRes.y / 4f);
+        float width = (MyGdxGame.initialRes.x / 6f);
+        float height = (MyGdxGame.initialRes.y / 20f);
+        for (int i = 0; i < skills.length; i++) {
+            String skill = skills[i];
+            Label temp = new Label(skill, "");
+
+            temp.setPos(x, y + (height * i));
+            temp.setSize(width, height);
+            selectedColonistSkills.add(temp);
+        }
+    }
+
+    public void changeSkills(){
+        for (Button b : selectedColonistSkills.buttons) {
+            Label l = (Label) b;
+            if (selectedColonist instanceof Colonist) {
+                Colonist colonist = (Colonist) selectedColonist;
+                l.setText((l.name + ": " + colonist.skills.get(l.name)));
+            }
+        }
+    }
+
+    public void checkIfShouldCloseColonistInfo(){
+        int mX = Gdx.input.getX();
+        int mY = (int) (MyGdxGame.initialRes.y - Gdx.input.getY());
+        int x = 10;
+        int y = (int) ((MyGdxGame.initialRes.y / 12f) * 1.1f);
+        int width = (int) (MyGdxGame.initialRes.x / 3f);
+        int height = (int) (MyGdxGame.initialRes.y / 4f);
+
+        if (!(mX > x && mX < x + width && mY > y && mY < y + height) && !attackSelection && !healSelection) {
+            shouldShowSelectedColonistInfo = false;
+            showSelectedSkills = false;
+        }
+    }
+
+    public void highLightAttackAble(ShapeRenderer shapeRenderer){
+        Vector2 mousePos = camera.unproject(new Vector2(Gdx.input.getX(), Gdx.input.getY()));
+
+        float offset = GameScreen.TILE_DIMS / 2f;
+
+        boolean onSelected = false;
+        for (Entity e : allEntities) {
+            if (e.isAlive() && e != selectedColonist) {
+                shapeRenderer.setColor(Color.RED);
+                float eX = e.getFullX() + GameScreen.TILE_DIMS / 2f;
+                float eY = e.getFullY() + GameScreen.TILE_DIMS / 2f;
+                if (distance(mousePos.x, mousePos.y, eX, eY) <= (GameScreen.TILE_DIMS / 2f) && !onSelected) {
+                    onSelected = true;
+                    shapeRenderer.setColor(Color.BLUE);
+                }
+
+                float x = (e.getX() + ((e.getNextX() - e.getX()) * e.getTimer())) * GameScreen.TILE_DIMS;
+                float y = (e.getY() + ((e.getNextY() - e.getY()) * e.getTimer())) * GameScreen.TILE_DIMS;
+                shapeRenderer.circle(x + offset, y + offset, GameScreen.TILE_DIMS / 2f);
+            }
+        }
+    }
+
+    public void highLightHealAble(ShapeRenderer shapeRenderer){
+        shapeRenderer.setColor(Color.GREEN);
+        for (Zone z : map.zones) {
+            for (FloorDrop fd : z.getDrops()) {
+                if (fd.isConsumable){
+                    shapeRenderer.circle((fd.getX() + 0.5f) * GameScreen.TILE_DIMS, (fd.getY() + 0.5f) * GameScreen.TILE_DIMS, GameScreen.TILE_DIMS / 2f);
+                }
+            }
+        }
+        for (FloorDrop fd : map.floorDrops) {
+            if (fd.isConsumable){
+                shapeRenderer.circle((fd.getX() + 0.5f) * GameScreen.TILE_DIMS, (fd.getY() + 0.5f) * GameScreen.TILE_DIMS, GameScreen.TILE_DIMS / 2f);
+            }
+        }
+    }
+
+    public float distance(float x, float y, float x2, float y2){
+        return (float) Math.sqrt((x - x2) * (x - x2) + (y - y2) * (y - y2));
+    }
+
+    public Entity getEntityAtUsingFull(float x, float y){
+        for (Entity e : allEntities) {
+            float eX = e.getFullX() + GameScreen.TILE_DIMS / 2f;
+            float eY = e.getFullY() + GameScreen.TILE_DIMS / 2f;
+            if (distance(x, y, eX, eY) <= (GameScreen.TILE_DIMS / 2f)) {
+                return e;
+            }
+        }
+        return null;
+    }
+
+    public Entity getEntityAt(int x, int y){
+        for (Entity e : allEntities) {
+            if (e.getX() == x && e.getY() == y) {
+                return e;
+            }
+        }
+        return null;
+    }
+
+    public Entity getEntityWithId(int id){
+        for (Entity e : allEntities) {
+            if (e.getEntityID() == id) {
+                return e;
+            }
+        }
+        return null;
+    }
+
+    public FloorDrop getFloorDropAt(int x, int y){
+        for (Zone z : map.zones) {
+            for (FloorDrop fd : z.getDrops()) {
+                if (fd.getX() == x && fd.getY() == y){
+                    return fd;
+                }
+            }
+        }
+        for (FloorDrop fd : map.floorDrops) {
+            if (fd.getX() == x && fd.getY() == y){
+                return fd;
+            }
+        }
+        return null;
+    }
+
+    public void updateRaids(){
+        if (clock.newDay) {
+            clock.newDay = false;
+            GameScreen.score += clock.getDay() * 10;
+            raidChance += (0.005 * Math.min(clock.getDay(), 10)) + (0.001 * Math.min(map.totalRaidChanceAffector,100));
+
+            float chance = random.nextFloat();
+            if (raidChance >= chance) {
+                raidChance = 0;
+                int amount = random.nextInt(3) + 1;
+                int add = clock.getDay() / 10;
+                amount += add;
+
+                spawnRaid(amount);
+                notifications.add(socket, isHost, new Notification(notifications.getNextId(), "Raid", "raid"));
+            }
+        }
+    }
+
+    public void spawnRaid(int amount){
+        ArrayList<Vector2> temp = map.getRandomPlaceForEntities(random);
+
+        if (temp != null) {
+            if (temp.size() >= amount){
+                spawnBarbarians("barbarian", temp, amount);
+            }
+        }
+    }
+
+    public void setupNotifications(){
+        float y = MyGdxGame.initialRes.y * 0.6f;
+        float x = MyGdxGame.initialRes.x * 0.95f;
+        float dims = MyGdxGame.initialRes.x * 0.04f;
+        notifications = new NotificationCollection(x, y, dims);
+    }
+
+    public void addNotification(String text, String type){
+        Notification temp = new Notification(notifications.getNextId() ,text, type);
+        notifications.add(socket, isHost, temp);
+    }
+
+    public void setupPriorityButtons(){
+        priorityButtons = new ButtonCollection();
+        priorityButtons.useWorldCoords = false;
+        NumberScale.font = new BitmapFont(Gdx.files.internal("Fonts/" + MyGdxGame.fontName + ".fnt"));
+        priorityButtons.showButtons = false;
+        updatePriorityButtons();
+    }
+
+    public void updatePriorityButtons(){
+        priorityButtons.clear();
+
+        int y = (int) (MyGdxGame.initialRes.y / 12f) + 5;
+        int dims = (int) (MyGdxGame.initialRes.y / 24f);
+
+        if (colonists.size() > 0) {
+            Colonist c = colonists.get(0);
+            Set<String> skills = c.priorityFromType.keySet();
+            int num = Math.min(colonists.size(), priorityHeight);
+            int ySkill = y + dims * (num + 1);
+            int xSkill = (int) (MyGdxGame.initialRes.x / 12f) + 5;
+
+            for (int i = 0; i < skills.size(); i++) {
+                ImgButton skill = new ImgButton("skill:" + skills.toArray()[i], skills.toArray()[i].toString());
+                skill.drawButton = false;
+                skill.setSize(dims, dims);
+                skill.setPos(xSkill + (i * (dims + 10)), ySkill);
+                priorityButtons.add(skill);
+            }
+        }
+
+        int end = Math.min(colonists.size(), priorityHeight + priorityStart);
+
+        for (int i = priorityStart; i < end; i++) {
+            Colonist c = colonists.get(i);
+
+            int temp = i - priorityStart;
+
+            Label name = new Label(c.getEntityID() + ":name", c.getFullName());
+            name.setPos(5, y + (temp * (dims + 5)));
+            name.setSize((MyGdxGame.initialRes.x / 12f), dims);
+            name.drawCentred = false;
+            name.resizeFontToFit = true;
+            priorityButtons.add(name);
+
+            int x = (int) (MyGdxGame.initialRes.x / 12f) + 5;
+            Set<String> skills = c.priorityFromType.keySet();
+            for (int j = 0; j < skills.size(); j++) {
+                String s = skills.toArray(new String[0])[j];
+                NumberScale scale = new NumberScale(c.getEntityID() + ":" + s, c, s);
+                scale.setRunnable(() -> {
+                    c.incrementPriority(scale.getSkill());
+                    if (socket != null) {
+                        socket.emit("updatePriority", c.getEntityID(), scale.getSkill(), c.getPriorityValue(scale.getSkill()));
+                    }
+                });
+                scale.setPos(x + (dims + 10) * j, y + temp * (dims + 5));
+                scale.setSize(dims, dims);
+                priorityButtons.add(scale);
+            }
+        }
+    }
+    
+    public void updateAttackSelection(){
+        if (attackSelection && selectedColonist != null) {
+            if (Gdx.input.isButtonJustPressed(0)){
+                if (selectedColonist instanceof Colonist) {
+                    Vector2 mousePos = camera.unproject(new Vector2(Gdx.input.getX(), Gdx.input.getY()));
+                    Entity toAttack = getEntityAtUsingFull(mousePos.x, mousePos.y);
+                    if (selectedColonist != null && toAttack != null) {
+                        selectedColonist.setDefender(toAttack);
+                        if (socket != null) {
+                            socket.emit("entityAttacking", toAttack.getEntityID(), selectedColonist.getEntityID());
+                        }
+                    }
+                    if (toAttack != null) {
+                        System.out.println(toAttack.getEntityID() + " showing to attack");
+                    } else {
+                        System.out.println("No entity to attack");
+                    }
+                }
+            }
+        }
+    }
+    
+    public void updateHealSelection(){
+        if (healSelection && selectedColonist != null){
+            if (selectedColonist instanceof Colonist) {
+                if (Gdx.input.isButtonJustPressed(0)) {
+                    Colonist c = (Colonist) selectedColonist;
+                    Vector2 mousePos = camera.unproject(new Vector2(Gdx.input.getX(), Gdx.input.getY()));
+                    int x = (int) (mousePos.x / TILE_DIMS);
+                    int y = (int) (mousePos.y / TILE_DIMS);
+                    FloorDrop toHeal = getFloorDropAt(x, y);
+                    if (c != null && toHeal != null) {
+                        c.stopWhatYoureDoing(map);
+                        Task t = new Task("Heal", "", x, y);
+                        map.tasks.add(t);
+                        c.setTask(t, map, allEntities);
+                    }
+                }
+            }
+        }
+    }
+
+    public String getCurrentAction(Entity e){
+        if (e instanceof Colonist){
+            Colonist c = (Colonist) e;
+            if (c.completingTask && c.getCurrentTask() != null){
+                return "Doing a task at " + c.getCurrentTask().getX() + "," + c.getCurrentTask().getY();
+            }
+            if (c.isAttacking){
+                return "Attacking with a " + c.getWeapon().getName();
+            }
+            if (c.movingAcrossPath && c.pathToComplete.size() > 1){
+                Vector2 end = c.pathToComplete.get(c.pathToComplete.size() - 1);
+                return "Moving to " + end.x + "," + end.y;
+            }
+        }
+        return "";
+    }
+
+    public void updateColonistsMoveTo(JSONObject data) throws JSONException {
+        int entityID = data.getInt("entityID");
+        int x = data.getInt("x");
+        int y = data.getInt("y");
+        for (Entity e : allEntities) {
+            if (e.getEntityID() == entityID) {
+                e.setMoveToPos(x, y, map, allEntities);
+            }
+        }
+    }
+
+    public void updateColonistsMovement(JSONObject data) throws JSONException {
+        int entityID = data.getInt("entityID");
+        int nextX = data.getInt("nextX");
+        int nextY = data.getInt("nextY");
+        for (Entity e : allEntities) {
+            if (e.getEntityID() == entityID) {
+                e.setNextX(nextX);
+                e.setNextY(nextY);
+            }
+        }
+    }
+
+    public static void sendColonistTask(Socket socket, Task task, int colonistID){
+         String jsonText = json.toJson(task, Task.class);
+         JSONObject jsonObject = new JSONObject();
+         try {
+             jsonObject.put("task", jsonText);
+             jsonObject.put("colonistID", colonistID);
+             socket.emit("colonistTask", jsonObject);
+         } catch (JSONException e) {
+             e.printStackTrace();
+         }
+    }
+
+    public static void completeTaskNotifyServer(Socket socket, int x, int y, String type){
+        JSONObject data = new JSONObject();
+        try {
+            data.put("x", x);
+            data.put("y", y);
+            data.put("type", type);
+            socket.emit("completeTask", data);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void refreshAllLights(){
+        for (int i = 0; i < TILES_ON_X; i++) {
+            for (int j = 0; j < TILES_ON_X; j++) {
+                Thing t = map.things.get(i).get(j);
+                if (t.emitsLight){
+                    t.setup();
+                    map.lightShouldBeUpdated = true;
+                }
+            }
+        }
+    }
+
+    public Colonist getColonistWithID(int id){
+        for (Colonist c : colonists) {
+            if (c.getEntityID() == id){
+                return c;
+            }
+        }
+        return null;
+    }
+
+    public EntityGroup getEntityGroupWithID(int id, ArrayList<EntityGroup> groups){
+        for (EntityGroup e : groups) {
+            if (e.getId() == id){
+                return e;
+            }
+        }
+        return null;
+    }
+
+    public void loadEntities(String dirName, String saveName) {
+        try {
+            ArrayList<String> save = Map.getSaveString(dirName, saveName);
+
+            for (String s : save) {
+                switch (s.split(" ")[0]) {
+                    case "mobs:" -> mobs = json.fromJson(ArrayList.class, EntityGroup.class, s.split(" ")[1]);
+                    case "barbarians:" -> barbarians = json.fromJson(ArrayList.class, EntityGroup.class, s.split(" ")[1]);
+                }
+            }
+            for (EntityGroup eg : mobs) {
+                allEntities.addAll(eg.entities);
+            }
+            for (EntityGroup eg : barbarians) {
+                allEntities.addAll(eg.entities);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public int countColonistsAlive(){
+        int amount = 0;
+        for (Colonist c : colonists) {
+            if (c.isAlive()){
+                amount++;
+            }
+        }
+        return amount;
+    }
+
+    public void checkNotEnd(){
+        if (countColonistsAlive() < 1){
+            game.setScreen(new EndScreen(game, this));
+        }
+    }
+
+    public void dropFoodForDeadMobs(){
+        for (EntityGroup eg : mobs) {
+            for (Entity e : eg.entities) {
+                Mob m = (Mob) e;
+                if (!m.isAlive()){
+                    if (!m.hasDroppedFood){
+                        int amount = random.nextInt(2) + 1;
+                        map.addFloorDrop(m.getX(), m.getY(), "meat", amount, socket, isHost);
+                        m.hasDroppedFood = true;
+                    }
+                }
+            }
+        }
+    }
+
+    public void removeCorpses(){
+        ArrayList<Entity> toRemove = new ArrayList<>();
+        for (EntityGroup eg : mobs) {
+            for (Entity e : eg.entities) {
+                if (!e.isAlive()){
+                    toRemove.add(e);
+                }
+            }
+            if (toRemove.contains(selectedColonist)){
+                shouldRemoveSelectedColonist = true;
+            }
+            eg.removeAll(toRemove);
+            toRemove.clear();
+        }
+        for (EntityGroup eg : barbarians) {
+            for (Entity e : eg.entities) {
+                if (!e.isAlive()){
+                    toRemove.add(e);
+                }
+            }
+            if (toRemove.contains(selectedColonist)){
+                shouldRemoveSelectedColonist = true;
+            }
+            eg.removeAll(toRemove);
+            toRemove.clear();
+        }
     }
 }

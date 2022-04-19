@@ -177,6 +177,10 @@ public class MapGeneration implements Screen {
         }
 
         typing = seedInput.typing || dimsInput.typing;
+
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){
+            game.escapeScreen();
+        }
     }
 
     @Override

@@ -10,6 +10,13 @@ public class InputButtonTwo extends TextButton{
         super(x, y, width, height, text, TextureGda, name);
     }
 
+    public InputButtonTwo(String text, String name, InputMultiplexer inputMultiplexer) {
+        super(0, 0, 0, 0, text, name);
+        this.text = text;
+        wantsSingleCheck = true;
+        setup(inputMultiplexer);
+    }
+
     public InputButtonTwo(int x, int y, int width, int height, String text, String name, InputMultiplexer inputMultiplexer) {
         super(x, y, width, height, text, name);
         this.text = text;
@@ -52,6 +59,7 @@ public class InputButtonTwo extends TextButton{
         inputProcessor = new InputAdapter() {
             @Override
             public boolean keyTyped(char character) {
+                System.out.println(" key was typed and i heard it!" + character);
                 if(typing){
                     if (character != ' '){
                         lineWaitTimer = (float) (0.5 * lineTotalWaitTime);
@@ -191,6 +199,7 @@ public class InputButtonTwo extends TextButton{
 
     public boolean checkIfPressed(int x, int y, boolean firstCheck){
         if(visible){
+            System.out.println(" i have been pressed ");
             if (x > this.x && x < this.x + width && y > this.y && y < this.y + height) {
                 pressed = true;
                 typing = true;

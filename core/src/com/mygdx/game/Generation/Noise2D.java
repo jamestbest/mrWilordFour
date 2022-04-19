@@ -5,9 +5,9 @@ import com.mygdx.game.Math.Math;
 
 public class Noise2D {
 
-    public static float noise(float x, float y, int numberOfLargeSquares){
-        int largeSquareX = (int) Math.ffloor(x) % numberOfLargeSquares;
-        int largeSquareY = (int) Math.ffloor(y) % numberOfLargeSquares;
+    public static float noise(float x, float y, int lSquare){
+        int largeSquareX = (int) Math.ffloor(x) % lSquare;
+        int largeSquareY = (int) Math.ffloor(y) % lSquare;
 
         x -= Math.ffloor(x);
         y -= Math.ffloor(y);

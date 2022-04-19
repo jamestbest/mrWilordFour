@@ -24,6 +24,14 @@ public class ToggleButton extends Button{
         this(0, 0, 0, 0, name, startValue);
     }
 
+    public ToggleButton(String name, boolean startValue, Runnable r){
+        this(0, 0, 0, 0, name, startValue);
+        this.r = r;
+    }
+
+
+    public Runnable r;
+
     String type;
     public boolean toggled = false;
 
@@ -45,10 +53,17 @@ public class ToggleButton extends Button{
         if (Gdx.input.isButtonJustPressed(0)){
             if (super.checkIfPressed(x, y, firstCheck)){
                 toggled = !toggled;
+                if (firstCheck) {
+                    clicked();
+                }
                 return true;
             }
         }
         return false;
+    }
+
+    public void clicked(){
+        if(r != null) r.run();
     }
 
     public void setSize(int width, int height){

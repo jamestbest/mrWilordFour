@@ -1,6 +1,8 @@
 package com.mygdx.game.Weapons;
 
 import com.mygdx.game.Entity.Entity;
+import com.mygdx.game.Screens.GameScreen;
+import io.socket.client.Socket;
 
 public class Ranged extends Weapon {
     public Ranged(String name) {
@@ -57,15 +59,9 @@ public class Ranged extends Weapon {
         this.maxAmmo = maxAmmo;
     }
 
-    public boolean attack(Entity defender){
+    public boolean attack(Entity defender, Entity attacker, Socket socket, boolean isHost){
         if(ammo > 0 && reloadTimer <= 0){
-            if (currentCoolDown <= 0) {
-                currentCoolDown = coolDown;
-                if (random.nextInt(100) <= accuracy) {
-                    defender.setHealth(defender.getHealth() - damage);
-                    return true;
-                }
-            }
+            super.attack(defender, attacker, socket, isHost);
         }
         else {
             reload();

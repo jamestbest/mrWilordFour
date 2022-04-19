@@ -1,12 +1,9 @@
 package com.mygdx.game.ui.elements;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.mygdx.game.Game.MyGdxGame;
-
-import java.util.Vector;
 
 public class Button {
     public int x;
@@ -30,6 +27,8 @@ public class Button {
     public int pressedLayer = 0;
     public boolean wantsSingleCheck = false;
 
+    protected Runnable r;
+
     public Button(int x, int y, int width, int height, String Gda, String name) {
         this.x = x;
         this.y = y;
@@ -50,6 +49,11 @@ public class Button {
         this(0, 0, 0, 0, "BlueButton", name);
     }
 
+    public Button(String name, String gda, Runnable r){
+        this(0, 0, 0, 0, gda, name);
+        this.r = r;
+    }
+
     public void draw(SpriteBatch batch, int drawLayer) {
         if(drawLayer == this.drawLayer){
             if (visible) {
@@ -67,6 +71,9 @@ public class Button {
         if(visible){
             if (x > this.x && x < this.x + width && y > this.y && y < this.y + height) {
                 pressed = true;
+                if (firstCheck && r != null) {
+                    r.run();
+                }
                 return true;
             }
         }
@@ -105,5 +112,37 @@ public class Button {
 
     public void setSelected(boolean selected){
         this.selected = selected;
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public void setX(int x) {
+        this.x = x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public void setY(int y) {
+        this.y = y;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    public int getHeight() {
+        return height;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
     }
 }

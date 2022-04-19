@@ -26,27 +26,68 @@
     tree:
         {
             type:tree,
-            canWalkOn:true
+            canWalkOn:true,
+            drawLayer:1
         },
 
     "":
         {
             type:"",
             canWalkOn:true
-            canSpawnOn:true
+            canSpawnOn:true,
+            drawLayer:1
         },
 
     stoneWall:
         {
             type:stoneWall,
+            drawLayer:1
         },
     woodWall:
         {
             type:woodWall,
+            drawLayer:1
         },
     stoneDoor:
         {
             type:stoneDoor,
-            canWalkOn:true
+            canWalkOn:true,
+            drawLayer:2
+        },
+    torch:
+        {
+            type:torch,
+            canWalkOn:true,
+            drawLayer:1
+        },
+    lamp:
+        {
+            type:lamp,
+            canWalkOn:true,
+            drawLayer:1
+        },
+    berryBush:
+        {
+            type:berryBush,
+            canWalkOn:true,
+            drawLayer:0
+        },
+    edgeBouncer:
+        {
+            type:edgeBouncer,
+            canWalkOn:true,
+            drawLayer:1
+        },
+    woodFloor:
+        {
+            type:woodFloor,
+            canWalkOn:true,
+            drawLayer:0
+        },
+    stoneFloor:
+        {
+            type:stoneFloor,
+            canWalkOn:true,
+            drawLayer:0
         },
 }

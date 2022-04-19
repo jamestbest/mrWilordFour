@@ -13,6 +13,7 @@ import com.mygdx.game.Entity.Colonist;
 import com.mygdx.game.Game.MyGdxGame;
 import com.mygdx.game.Generation.Map;
 import com.mygdx.game.Generation.MapSettings;
+import com.mygdx.game.Saving.RLE;
 import com.mygdx.game.ui.elements.Button;
 import com.mygdx.game.ui.elements.InputButtonTwo;
 import com.mygdx.game.ui.elements.TextButton;
@@ -105,7 +106,12 @@ public class JoinGameScreen implements Screen {
             buttonCollection.updateButtons(cameraTwo, Gdx.input.isButtonJustPressed(0));
 
             if(buttonCollection.pressedButtonName.equals("joinGameButton")){
-                myGdxGame.setScreen(new GameScreen(myGdxGame, ipInputButton.text));
+                if (socket != null) {
+                    if (socket.connected()) {
+                        socket.disconnect();
+                        myGdxGame.setScreen(new GameScreen(myGdxGame, ipInputButton.text, map));
+                    }
+                }
             }
         }
 
@@ -194,14 +200,15 @@ public class JoinGameScreen implements Screen {
 //                map = json.fromJson(Map.class, data.get("map").toString());
 //                colonists = json.fromJson(ArrayList.class, data.get("colonists").toString());
 
-                ArrayList<String> packagedTiles = json.fromJson(ArrayList.class, data.get("tiles").toString());
+                String packagedTiles = json.fromJson(String.class, data.get("tiles").toString());
                 int mapWidth = data.getInt("mapWidth");
                 int tileDims = data.getInt("tileDims");
                 GameScreen.TILES_ON_X = mapWidth;
                 GameScreen.TILE_DIMS = tileDims;
 
                 map.settings = json.fromJson(MapSettings.class, data.get("settings").toString());
-                map.unPackageTiles(packagedTiles);
+//                map.unPackageTiles(packagedTiles);
+                map.tiles = RLE.decodeTiles(packagedTiles, GameScreen.TILES_ON_X);
 
                 this.colonists = json.fromJson(ArrayList.class, data.get("colonists").toString());
                 this.resources = json.fromJson(HashMap.class, data.get("resources").toString());
@@ -214,7 +221,6 @@ public class JoinGameScreen implements Screen {
     }
 
     public void drawColonistInformation(SpriteBatch batch, int x, int y, int width, int height){
-        System.out.println(colonists.size());
         glyphLayout.setText(font, "Colonists: ");
         font.draw(batch, glyphLayout, x, y + (height * 0.95f) + glyphLayout.height + GameScreen.TILE_DIMS / 2f);
 

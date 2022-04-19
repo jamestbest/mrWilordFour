@@ -2,7 +2,6 @@ package com.mygdx.game.ui.elements;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.Matrix4;
 
 public class Slider extends TextButton{
     float maxValue = 100f;

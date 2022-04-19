@@ -8,8 +8,6 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.utils.viewport.StretchViewport;
-import com.badlogic.gdx.utils.viewport.Viewport;
 import com.mygdx.game.Math.CameraTwo;
 import com.mygdx.game.Game.MyGdxGame;
 import com.mygdx.game.ui.elements.*;
@@ -203,7 +201,7 @@ public class SettingsScreen implements Screen {
     public ArrayList<String> getSelectableSongs(){
         File dir = new File("core/assets/Music");
         String[] files = dir.list();
-        ArrayList<String> songs = new ArrayList<String>();
+        ArrayList<String> songs = new ArrayList<>();
         assert files != null;
         for (String file : files) {
             if (file.endsWith(".mp3")) {
@@ -216,7 +214,7 @@ public class SettingsScreen implements Screen {
     public ArrayList<String> getSelectableFonts(){
         File dir = new File("core/assets/Fonts");
         String[] files = dir.list();
-        ArrayList<String> fonts = new ArrayList<String>();
+        ArrayList<String> fonts = new ArrayList<>();
         assert files != null;
         for (String file : files) {
             if (file.endsWith(".fnt")) {

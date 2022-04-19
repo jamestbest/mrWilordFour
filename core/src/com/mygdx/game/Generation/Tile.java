@@ -1,14 +1,15 @@
 package com.mygdx.game.Generation;
 
-import com.mygdx.game.Game.Task;
-
 import java.util.HashMap;
 
 public class Tile extends MapComponent{
     public boolean canWalkOn = true;
     public boolean canSpawnOn = true;
 
-    public Task task;
+    public boolean hasFireOn;
+    public boolean hasFloorDropOn;
+
+    public boolean hasBeenFished;
 
     public Tile(int x, int y, String type) {
         this.x = x;
@@ -18,11 +19,6 @@ public class Tile extends MapComponent{
 
     public Tile(){
 
-    }
-
-    public void setTask(String task, String subType){
-    	this.task = new Task(task);
-    	this.task.subType = subType;
     }
 
     public void updateWalkAndSpawn(HashMap<String, TileInformation> tileInformationHashMap){

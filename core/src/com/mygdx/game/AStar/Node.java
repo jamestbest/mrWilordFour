@@ -27,7 +27,7 @@ public class Node {
     }
 
     public ArrayList<Node> getNeighbours(ArrayList<ArrayList<Node>> nodes){
-        ArrayList<Node> neighbors = new ArrayList<Node>();
+        ArrayList<Node> neighbors = new ArrayList<>();
         if (x > 0) {
             neighbors.add(nodes.get(x - 1).get(y));
             if (y > 0) {

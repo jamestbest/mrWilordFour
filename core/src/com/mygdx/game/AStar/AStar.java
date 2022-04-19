@@ -1,7 +1,7 @@
 package com.mygdx.game.AStar;
 
 import com.badlogic.gdx.math.Vector2;
-import com.mygdx.game.DataStructures.Queue;
+import com.mygdx.game.Entity.Entity;
 import com.mygdx.game.Generation.Noise2D;
 import com.mygdx.game.Generation.Tile;
 import com.mygdx.game.Screens.GameScreen;
@@ -33,7 +33,8 @@ public class AStar {
         return PathFind(start, end);
     }
 
-    public static ArrayList<Vector2> pathFindForColonist(Vector2 start, Vector2 end, ArrayList<ArrayList<Tile>> map){
+    public static ArrayList<Vector2> pathFindForEntities(Vector2 start, Vector2 end, ArrayList<ArrayList<Tile>> map,
+                                                         ArrayList<Entity> entities, int entityID){
         if (grid != null) {
             grid.clear();
         }
@@ -43,12 +44,12 @@ public class AStar {
             for (int j = 0; j < GameScreen.TILES_ON_X; j++) {
                 Node temp = new Node(i, j);
                 temp.HMP = 0;
-                temp.accessible = map.get(i).get(j).canWalkOn;
+                temp.accessible = map.get(i).get(j).canWalkOn && doesntContainAnEntity(i,j, entities, entityID)
+                        && noColonistPathFindingTo(i,j, entities, entityID) && !map.get(i).get(j).hasFireOn;
                 temp.setDistance(end);
                 grid.get(i).add(temp);
             }
         }
-
         return PathFind(start, end);
     }
 
@@ -57,6 +58,8 @@ public class AStar {
 
         startNode.local = 0;
         startNode.global = 0;
+
+        int counter = 0;
 
         ArrayList<Node> nodesToCheck = new ArrayList<>();
         nodesToCheck.add(startNode);
@@ -75,6 +78,7 @@ public class AStar {
             for (Node n: currentNode.getNeighbours(grid)) {
                 if (n.accessible && !n.visited) {
                     nodesToCheck.add(n);
+                    counter++;
                     n.visited = true;
                     float temp = 10;
                     if (currentNode.x != n.x && currentNode.y != n.y) {
@@ -100,9 +104,39 @@ public class AStar {
             path.add(pathRev.get(pathRev.size() - i - 1));
         }
 
-        if (path.size() == 1) {
-            return new ArrayList<>();
+        if (path.size() == 1) { //this prevents colonists from completing tasks that they can't reach
+            if (path.get(0).x == end.x && path.get(0).y == end.y) {
+                return new ArrayList<>();
+            }
         }
+        System.out.println(counter);
         return path;
+    }
+
+    public static boolean doesntContainAnEntity(int x, int y, ArrayList<Entity> entities, int excludedID) {
+        for (Entity e: entities) {
+            if (e.getX() == x && e.getY() == y) {
+                if (e.getEntityID() != excludedID) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    public static boolean noColonistPathFindingTo(int x, int y, ArrayList<Entity> entities, int excludedID) {
+        for (Entity e : entities) {
+            if (e.pathToComplete != null) {
+                if (e.pathToComplete.size() > 0) {
+                    Vector2 destination = e.pathToComplete.get(e.pathToComplete.size() - 1);
+                    if (destination.x == x && destination.y == y) {
+                        if (e.getEntityID() != excludedID) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        return true;
     }
 }

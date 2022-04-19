@@ -18,6 +18,8 @@ public class TextButton extends Button {
     Color fontColor = Color.WHITE;
     float fontScale = 1f;
 
+    Runnable r;
+
     public TextButton(int x, int y, int width, int height, String text, String TextureGda, String name) {
         super(x, y, width, height, TextureGda);
         this.text = text;
@@ -31,6 +33,11 @@ public class TextButton extends Button {
 
     public TextButton(String text, String name) {
         this(0,0,0,0, text,"BlueButton", name);
+    }
+
+    public TextButton(String text, String name, Runnable r) {
+        this(0,0,0,0, text,"BlueButton", name);
+        this.r = r;
     }
 
     public void setup(){
@@ -96,5 +103,22 @@ public class TextButton extends Button {
         while (glyphLayout.height > height * 0.75f) {
             setFontScale(fontScale - 0.01f);
         }
+    }
+
+    public boolean checkIfPressed(int x, int y, boolean firstCheck){
+        if(visible){
+            if (x > this.x && x < this.x + width && y > this.y && y < this.y + height) {
+                pressed = true;
+                if (firstCheck) {
+                    clicked();
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void clicked(){
+        if(r != null) r.run();
     }
 }

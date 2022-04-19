@@ -2,9 +2,6 @@ package com.mygdx.game.Math;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.graphics.Camera;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.mygdx.game.Game.MyGdxGame;
@@ -117,17 +114,34 @@ public class CameraTwo {
         temp *= zoom;
         temp /= 5;
 
+        if (GameScreen.followingSelected){
+            if (GameScreen.selectedColonist != null) {
+                position.x = GameScreen.selectedColonist.getFullX();
+                position.y = GameScreen.selectedColonist.getFullY();
+            }
+        }
+
+        boolean hasMoved = false;
+
         if ((Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP)) && position.y < maxPoint.y) {
             position.y += temp;
+            hasMoved = true;
         }
         if ((Gdx.input.isKeyPressed(Input.Keys.S) || Gdx.input.isKeyPressed(Input.Keys.DOWN)) && position.y > minPoint.y) {
             position.y -= temp;
+            hasMoved = true;
         }
         if ((Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) && position.x > minPoint.x) {
             position.x -= temp;
+            hasMoved = true;
         }
         if ((Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) && position.x < maxPoint.x) {
             position.x += temp;
+            hasMoved = true;
+        }
+
+        if (hasMoved) {
+            GameScreen.followingSelected = false;
         }
     }
 
@@ -143,6 +157,11 @@ public class CameraTwo {
         if (position.y + y < maxPoint.y && position.y + y > minPoint.y) {
             position.y += y;
         }
+    }
+
+    public void moveTo(float x, float y){
+        position.x = x;
+        position.y = y;
     }
 
     public void handleZoom(float amountY){

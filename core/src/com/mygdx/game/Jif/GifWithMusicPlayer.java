@@ -30,6 +30,9 @@ public class GifWithMusicPlayer {
 
     Texture drawing;
 
+    boolean hasMusic = true;
+    public boolean loop = false;
+
     public GifWithMusicPlayer(String generalDirectoryAddition, String musicName, String musicExtension){
         this.gDA = generalDirectoryAddition;
         this.musicExtension = musicExtension;
@@ -40,7 +43,16 @@ public class GifWithMusicPlayer {
         music.play();
 
         drawing = new Texture(Gdx.files.internal("core/assets/GifResources/" + gDA + "/" + gDA + "_" + "000" + ".jpg"));
-//        drawing = new Texture(Gdx.files.internal("core/assets/GifResources/" + gDA + "/" + gDA + " (" + "1" + ").jpg"));
+
+        batch = new SpriteBatch();
+    }
+
+    public GifWithMusicPlayer(String generalDirectoryAddition){
+        this.gDA = generalDirectoryAddition;
+        hasMusic = false;
+        getNumberOfImages();
+
+        drawing = new Texture(Gdx.files.internal("core/assets/GifResources/" + gDA + "/" + gDA + "_" + "000" + ".jpg"));
 
         batch = new SpriteBatch();
     }
@@ -72,12 +84,15 @@ public class GifWithMusicPlayer {
                     tempStr += pointer;
                 }
 
-//                drawing = new Texture(Gdx.files.internal("core/assets/GifResources/" + gDA + "/" + gDA + " (" + tempStr + ").jpg"));
                 drawing = new Texture(Gdx.files.internal("core/assets/GifResources/" + gDA + "/" + gDA + "_" + tempStr + ".jpg"));
                 if (pointer < numberOfImages - 1) {
                     pointer++;
                 } else {
-                    ended = true;
+                    if (!loop) {
+                        ended = true;
+                    } else {
+                        pointer = 1;
+                    }
                 }
             }
             batch.begin();
@@ -85,7 +100,9 @@ public class GifWithMusicPlayer {
             batch.end();
         }
         else {
-            music.stop();
+            if (hasMusic) {
+                music.stop();
+            }
         }
     }
 
@@ -94,9 +111,19 @@ public class GifWithMusicPlayer {
         this.height = height;
     }
 
+    public void setDims(float width, float height){
+        this.width = (int) width;
+        this.height = (int) height;
+    }
+
     public void setPosition(int x, int y){
         this.x = x;
         this.y = y;
+    }
+
+    public void setPosition(float x, float y){
+        this.x = (int) x;
+        this.y = (int) y;
     }
 
     public void setFPS(int fps){

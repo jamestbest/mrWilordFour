@@ -1,21 +1,23 @@
 [
     {
-        class:com.mygdx.game.Weapons.Melee,
-        name:Baguette,
+        class:com.mygdx.game.Weapons.Ranged,
+        name:pistol,
         damage:10,
         damageRange:2,
-        range:20,
+        damageLevelEffector:1,
+        range:10,
         accuracy:100,
-        coolDown:0.5
+        coolDown:2
     },
 
     {
         class:com.mygdx.game.Weapons.Ranged,
-        name:Rifle,
+        name:rifle,
         damage:12,
         damageRange:3,
-        range:15,
-        coolDown:0.6,
+        damageLevelEffector:2,
+        range:12,
+        coolDown:3,
         currentCoolDown:0,
         accuracy:100,
         reloadTime:0,
@@ -26,11 +28,12 @@
 
     {
         class:com.mygdx.game.Weapons.Melee,
-        name:Fists,
+        name:punch,
         damage:5,
         damageRange:1,
-        range:2,
+        damageLevelEffector:1,
+        range:1.5,
         accuracy:70,
-        coolDown:0.5
+        coolDown:3
     }
 ]

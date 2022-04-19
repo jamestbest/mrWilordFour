@@ -6,11 +6,14 @@ public class TileInformation {
     public boolean canWalkOn;
     public boolean canSpawnOn;
 
-    public TileInformation(String type, boolean canWalkOn, boolean canSpawnOn) {
+    public int drawLayer;
+
+    public TileInformation(String type, boolean canWalkOn, boolean canSpawnOn, int drawLayer){
         this.type = type;
 
         this.canWalkOn = canWalkOn;
         this.canSpawnOn = canSpawnOn;
+        this.drawLayer = drawLayer;
     }
 
     public TileInformation(){

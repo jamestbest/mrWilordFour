@@ -1,16 +1,17 @@
 package com.mygdx.game.Entity;
 
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.Json;
 import com.mygdx.game.AStar.AStar;
 import com.mygdx.game.Generation.Map;
 import com.mygdx.game.Math.Math;
 import com.mygdx.game.Screens.GameScreen;
 import com.mygdx.game.Weapons.Weapon;
+import io.socket.client.Socket;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,6 +23,8 @@ public class Entity {
     protected int nextX;
     protected int nextY;
     public ArrayList<Vector2> pathToComplete = new ArrayList<>();
+
+    protected int entityID;
 
     protected float timer = 0f;
     protected float timerMax = 1f;
@@ -35,18 +38,28 @@ public class Entity {
     protected int height;
 
     protected int health;
+    protected int maxHealth;
 
     protected Weapon weapon;
 
-    boolean movingAcrossPath = false;
-    int randomMoveRadius = 25;
+    public boolean movingAcrossPath = false;
+    int randomMoveRadius = 4;
 
     public static HashMap<String, Integer> typeToHealth = new HashMap<>();
     public static Random random = new Random();
 
-    boolean isAttacking;
-    Entity defender;
-    ArrayList<Entity> attackers = new ArrayList<>();
+    public boolean isAttacking;
+    transient public Entity defender;
+    transient ArrayList<Entity> attackers = new ArrayList<>();
+
+    public boolean drawPath;
+
+    protected int level = 1;
+    protected int xp = 0;
+
+    public boolean completingTask = false;
+    public boolean doingTaskAnimation = false;
+    protected Task currentTask;
 
     public Entity(int x, int y, String entityType, int width, int height) {
         this.x = x;
@@ -57,6 +70,7 @@ public class Entity {
         this.width = width;
         this.height = height;
         this.health = getHealthFromType(entityType);
+        this.maxHealth = health;
     }
 
     public Entity(){
@@ -74,7 +88,7 @@ public class Entity {
 
 
     public void drawMini(SpriteBatch batch, int x, int y, int dims, HashMap<String, TextureAtlas> clothes) {
-        batch.draw(clothes.get(clotheName).findRegion("front"), x, y, dims, dims);
+        batch.draw(clothes.get(entityType).findRegion("front"), x, y, dims, dims);
     }
 
     public void move(int x, int y) {
@@ -106,23 +120,45 @@ public class Entity {
         }
     }
 
-    public void updateMovement(EntityGroup eg, Map map){
+    public void updateMovement(EntityGroup eg, Map map, ArrayList<Entity> entities, Socket socket, boolean isHost){
         if (isAlive()) {
             if (isAttacking && defender == null) {
                 defender = findClosestAttacker();
             }
-            if (isAttacking && !isNeighbouringDefender() && !isInRange()) {
-                setMoveToPos(defender.x, defender.y, map);
+            if (isAttacking && isNeighbouringNotDefender() && !isInRange()) {
+                for (Vector2 v : getNeighbours(defender.x, defender.y, map, entities)) {
+                    if (setMoveToPos((int) v.x, (int) v.y, map, entities)){
+                        break;
+                    }
+                }
             }
             if (isAttacking && isInRange() && Entity.haveLineOfSight(this, defender, map)) {
-                attack();
+                attack(socket, isHost);
             }
             else if (movingAcrossPath) {
                 moveAcrossPath();
             } else {
-                setMoveToPos(eg.x + (random.nextInt(eg.radius * 2) - eg.radius), eg.y + (random.nextInt(eg.radius * 2) - eg.radius), map);
+                int x = eg.x + (random.nextInt(eg.radius * 2) - eg.radius);
+                int y = eg.y + (random.nextInt(eg.radius * 2) - eg.radius);
+                if (map.isWithinBounds(x, y)){
+                    setMoveToPos(x, y, map, entities);
+                }
             }
         }
+    }
+
+    public ArrayList<Vector2> getNeighbours(int x, int y, Map map, ArrayList<Entity> entities){
+        ArrayList<Vector2> neighbours = new ArrayList<>();
+        int[][] neighboursCoords = new int[][]{{0,-1},{1,-1},{1,0},{1,1},{0,1},{-1,1},{-1,0},{-1,-1}};
+        for (int[] coord : neighboursCoords) {
+            if (map.isWithinBounds(x + coord[0], y + coord[1])) {
+                if (AStar.doesntContainAnEntity(x + coord[0], y + coord[1], entities, entityID) &&
+                        AStar.noColonistPathFindingTo(x + coord[0], y + coord[1],entities, entityID)) {
+                    neighbours.add(new Vector2(x + coord[0], y + coord[1]));
+                }
+            }
+        }
+        return neighbours;
     }
 
     public void moveAcrossPath(){
@@ -140,7 +176,7 @@ public class Entity {
         }
     }
 
-    public void moveRandomly(Map map) {
+    public Vector2 moveRandomly(Map map) {
         int randomX = random.nextInt(3) - 1;
         int randomY = random.nextInt(3) - 1;
 
@@ -150,14 +186,16 @@ public class Entity {
                 nextY = y + randomY;
             }
         }
+        return new Vector2(nextX, nextY);
     }
 
-    public void setMoveToPos(int x, int y, Map map) {
-        pathToComplete = AStar.pathFindForColonist(new Vector2(this.x, this.y), new Vector2(x, y), map.tiles);
+    public boolean setMoveToPos(int x, int y, Map map, ArrayList<Entity> entities) {
+        pathToComplete = AStar.pathFindForEntities(new Vector2(this.x, this.y), new Vector2(x, y), map.tiles, entities, entityID);
         movingAcrossPath = pathToComplete.size() > 0;
+        return movingAcrossPath;
     }
 
-    public void getRandomPosition(Map map) {
+    public Vector2 getRandomPosition(Map map, ArrayList<Entity> entities) {
         int count = 0;
         Vector2 randomPos = getPosInRange(map);
         int randomX = (int) randomPos.x;
@@ -173,9 +211,13 @@ public class Entity {
             }
         }
 
-        pathToComplete = AStar.pathFindForColonist(new Vector2(x, y), new Vector2(randomX + x, randomY + y), map.tiles);
+        pathToComplete = AStar.pathFindForEntities(new Vector2(x, y), new Vector2(randomX + x, randomY + y), map.tiles, entities, entityID);
 
         movingAcrossPath = pathToComplete.size() > 0;
+        if (movingAcrossPath) {
+            return pathToComplete.get(pathToComplete.size() - 1);
+        }
+        return new Vector2();
     }
 
     public Vector2 getPosInRange(Map map) {
@@ -200,10 +242,9 @@ public class Entity {
 
     public static void setHealthFromType() {
         typeToHealth.put("barbarian", 90);
-        typeToHealth.put("colonist", 150);
-        typeToHealth.put("pig", 20);
+        typeToHealth.put("colonist", 1500);
         typeToHealth.put("sheep", 25);
-        typeToHealth.put("wolf", 50);
+        typeToHealth.put("poong", 100);
     }
 
     public int getX() {
@@ -252,6 +293,12 @@ public class Entity {
 
     public void setHealth(int health) {
         this.health = health;
+        if (this.health < 0) {
+            this.health = 0;
+        }
+        if (this.health > getMaxHealth()) {
+            this.health = getMaxHealth();
+        }
     }
 
     public int getNextX() {
@@ -310,8 +357,28 @@ public class Entity {
         this.weapon = weapon;
     }
 
-    public boolean attack(Entity defender, Entity attacker) {
-        return weapon.attack(defender, attacker);
+    public void copyWeapon(Weapon weapon) {
+        this.weapon = new Weapon(weapon);
+    }
+
+    public int getMaxHealth() {
+        return maxHealth;
+    }
+
+    public void setMaxHealth(int maxHealth) {
+        this.maxHealth = maxHealth;
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public void setLevel(int level) {
+        this.level = level;
+    }
+
+    public boolean attack(Entity defender, Entity attacker, Socket socket, boolean isHost) {
+        return weapon.attack(defender, attacker, socket, isHost);
     }
 
     public boolean isAlive(){
@@ -358,9 +425,12 @@ public class Entity {
     }
 
     public void setDefender(Entity defender){
-        this.defender = defender;
-        defender.addAttacker(this);
-        isAttacking = true;
+        if (defender != null && defender.isAlive() && defender != this) {
+            this.defender = defender;
+            defender.addAttacker(this);
+            isAttacking = true;
+            attackers.add(defender);
+        }
     }
 
     public void addAttacker(Entity e){
@@ -373,25 +443,35 @@ public class Entity {
     }
 
     public boolean isInRange(){
-        return Math.abs(defender.x - x) <= weapon.getRange() && Math.abs(defender.y - y) <= weapon.getRange();
+        return (java.lang.Math.pow(x - defender.getX(), 2) +
+                java.lang.Math.pow(y - defender.getY(), 2)) <= java.lang.Math.pow(weapon.getRange(), 2);
     }
 
-    public boolean isNeighbouringDefender(){
-        return Math.abs(defender.x - x) <= 1 && Math.abs(defender.y - y) <= 1;
+    public boolean isNeighbouringNotDefender(){
+        return !(Math.abs(defender.x - x) <= 1) || !(Math.abs(defender.y - y) <= 1);
     }
 
-    public boolean attack() {
+    public void attack(Socket socket, boolean isHost) {
+        faceDefender();
         if (!defender.isAlive()) {
-            isAttacking = false;
-            defender = null;
-            return false;
+            attackers.remove(0);
+            if (attackers.size() == 0) {
+                isAttacking = false;
+                defender = null;
+            }
+            else {
+                defender = attackers.get(0);
+            }
+            return;
         }
-        return weapon.attack(defender, this);
+        weapon.attack(defender, this, socket, isHost);
     }
 
     public void drawPathOutline(ShapeRenderer shapeRenderer) {
-        for (Vector2 v : pathToComplete) {
-            shapeRenderer.rect(v.x * GameScreen.TILE_DIMS, v.y * GameScreen.TILE_DIMS, GameScreen.TILE_DIMS, GameScreen.TILE_DIMS);
+        if (drawPath) {
+            for (Vector2 v : pathToComplete) {
+                shapeRenderer.rect(v.x * GameScreen.TILE_DIMS, v.y * GameScreen.TILE_DIMS, GameScreen.TILE_DIMS, GameScreen.TILE_DIMS);
+            }
         }
     }
 
@@ -407,5 +487,112 @@ public class Entity {
         }
         this.isAttacking = closest != null;
         return closest;
+    }
+
+    public Entity findClosestEntity(ArrayList<Entity> entities, String excludedType){
+        float minDist = Float.MAX_VALUE;
+        Entity closest = null;
+        for (Entity e : entities){
+            if (e.getEntityType().equals(excludedType)){
+                continue;
+            }
+            if (e.isAlive()){
+                float dist = (float) java.lang.Math.sqrt(java.lang.Math.pow(e.x - x, 2) + java.lang.Math.pow(e.y - y, 2));
+                if (dist < minDist){
+                    minDist = dist;
+                    closest = e;
+                }
+            }
+        }
+        return closest;
+    }
+
+    public Vector2 findClosestBuilding(Map map){
+        float minDist = Float.MAX_VALUE;
+        Vector2 closest = null;
+        for (int x = 0; x < GameScreen.TILES_ON_X; x++){
+            for (int y = 0; y < GameScreen.TILES_ON_X; y++){
+                if (map.things.get(x).get(y).builtByColonist){
+                    float dist = (float) java.lang.Math.sqrt(java.lang.Math.pow(x - this.x, 2) + java.lang.Math.pow(y - this.y, 2));
+                    if (dist < minDist){
+                        minDist = dist;
+                        closest = new Vector2(x, y);
+                    }
+                }
+            }
+        }
+        return closest;
+    }
+
+    public int getEntityID() {
+        return entityID;
+    }
+
+    public void setEntityID(int entityID) {
+        this.entityID = entityID;
+    }
+
+    public void faceDefender(){
+        if (defender.x > x){
+            direction = "right";
+        }
+        else if (defender.x < x){
+            direction = "left";
+        }
+        else if (defender.y > y){
+            direction = "back";
+        }
+        else if (defender.y < y){
+            direction = "front";
+        }
+    }
+
+    public float getFullX(){
+        return (x + ((nextX - x) * timer)) * GameScreen.TILE_DIMS;
+    }
+
+    public float getFullY(){
+        return (y + ((nextY - y) * timer)) * GameScreen.TILE_DIMS;
+    }
+
+    public void stopWhatYoureDoing(Map map){
+        if (movingAcrossPath){
+            movingAcrossPath = false;
+            pathToComplete = new ArrayList<>();
+        }
+        if (isAttacking){
+            isAttacking = false;
+            defender = null;
+        }
+    }
+
+    public void faceTask(){
+        if (currentTask != null) {
+            if (x < currentTask.getX()) {
+                direction = "right";
+            } else if (x > currentTask.getX()) {
+                direction = "left";
+            } else if (y < currentTask.getY()) {
+                direction = "back";
+            } else if (y > currentTask.getY()) {
+                direction = "front";
+            }
+        }
+    }
+
+    public Task getCurrentTask() {
+        return currentTask;
+    }
+
+    public void setCurrentTask(Task currentTask) {
+        this.currentTask = currentTask;
+    }
+
+    public int getXp() {
+        return xp;
+    }
+
+    public void setXp(int xp) {
+        this.xp = xp;
     }
 }

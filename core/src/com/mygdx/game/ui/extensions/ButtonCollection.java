@@ -3,11 +3,13 @@ package com.mygdx.game.ui.extensions;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
+import com.mygdx.game.Game.MyGdxGame;
 import com.mygdx.game.Math.CameraTwo;
 import com.mygdx.game.ui.elements.Button;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
 
 public class ButtonCollection {
     public ArrayList<Button> buttons;
@@ -49,13 +51,13 @@ public class ButtonCollection {
                 y = (int) temp.y;
             }
             else {
-                y = Gdx.graphics.getHeight() - y;
+                y = (int) (MyGdxGame.initialRes.y - y);
             }
             for (int i = 2; i > -1; i--) {
                 for (Button button : buttons) {
                     if (button.pressedLayer == i) {
                         if (firstCheck && button.wantsSingleCheck) {
-                            if (button.checkIfPressed(x, y, firstCheck)) {
+                            if (button.checkIfPressed(x, y, true)) {
                                 setAllToUnSelected(button);
                                 button.selected = true;
                                 pressedButtonName = button.name;
@@ -93,5 +95,24 @@ public class ButtonCollection {
                 button.setSelected(false);
             }
         }
+    }
+
+    public void setAllToUnSelected(){
+        for (Button button : buttons) {
+            button.setSelected(false);
+        }
+    }
+
+    public void clear(){
+        buttons.clear();
+    }
+
+    public Button getSelected(){
+        for (Button button : buttons) {
+            if (button.selected) {
+                return button;
+            }
+        }
+        return null;
     }
 }

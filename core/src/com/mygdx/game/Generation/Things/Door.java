@@ -6,7 +6,6 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.mygdx.game.Screens.GameScreen;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class Door extends ConnectedThings{
     public Door(int x, int y, int width, int height, String type, int tileDims) {

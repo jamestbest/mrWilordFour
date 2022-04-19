@@ -4,7 +4,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import org.w3c.dom.Text;
 
 public class NumberInputWithSides extends NumberInput{
     public NumberInputWithSides(int x, int y, int width, int height, String text, String TextureGda, String name) {

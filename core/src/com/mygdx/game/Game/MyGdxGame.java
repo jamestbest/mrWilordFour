@@ -5,9 +5,10 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.math.Vector2;
-import com.mygdx.game.Screens.GameScreen;
-import com.mygdx.game.Screens.MainMenu;
-import com.mygdx.game.Screens.SettingsScreen;
+import com.mygdx.game.DataStructures.Stack;
+import com.mygdx.game.Entity.Colonist;
+import com.mygdx.game.Generation.Map;
+import com.mygdx.game.Screens.*;
 
 import java.util.ArrayList;
 
@@ -20,7 +21,7 @@ public class MyGdxGame extends Game {
 	public static Vector2 initialRes;
 
 	public static String fontName = "Fortnite";
-	public static String title = "mR. Wilord owen woz ere";
+	public static String title = "mR. Wilord";
 
 	public String songPlaying = "Moving on";
 	public boolean mute = true;
@@ -38,6 +39,8 @@ public class MyGdxGame extends Game {
 	public GameScreen currentGameScreen;
 
 	public float clickWaitTimer = 0.2f;
+
+	public static Stack<Screen> screenStack = new Stack<>(5);
 	
 	@Override
 	public void create () {
@@ -55,6 +58,8 @@ public class MyGdxGame extends Game {
 		Gdx.graphics.setTitle(title);
 
 		setScreen(this.mainMenu);
+//		setScreen(new TutorialsScreen(this));
+		screenStack.eraseOld = true;
 		// owen woz ere
 	}
 	
@@ -77,5 +82,30 @@ public class MyGdxGame extends Game {
 		music.setLooping(loop);
 		if (!mute) music.setVolume(volume / 100f);
 		else music.setVolume(0);
+	}
+
+	@Override
+	public void setScreen(Screen s){
+		if (this.screen != null) screenStack.enStack(this.screen);
+		super.setScreen(s);
+	}
+
+	public void setScreenForEscape(Screen s){
+		super.setScreen(s);
+	}
+
+	public void escapeScreen(){
+		screenStack.displayStack();
+		System.out.println(screenStack.top + " is top of stack");
+		Screen s = screenStack.pop();
+		if (s != null) setScreenForEscape(s);
+	}
+
+	public void clearStack(){
+		screenStack.clear();
+	}
+
+	public void addToStack(Screen s){
+		screenStack.enStack(s);
 	}
 }

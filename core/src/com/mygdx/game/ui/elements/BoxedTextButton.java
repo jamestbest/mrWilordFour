@@ -17,16 +17,19 @@ public class BoxedTextButton extends Button {
 
     ShapeRenderer shapeRenderer;
 
+    Runnable r;
+
     public BoxedTextButton(int x, int y, int width, int height, String name, String text) {
         super(x, y, width, height, name);
         this.text = text;
         setup();
     }
 
-    public BoxedTextButton(String name, String text) {
+    public BoxedTextButton(String name, String text, Runnable runnable) {
         super(name);
         this.text = text;
         setup();
+        this.r = runnable;
     }
 
     public void setup(){
@@ -65,6 +68,9 @@ public class BoxedTextButton extends Button {
     public boolean checkIfPressed(int x, int y, boolean firstCheck){
         if (x > this.x && x < this.x + this.width && y > this.y && y < this.y + this.height) {
             pressed = true;
+            if (r != null) {
+                r.run();
+            }
             return true;
         }
         return false;
@@ -73,5 +79,13 @@ public class BoxedTextButton extends Button {
     public void setText(String text){
         this.text = text;
         glyphLayout.setText(font, text);
+    }
+
+    public Runnable getR() {
+        return r;
+    }
+
+    public void setR(Runnable r) {
+        this.r = r;
     }
 }

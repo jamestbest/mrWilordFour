@@ -1,6 +1,9 @@
 package com.mygdx.game.Weapons;
 
+import com.mygdx.game.Entity.Colonist;
 import com.mygdx.game.Entity.Entity;
+import com.mygdx.game.Screens.GameScreen;
+import io.socket.client.Socket;
 
 import java.util.Random;
 
@@ -8,9 +11,10 @@ public class Weapon {
     protected String name;
     protected int damage;
     protected int damageRange;
-    protected int range;
-    protected int coolDown;
-    protected int currentCoolDown;
+    protected int damageLevelEffector;
+    protected float range;
+    protected float coolDown;
+    protected float currentCoolDown;
     protected int accuracy; // 0 - 100
     
     protected static Random random = new Random();
@@ -26,6 +30,8 @@ public class Weapon {
         this.damage = copy.damage;
         this.name = copy.name;
         this.range = copy.range;
+        this.damageRange = copy.damageRange;
+        this.damageLevelEffector = copy.damageLevelEffector;
     }
 
     public Weapon(){
@@ -48,27 +54,27 @@ public class Weapon {
         this.damage = damage;
     }
 
-    public int getRange() {
+    public float getRange() {
         return range;
     }
 
-    public void setRange(int range) {
+    public void setRange(float range) {
         this.range = range;
     }
 
-    public int getCoolDown() {
+    public float getCoolDown() {
         return coolDown;
     }
 
-    public void setCoolDown(int coolDown) {
+    public void setCoolDown(float coolDown) {
         this.coolDown = coolDown;
     }
 
-    public int getCurrentCoolDown() {
+    public float getCurrentCoolDown() {
         return currentCoolDown;
     }
 
-    public void setCurrentCoolDown(int currentCoolDown) {
+    public void setCurrentCoolDown(float currentCoolDown) {
         this.currentCoolDown = currentCoolDown;
     }
 
@@ -80,20 +86,28 @@ public class Weapon {
         this.accuracy = accuracy;
     }
     
-    public boolean attack(Entity defender, Entity attacker) {
+    public boolean attack(Entity defender, Entity attacker, Socket socket, boolean isHost) {
         if (currentCoolDown <= 0) {
             currentCoolDown = coolDown;
             int temp = random.nextInt(100);
             if (temp <= accuracy && isInRange(attacker, defender)) {
                 int delta = accuracy - temp;
-                int totalDamage = damage;
+                int totalDamage = damage + (attacker.getLevel() * damageLevelEffector / 2);
                 if (random.nextInt(100) <= (50 + delta)){
                     totalDamage += damageRange;
                 }
                 else {
                     totalDamage -= damageRange;
                 }
+                GameScreen.soundManager.addSound(name, attacker.getX(), attacker.getY(), socket, isHost);
                 defender.setHealth(defender.getHealth() - totalDamage);
+                if (isHost && socket != null) {
+                    socket.emit("updateHealth", defender.getEntityID(), defender.getHealth());
+                }
+                if (random.nextInt(10) <= 1 && attacker instanceof Colonist) {
+                    attacker.setXp(attacker.getXp() + random.nextInt(2) + 1);
+                    GameScreen.score += random.nextInt(2) + 1;
+                }
                 return true;
             }
         }
