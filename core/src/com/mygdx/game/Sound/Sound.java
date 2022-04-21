@@ -16,6 +16,9 @@ public class Sound {
 
     private com.badlogic.gdx.audio.Sound sound;
 
+    long id;
+    String name;
+
     public Sound(int x, int y, float radius, float volume, int soundID, String soundName) {
         this.x = x;
         this.y = y;
@@ -37,6 +40,14 @@ public class Sound {
         this.y = y;
         this.radius = s.radius;
         this.volume = s.volume;
+    }
+
+    public Sound(long id, String name, int x, int y, float radius){
+        this.id = id;
+        this.name = name;
+        this.x = x;
+        this.y = y;
+        this.radius = radius;
     }
 
     public Sound(){
@@ -126,6 +137,10 @@ public class Sound {
 
     public String getSoundName() {
         return soundName;
+    }
+
+    public String getName(){
+        return name;
     }
 
     public void setSoundName(String soundName) {
