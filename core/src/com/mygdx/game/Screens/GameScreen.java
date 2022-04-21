@@ -1806,10 +1806,8 @@ public class GameScreen implements Screen {
                     }
                 }
                 if (inCancelTaskMode){
-                    if (findTaskAtLocation(i,j) != null){
-                        if (!findTaskAtLocation(i,j).reserved){
-                            batch.draw(selectionIcon, i * TILE_DIMS, j * TILE_DIMS, TILE_DIMS, TILE_DIMS);
-                        }
+                    if (findTaskAtLocation(i, j) != null){
+                        batch.draw(selectionIcon, i * TILE_DIMS, j * TILE_DIMS, TILE_DIMS, TILE_DIMS);
                     }
                 }
             }
