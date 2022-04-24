@@ -349,17 +349,11 @@ public class Map {
     }
 
     public void updateThingNeighbours(int x, int y){
-        if (isWithinBounds(x + 1, y)) {
-            things.get(x + 1).get(y).update(things);
-        }
-        if (isWithinBounds(x - 1, y)) {
-            things.get(x - 1).get(y).update(things);
-        }
-        if (isWithinBounds(x, y + 1)) {
-            things.get(x).get(y + 1).update(things);
-        }
-        if (isWithinBounds(x, y - 1)) {
-            things.get(x).get(y - 1).update(things);
+        int[][] neighbours = {{x - 1, y}, {x + 1, y}, {x, y - 1}, {x, y + 1}};
+        for (int[] neighbour : neighbours) {
+            if (isWithinBounds(neighbour[0], neighbour[1])) {
+                things.get(neighbour[0]).get(neighbour[1]).update(things);
+            }
         }
     }
 
@@ -505,11 +499,11 @@ public class Map {
         }
     }
 
-    public void updateFires(Map map){
+    public void updateFires(ArrayList<Colonist> colonists){
         ArrayList<Fire> toAdd = new ArrayList<>();
         ArrayList<Fire> toRemove = new ArrayList<>();
         for (Fire f : fire) {
-            f.update(map);
+            f.update(this);
             if (f.canSpread){
                 Fire s = f.spread(tiles, this);
                 if (s != null){
@@ -528,12 +522,25 @@ public class Map {
                 if (Objects.equals(t.type, "FireFight")) {
                     if (t.getX() == f.getX() && t.getY() == f.getY()) {
                         tasksToRemove.add(t);
+                        Colonist c = getColonistWithThisTask(t, colonists);
+                        if (c != null) {
+                            c.removeCurrentTask();
+                        }
                     }
                 }
             }
         }
         tasks.removeAll(tasksToRemove);
         fire.removeAll(toRemove);
+    }
+
+    public Colonist getColonistWithThisTask(Task t, ArrayList<Colonist> colonists){
+        for (Colonist c : colonists) {
+            if (c.getCurrentTask() == t) {
+                return c;
+            }
+        }
+        return null;
     }
 
     public void addFire(int x, int y, Socket socket, boolean isHost){
@@ -553,10 +560,6 @@ public class Map {
     public void removeFire(int x, int y, Socket socket, boolean isHost){
         for (Fire f : fire) {
             if (f.getX() == x && f.getY() == y){
-                Task temp = getTaskAt(x, y, "FireFight");
-                if (temp != null){
-                    tasks.remove(temp);
-                }
                 fire.remove(f);
                 if (isHost && socket != null){
                     socket.emit("removeFire", x, y);
@@ -654,7 +657,17 @@ public class Map {
             if (f.getX() == x && f.getY() == y){
                 alreadyExists = true;
                 if (f.getType().equals(type)){
-                    f.incrementStackSize(amount);
+                    if (!f.notAtMaxWith(amount)) {
+                        f.incrementStackSize(amount);
+                    }
+                    else{
+                        int getMaxAmount = f.getMaxAmountToAdd();
+                        f.incrementStackSize(getMaxAmount);
+                        amount -= getMaxAmount;
+                    }
+                    if (isHost && socket != null) {
+                        socket.emit("updateFloorDrop", x, y, type, f.getStackSize());
+                    }
                     break;
                 }
             }
@@ -674,6 +687,15 @@ public class Map {
 
     public void addFloorDrop(FloorDrop f, Socket socket, boolean isHost){
         addFloorDrop(f.getX(), f.getY(), f.getType(), f.getStackSize(), socket, isHost);
+    }
+
+    public void updateFloorDrop(int x, int y, String type, int amount){
+        FloorDrop fd = getFloorDropAt(x, y);
+        if (fd != null){
+            if (fd.getType().equals(type)){
+                fd.setStackSize(amount);
+            }
+        }
     }
 
     public void removeFloorDrop(int x, int y, String type){

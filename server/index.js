@@ -29,10 +29,14 @@ io.on('connection', function(socket){
   console.log(players.length);
 
   socket.emit("socketID", {id: socket.id})
-  socket.broadcast.emit("newPlayer")
+
+  if (players.length > 0){
+    id = players[0].id;
+    socket.to(id).emit("newPlayer")
+  }
 
   socket.on("updateColonists", function(data){
-    players[0].emit("updateColonists", data)
+    players[0].broadcast.emit("updateColonists", data)
     // console.log("updateColonists")
     // console.log(data)
   })
@@ -161,6 +165,11 @@ io.on('connection', function(socket){
   socket.on("removeFloorDrop", function(x, y, type){
     socket.broadcast.emit("removeFloorDrop", x, y, type)
     console.log("removeFloorDrop")
+  });
+
+  socket.on("updateFloorDrop", function(x, y, type, amount){
+    socket.broadcast.emit("updateFloorDrop", x, y, type, amount)
+    console.log("updateFloorDrop")
   });
 
   socket.on("addZone", function(x, y, x2, y2){

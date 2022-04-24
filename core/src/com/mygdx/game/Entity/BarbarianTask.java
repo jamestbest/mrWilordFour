@@ -10,11 +10,6 @@ import java.util.ArrayList;
 public class BarbarianTask extends Task {
     Barbarian b;
 
-    private int x;
-    private int y;
-
-    String type;
-
     public BarbarianTask(Barbarian b, int x, int y, String type){
         this.b = b;
         this.x = x;

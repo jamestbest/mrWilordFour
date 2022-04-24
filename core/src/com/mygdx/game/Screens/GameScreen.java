@@ -115,8 +115,6 @@ public class GameScreen implements Screen {
     public static NotificationCollection notifications;
     ButtonCollection startMultiplayerButtons;
 
-    TutorialTracker tutorialTracker;
-
     int priorityStart;
     int priorityHeight = 7;
 
@@ -351,8 +349,6 @@ public class GameScreen implements Screen {
 
         RLE.setThingNameCode();
 
-        tutorialTracker = new TutorialTracker();
-
         Colonist.deanTexture = new Texture(Gdx.files.internal("core/assets/Textures/msc/deanNorris.jpg"));
         selectionIcon = new Texture(Gdx.files.internal("core/assets/Textures/ui/selection/selectedIcon.png"));
 
@@ -506,7 +502,7 @@ public class GameScreen implements Screen {
         drawTaskType(batch);
 
         map.drawFires(batch, fireMap);
-        map.updateFires(map);
+        map.updateFires(colonists);
 
         map.drawFloorDrops(batch, floorDropTextures);
 
@@ -675,7 +671,6 @@ public class GameScreen implements Screen {
                             updateShowingButtons(zoneButtons);
                         }
                         case "PrioritiesButton" -> {
-                            tutorialTracker.prioritiesButtonsPressed = true;
                             selectionMode = "Priority";
                             updateShowingButtons(priorityButtons);
                         }
@@ -866,6 +861,10 @@ public class GameScreen implements Screen {
             game.setScreen(new SaveScreen(game, map, colonists, this));
         }
 
+        if (Gdx.input.isKeyJustPressed(Input.Keys.K)){
+            soundManager.addSound("rifle", 1,1, socket, isHost);
+        }
+
         if (endGame){
             game.setScreen(new MainMenu(game));
         }
@@ -949,7 +948,6 @@ public class GameScreen implements Screen {
 
     @Override
     public void dispose() {
-        soundManager.dispose();
         shapeRenderer.dispose();
         batch.dispose();
     }
@@ -1005,9 +1003,6 @@ public class GameScreen implements Screen {
     }
 
     public boolean connectSocket(String ip){
-//        Scanner sc = new Scanner(System.in);
-//        System.out.println("Enter IP address: ");
-//        String ip = sc.nextLine();
         System.out.println("Connecting to " + ip);
         try {
             socket = IO.socket("http://" + ip);
@@ -1031,8 +1026,8 @@ public class GameScreen implements Screen {
             try {
                 JSONObject data = new JSONObject();
 
-                data.put("tiles", json.toJson(map.packageTiles()));
-                data.put("things", json.toJson(map.packageThings()));
+                data.put("tiles", (map.packageTiles()));
+                data.put("things", (map.packageThings()));
                 data.put("mapWidth", GameScreen.TILES_ON_X);
                 data.put("mapHeight", GameScreen.TILES_ON_X);
                 data.put("tileDims", GameScreen.TILE_DIMS);
@@ -1040,7 +1035,7 @@ public class GameScreen implements Screen {
                 data.put("settings", json.toJson(map.settings));
                 data.put("resources", json.toJson(map.resources));
                 data.put("tasks", json.toJson(map.tasks));
-                data.put("time", json.toJson(clock.getTime()));
+                data.put("time", (clock.getTime()));
                 data.put("mapFloorDrops", json.toJson(map.floorDrops));
                 data.put("zones", json.toJson(map.zones));
                 data.put("nextZoneID", map.getZoneID());
@@ -1074,7 +1069,7 @@ public class GameScreen implements Screen {
             String soundName = (String) args[0];
             int x = (int) args[1];
             int y = (int) args[2];
-            soundManager.removeSound(soundName, x, y);
+            soundManager.removeSound(soundName, x, y, socket, false);
 //            soundManager.updateSounds(camera.position.x, camera.position.y);
         });
 
@@ -1117,6 +1112,14 @@ public class GameScreen implements Screen {
             String type = (String) args[2];
             int amount = (int) args[3];
             map.addFloorDrop(x, y, type, amount, socket, false);
+        });
+
+        socket.on("updateFloorDrop", args -> {
+            int x = (int) args[0];
+            int y = (int) args[1];
+            String type = (String) args[2];
+            int amount = (int) args[3];
+            map.updateFloorDrop(x, y, type, amount);
         });
 
         socket.on("entityAttacking", args -> {
@@ -1250,27 +1253,25 @@ public class GameScreen implements Screen {
                 e.printStackTrace();
             }
         });
+
         socket.on("sayID", args -> System.out.println("ID: " + socketID));
         socket.on("loadWorldClient", args -> {
             JSONObject data = (JSONObject) args[0];
             try {
-//                map = json.fromJson(Map.class, data.get("map").toString());
                 colonists = json.fromJson(ArrayList.class, data.get("colonists").toString());
                 setColonistIDs();
 
                 mobs = json.fromJson(ArrayList.class, EntityGroup.class, data.get("mobs").toString());
                 barbarians = json.fromJson(ArrayList.class, EntityGroup.class, data.get("barbarians").toString());
 
-                String packagedTiles = json.fromJson(String.class, data.get("tiles").toString());
-                String packagedThings = json.fromJson(String.class, data.get("things").toString());
                 int mapWidth = data.getInt("mapWidth");
                 int tileDims = data.getInt("tileDims");
                 GameScreen.TILES_ON_X = mapWidth;
                 GameScreen.TILE_DIMS = tileDims;
 
                 map.settings = json.fromJson(MapSettings.class, data.get("settings").toString());
-                map.tiles = RLE.decodeTiles(packagedTiles, GameScreen.TILES_ON_X);
-                map.things = RLE.decodeThings(packagedThings, GameScreen.TILES_ON_X);
+                map.tiles = RLE.decodeTiles(data.get("tiles").toString(), GameScreen.TILES_ON_X);
+                map.things = RLE.decodeThings(data.get("things").toString(), GameScreen.TILES_ON_X);
 
                 map.updateAllTilesWithNewThings();
 
@@ -1284,10 +1285,12 @@ public class GameScreen implements Screen {
 
                 nextEntityGroupID = json.fromJson(Integer.class, data.get("nextEntityGroupID").toString());
 
-                clock.setTime(json.fromJson(String.class, data.get("time").toString()));
+                clock.setTime(data.get("time").toString());
 
                 game.currentGameScreen = this;
                 gameSpeed = data.getInt("gameSpeed");
+                gameSpeedLabel.setText(gameSpeed + "x");
+
                 System.out.println("Loaded world" + colonists.size());
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -1906,7 +1909,10 @@ public class GameScreen implements Screen {
                             }
                             if (shouldExchange) {
                                 if (taskType.equals("Build") || taskType.equals("Plant")) {
-                                    String resource = getResourceFromBuilding(taskSubType);
+                                    String resource = "wood";
+                                    if (taskType.equals("Build")) {
+                                        resource = getResourceFromBuilding(taskSubType);
+                                    }
                                     if (map.resources.get(resource) < 1) {
                                         continue;
                                     } else {
@@ -2770,7 +2776,11 @@ public class GameScreen implements Screen {
             shouldShowSelectedColonistInfo = false;
             showSelectedSkills = false;
         });
-        ImgButton pathButton = new ImgButton("pathButton", "path", () -> selectedColonist.drawPath = !selectedColonist.drawPath);
+        ImgButton pathButton = new ImgButton("pathButton", "path", () -> {
+            if (selectedColonist != null) {
+                selectedColonist.drawPath = !selectedColonist.drawPath;
+            }
+        });
         ImgButton attackButton = new ImgButton("attackButton", "attack", () -> {
             attackSelection = !attackSelection;
             if (attackSelection){
@@ -3104,29 +3114,6 @@ public class GameScreen implements Screen {
         return "";
     }
 
-    public void updateColonistsMoveTo(JSONObject data) throws JSONException {
-        int entityID = data.getInt("entityID");
-        int x = data.getInt("x");
-        int y = data.getInt("y");
-        for (Entity e : allEntities) {
-            if (e.getEntityID() == entityID) {
-                e.setMoveToPos(x, y, map, allEntities);
-            }
-        }
-    }
-
-    public void updateColonistsMovement(JSONObject data) throws JSONException {
-        int entityID = data.getInt("entityID");
-        int nextX = data.getInt("nextX");
-        int nextY = data.getInt("nextY");
-        for (Entity e : allEntities) {
-            if (e.getEntityID() == entityID) {
-                e.setNextX(nextX);
-                e.setNextY(nextY);
-            }
-        }
-    }
-
     public static void sendColonistTask(Socket socket, Task task, int colonistID){
          String jsonText = json.toJson(task, Task.class);
          JSONObject jsonObject = new JSONObject();
@@ -3245,6 +3232,7 @@ public class GameScreen implements Screen {
                 shouldRemoveSelectedColonist = true;
             }
             eg.removeAll(toRemove);
+            allEntities.removeAll(toRemove);
             toRemove.clear();
         }
         for (EntityGroup eg : barbarians) {
@@ -3257,6 +3245,7 @@ public class GameScreen implements Screen {
                 shouldRemoveSelectedColonist = true;
             }
             eg.removeAll(toRemove);
+            allEntities.removeAll(toRemove);
             toRemove.clear();
         }
     }

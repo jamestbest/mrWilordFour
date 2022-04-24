@@ -152,21 +152,6 @@ public class Zone {
         return amount;
     }
 
-    public void changeDims(int Nwidth, int Nheight, Map map){
-        for (int i = x; i < x + width; i++) {
-            for (int j = y; j < y + height; j++) {
-                map.tiles.get(i).get(j).hasFloorDropOn = false;
-            }
-        }
-        width = Nwidth;
-        height = Nheight;
-        for (int i = x; i < x + width; i++) {
-            for (int j = y; j < y + height; j++) {
-                map.tiles.get(i).get(j).hasFloorDropOn = true;
-            }
-        }
-    }
-
     public boolean isInZone(int x, int y, Map map){
         if (map.isWithinBounds(x, y)) {
             boolean isInArea = (x >= this.x && x < this.x + width && y >= this.y && y < this.y + height);
@@ -210,12 +195,7 @@ public class Zone {
     }
 
     public boolean hasDropHere(int x, int y){
-        for (FloorDrop f : drops) {
-            if (f.getX() == x && f.getY() == y){
-                return true;
-            }
-        }
-        return false;
+        return getDropAt(x, y) != null;
     }
 
     public void calculateResources(HashMap<String, Integer> resources){

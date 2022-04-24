@@ -21,9 +21,6 @@ public class Notification{
 
     }
 
-//    BitmapFont font;
-//    GlyphLayout glyphLayout;
-
     private String type;
     private String text;
     private int id;

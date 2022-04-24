@@ -14,8 +14,6 @@ public class Sound {
     private String soundName;
     private float count;
 
-    private com.badlogic.gdx.audio.Sound sound;
-
     long id;
     String name;
 
@@ -54,18 +52,9 @@ public class Sound {
 
     }
 
-    public boolean update(float camX, float camY) {
+    public boolean shouldEnd () {
         count += Gdx.graphics.getDeltaTime();
-        if (!isPlaying) {
-            sound = Gdx.audio.newSound(Gdx.files.internal("core/assets/Sounds/" + soundName + ".mp3"));
-            sound.play(calculateVolume(calculateDistance(camX, camY)));
-            isPlaying = true;
-        }
-        return !(count > 100);
-    }
-
-    public void stop(){
-        sound.stop();
+        return (count > 10);
     }
 
     public float calculateDistance(float camX, float camY) {
@@ -81,10 +70,6 @@ public class Sound {
             volume = 0;
         }
         return volume / 100f;
-    }
-
-    public void dispose() {
-        sound.dispose();
     }
 
     public int getX() {

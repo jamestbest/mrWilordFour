@@ -18,7 +18,6 @@ public class FloorDrop {
     private int y;
 
     private String type;
-    private String textureType;
 
     private int stackSize = 1;
     public static final int maxStackSize = 20;
@@ -89,14 +88,6 @@ public class FloorDrop {
         this.type = type;
     }
 
-    public String getTextureType() {
-        return textureType;
-    }
-
-    public void setTextureType(String textureType) {
-        this.textureType = textureType;
-    }
-
     public int getStackSize() {
         return stackSize;
     }
@@ -131,5 +122,9 @@ public class FloorDrop {
             default:
                 return false;
         }
+    }
+
+    public int getMaxAmountToAdd(){
+        return maxStackSize - stackSize;
     }
 }

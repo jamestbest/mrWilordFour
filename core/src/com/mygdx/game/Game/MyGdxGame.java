@@ -95,8 +95,6 @@ public class MyGdxGame extends Game {
 	}
 
 	public void escapeScreen(){
-		screenStack.displayStack();
-		System.out.println(screenStack.top + " is top of stack");
 		Screen s = screenStack.pop();
 		if (s != null) setScreenForEscape(s);
 	}

@@ -134,7 +134,6 @@ public class Colonist extends Entity {
     }
 
     public void moveAlongPath(Map map) {
-        checkPartialSkills();
         if (pathToComplete.size() > 0) {
             Vector2 nextTile = pathToComplete.get(0);
             if (nextTile.x == x && nextTile.y == y) {
@@ -221,15 +220,9 @@ public class Colonist extends Entity {
                         int choice = random.nextInt(10);
                         if (choice <= 3) {
                             getRandomPosition(map, entities);
-//                            if (GameScreen.isMultiplayer) {
-//                                GameScreen.sendMoveToServer(this, (int) end.x, (int) end.y, socket);
-//                            }
                         } else {
                             System.out.println("moving randomly");
                             moveRandomly(map);
-//                            if (GameScreen.isMultiplayer){
-//                                GameScreen.sendMovementServer(this, x, y, socket);
-//                            }
                         }
                     }
                 }
@@ -266,7 +259,6 @@ public class Colonist extends Entity {
     public boolean getNextTask(ArrayList<ArrayList<Tile>> tiles, ArrayList<Task> tasks, ArrayList<Entity> entities, Map map) {
         float minDistance = Integer.MAX_VALUE;
         int maxPriority = 0;
-        String maxPriorityTaskType = "";
         Task bestTask = null;
 
         for (Task task : tasks) {
@@ -277,21 +269,22 @@ public class Colonist extends Entity {
             }
             if (priorityFromType.get(task.type) > maxPriority && canGetToTask && !task.reserved) {
                 maxPriority = priorityFromType.get(task.type);
-                maxPriorityTaskType = task.type;
             }
         }
 
         for (Task task : tasks) {
-            boolean canGetToTask = Task.getBestNeighbour(tiles, task.getX(), task.getY(), map, entities, this) != null
-                    || (tiles.get(task.getX()).get(task.getY()).canWalkOn && !tiles.get(task.getX()).get(task.getY()).hasFireOn);
-            if (!checkForPickUp(task, map)) {
-                continue;
-            }
-            if (task.type.equals(maxPriorityTaskType) && !task.reserved && canGetToTask) {
-                float distance = getDistance(task.getX(), task.getY());
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    bestTask = task;
+            if (priorityFromType.get(task.type) == maxPriority && !task.reserved) {
+                boolean canGetToTask = Task.getBestNeighbour(tiles, task.getX(), task.getY(), map, entities, this) != null
+                        || (tiles.get(task.getX()).get(task.getY()).canWalkOn && !tiles.get(task.getX()).get(task.getY()).hasFireOn);
+                if (!checkForPickUp(task, map)) {
+                    continue;
+                }
+                if (canGetToTask) {
+                    float distance = getDistance(task.getX(), task.getY());
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        bestTask = task;
+                    }
                 }
             }
         }
@@ -302,20 +295,22 @@ public class Colonist extends Entity {
         return false;
     }
 
+    public void gotTask(Task t){
+        completingTask = true;
+        t.reserved = true;
+        currentTask = t;
+    }
+
     public boolean pathFindToTask(Task bestTask, ArrayList<ArrayList<Tile>> tiles, ArrayList<Entity> entities, Map map){
         Vector2 neighbour = Task.getBestNeighbour(tiles, bestTask.getX(), bestTask.getY(), map, entities, this);
         if (neighbour != null) {
             if (neighbour.x == x && neighbour.y == y) {
-                completingTask = true;
-                bestTask.reserved = true;
-                currentTask = bestTask;
+                gotTask(bestTask);
                 return true;
             }
             pathToComplete = AStar.pathFindForEntities(new Vector2(x, y), neighbour, tiles, entities, entityID);
             if (pathToComplete.size() != 0) {
-                completingTask = true;
-                bestTask.reserved = true;
-                currentTask = bestTask;
+                gotTask(bestTask);
             }
             return pathToComplete.size() != 0;
         }
@@ -324,9 +319,7 @@ public class Colonist extends Entity {
             if (canGoToTaskDirect) {
                 pathToComplete = AStar.pathFindForEntities(new Vector2(x, y), new Vector2(bestTask.getX(), bestTask.getY()), tiles, entities, entityID);
                 if (pathToComplete.size() != 0) {
-                    completingTask = true;
-                    bestTask.reserved = true;
-                    currentTask = bestTask;
+                    gotTask(bestTask);
                 }
                 return pathToComplete.size() != 0;
             }
@@ -409,6 +402,7 @@ public class Colonist extends Entity {
             map.tasks.remove(currentTask);
             currentTask = null;
             updateLevel();
+            checkPartialSkills();
         }
         completingTask = doingTaskAnimation;
     }

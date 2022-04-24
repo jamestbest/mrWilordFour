@@ -4,16 +4,15 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.math.Vector2;
 import com.mygdx.game.Entity.Task;
 import com.mygdx.game.Generation.Map;
 import com.mygdx.game.Generation.Tile;
 import com.mygdx.game.Screens.GameScreen;
+import com.mygdx.game.floorDrops.FloorDrop;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Objects;
-import java.util.Random;
+import java.util.*;
 
 public class Fire {
     private int x;
@@ -24,7 +23,6 @@ public class Fire {
     private int maxAnimationCounter;
 
     private String name;
-    private int id;
 
     private int powerLevel = 1;
     private final int powerLevelMax = 4;
@@ -36,9 +34,14 @@ public class Fire {
     public boolean isDead;
     float timeToDie = 100;
 
-    private static final int[][] neighbours = {{-1, -1}, {0, -1}, {1, -1}, {-1, 0}, {1, 0}, {-1, 1}, {0, 1}, {1, 1}};
+    boolean once;
 
-//    private static HashMap<String, ArrayList<Texture>> fireMap;
+    private static final int[][] neighbours = new int[][]{
+            {-1,+1},{+0,+1},{+1,+1},
+            {-1,+0},        {+1,+0},
+            {-1,-1},{+0,-1},{+1,-1}
+    };
+
     private static final Random random = new Random();
     private static int idCounter;
     public static final int DAMAGE = 5;
@@ -47,7 +50,6 @@ public class Fire {
         this.x = x;
         this.y = y;
         this.name = name;
-        this.id = getNextId();
         counter = 0;
         animationCounter = 0;
         this.maxAnimationCounter = maxAnimationCounter;
@@ -93,13 +95,18 @@ public class Fire {
             spreadability = 0;
         }
 
-        if (powerLevel == powerLevelMax){
+        if (powerLevel == powerLevelMax && !once){
             if (!Objects.equals(map.tiles.get(x).get(y).type, "dirt")){
                 map.tiles.get(x).get(y).type = "dirt";
             }
             if (!Objects.equals(map.things.get(x).get(y).type, "")){
                 map.things.get(x).get(y).type = "";
             }
+            FloorDrop fd = map.getFloorDropAt(x, y);
+            if (fd != null){
+                map.removeFloorDrop(fd);
+            }
+            once = true;
         }
 
         if (totalTime >= timeToDie){
@@ -115,14 +122,22 @@ public class Fire {
     }
 
     public Fire spread(ArrayList<ArrayList<Tile>> tiles, Map map){
+        ArrayList<Vector2> availableNeighbours = new ArrayList<>();
         for (int[] neighbour : neighbours) {
             int x = this.x + neighbour[0];
             int y = this.y + neighbour[1];
-            if (map.isWithinBounds(x, y) && tiles.get(x).get(y).canWalkOn && noFireHere(tiles, x, y)){
-                tiles.get(x).get(y).hasFireOn = true;
-                map.tasks.add(new Task("FireFight", "", x, y));
-                return new Fire(x, y, name, this.maxAnimationCounter);
+            if (map.isWithinBounds(x, y)){
+                if (tiles.get(x).get(y).canWalkOn && noFireHere(tiles, x, y)) {
+                    availableNeighbours.add(new Vector2(x, y));
+                }
             }
+        }
+        if (availableNeighbours.size() > 0) {
+            int randomIndex = random.nextInt(availableNeighbours.size());
+            Vector2 rN = availableNeighbours.get(randomIndex);
+            tiles.get((int) rN.x).get((int) rN.y).hasFireOn = true;
+            map.tasks.add(new Task("FireFight", "", (int) rN.x, (int) rN.y));
+            return new Fire((int) rN.x, (int) rN.y, name, this.maxAnimationCounter);
         }
         return null;
     }
@@ -199,13 +214,5 @@ public class Fire {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 }

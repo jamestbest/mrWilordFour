@@ -392,6 +392,7 @@ public class Entity {
                     return false;
                 }
             }
+            return true;
         }
         if (one.getY() == two.getY() && one.getX() != two.getX()) {
             for (int i = java.lang.Math.min(two.getX(), one.getX()); i < two.getX() - one.getX(); i++) {
@@ -399,6 +400,7 @@ public class Entity {
                     return false;
                 }
             }
+            return true;
         }
         if (one.getX() != two.getX() && one.getY() != two.getY()) {
             int x = one.getX();

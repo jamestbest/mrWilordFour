@@ -4,7 +4,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.utils.Array;
 
 public class Stack<T> {
-
     public int top = 0;
     int bottom = 0;
 
@@ -40,17 +39,6 @@ public class Stack<T> {
         }
         else{
             Gdx.app.log("Stack", "Stack is full");
-        }
-    }
-
-    public T deStack(){
-        if (top != bottom){
-            top --;
-            return array.get(top);
-        }
-        else{
-            Gdx.app.log("Stack", "Stack is empty");
-            return null;
         }
     }
 

@@ -63,7 +63,7 @@ public class Ranged extends Weapon {
         if(ammo > 0 && reloadTimer <= 0){
             super.attack(defender, attacker, socket, isHost);
         }
-        else {
+        else if (reloadTimer <= 0){
             reload();
         }
         return false;

@@ -33,7 +33,7 @@ public class Task {
 
     protected static final Random random = new Random();
 
-    public static int[][] neighbours = new int[][]{
+    public static final int[][] neighbours = new int[][]{
             {-1,+1},{+0,+1},{+1,+1},
             {-1,+0},        {+1,+0},
             {-1,-1},{+0,-1},{+1,-1}
@@ -60,7 +60,8 @@ public class Task {
         for (int[] n: neighbours) {
             if (map.isWithinBounds(x + n[0], y + n[1])) {
                 if (tileMap.get(x + n[0]).get(y + n[1]).canWalkOn) {
-                    if (checkIfNoEntities(e, x + n[0], y + n[1], c.getEntityID()) && AStar.noColonistPathFindingTo(x + n[0], y + n[1], e, c.getEntityID())) {
+                    if (checkIfNoEntities(e, x + n[0], y + n[1], c.getEntityID()) && AStar.noColonistPathFindingTo(x + n[0], y + n[1], e, c.getEntityID())
+                        && !map.tiles.get(x + n[0]).get(y + n[1]).hasFireOn) {
                         accessibleNeighbours.add(new Vector2(x + n[0], y + n[1]));
                     }
                 }
@@ -134,18 +135,15 @@ public class Task {
                     }
                     case "animated" -> {
                         AnimatedThings t = new AnimatedThings(map.things.get(x).get(y), subType);
-                        if (doesEmitLight(subType)) {
-                            setupLight(subType, t, map);
-                        }
                         map.addThing(t, x, y, true, socket, isHost);
                     }
                     default -> {
                         Thing t = new Thing(map.things.get(x).get(y), subType);
-                        if (doesEmitLight(subType)) {
-                            setupLight(subType, t, map);
-                        }
                         map.addThing(t, x, y, true, socket, isHost);
                     }
+                }
+                if (doesEmitLight(subType)) {
+                    setupLight(subType, map.things.get(x).get(y), map);
                 }
                 emitThingChange(subType, x, y, 1, doesEmitLight(subType) ,socket);
             }
@@ -186,10 +184,7 @@ public class Task {
                 map.tiles.get(x).get(y).hasBeenFished = true;
             }
         }
-        stopSound();
-        if (socket != null && isHost) {
-            socket.emit("stopSound", type, x, y);
-        }
+        stopSound(socket, isHost);
     }
 
     public int getHealAmount(){
@@ -201,12 +196,8 @@ public class Task {
     }
 
     public void increaseSkillLevel(Colonist c, String taskType){
-        switch (taskType) {
-            case "Mine" -> c.skillsPartial.put("Mining", c.skillsPartial.get("Mining") + 0.1f);
-            case "CutDown" -> c.skillsPartial.put("Chopping trees", c.skillsPartial.get("Chopping trees") + 0.1f);
-            case "Plant" -> c.skillsPartial.put("Planting", c.skillsPartial.get("Planting") + 0.1f);
-            case "Build" -> c.skillsPartial.put("Construction", c.skillsPartial.get("Construction") + 0.1f);
-        }
+        String partialType = getPriorityNameFromType(taskType);
+        c.skillsPartial.put(partialType, c.skillsPartial.get(partialType) + 0.1f);
         c.xp += random.nextInt(getTotalFromTaskType(taskType)) + 1;
     }
 
@@ -408,7 +399,7 @@ public class Task {
         GameScreen.soundManager.addSound(type, x, y, socket, isHost);
     }
 
-    public void stopSound(){
-        GameScreen.soundManager.removeSound(type, x, y);
+    public void stopSound(Socket socket, boolean isHost){
+        GameScreen.soundManager.removeSound(type, x, y, socket, isHost);
     }
 }
