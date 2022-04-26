@@ -56,6 +56,10 @@ public class Colonist extends Entity {
         this.health = 100;
     }
 
+    public Colonist(int x, int y, String entityType, int width, int height){
+        super(x, y, entityType, width, height);
+    }
+
     public void setup() {
         getRandomName();
         this.health = getHealthFromType("colonist");
@@ -109,14 +113,7 @@ public class Colonist extends Entity {
     }
 
     public void draw(SpriteBatch batch, float tileDims, HashMap<String, TextureAtlas> clothes) {
-        updateTimer();
-        if (isAlive()) {
-            batch.draw(clothes.get(clotheName).findRegion(direction), (x + ((nextX - x) * timer)) * tileDims, (y + ((nextY - y) * timer)) * tileDims, tileDims, tileDims);
-        }
-        else {
-            batch.draw(clothes.get(clotheName).findRegion(direction), (x + ((nextX - x) * timer)) * tileDims, (y + ((nextY - y) * timer)) * tileDims,
-                        tileDims / 2f, tileDims / 2f, tileDims, tileDims, 1, 1, 90);
-        }
+        super.draw(batch, tileDims, clothes, clotheName);
     }
 
     public void drawMini(SpriteBatch batch, int x, int y, int dims, HashMap<String, TextureAtlas> clothes) {
@@ -168,16 +165,7 @@ public class Colonist extends Entity {
 
     public void moveColonist(Map map, Socket socket, ArrayList<Entity> entities, boolean isHost) {
         if (isAlive()) {
-            if (isAttacking && defender == null) {
-                defender = findClosestAttacker();
-            }
-            if (isAttacking && isNeighbouringNotDefender() && !isInRange()) {
-                for (Vector2 v : getNeighbours(defender.x, defender.y, map, entities)) {
-                    if (setMoveToPos((int) v.x, (int) v.y, map, entities)){
-                        break;
-                    }
-                }
-            }
+            checkIfCanFindAttacker(map, entities);
             if (isAttacking && isInRange() && Entity.haveLineOfSight(this, defender, map)) {
                 attack(socket, isHost);
             }
@@ -229,6 +217,19 @@ public class Colonist extends Entity {
             }
             if (map.tiles.get(x).get(y).hasFireOn) {
                 health -= Fire.DAMAGE;
+            }
+        }
+    }
+
+    public void checkIfCanFindAttacker(Map map, ArrayList<Entity> entities) {
+        if (isAttacking && defender == null) {
+            defender = findClosestAttacker();
+        }
+        if (isAttacking && isNeighbouringNotDefender() && !isInRange()) {
+            for (Vector2 v : getNeighbours(defender.x, defender.y, map, entities)) {
+                if (setMoveToPos((int) v.x, (int) v.y, map, entities)){
+                    break;
+                }
             }
         }
     }

@@ -82,13 +82,26 @@ public class Entity {
     }
 
     public void draw(SpriteBatch batch, float tileDims, HashMap<String, TextureAtlas> clothes) {
-        batch.draw(clothes.get(entityType).findRegion(direction), (x + ((nextX - x) * timer)) * tileDims, (y + ((nextY - y) * timer)) * tileDims, tileDims, tileDims);
-        updateTimer();
+        draw(batch, tileDims, clothes, entityType);
     }
 
+    public void draw(SpriteBatch batch, float tileDims, HashMap<String, TextureAtlas> clothes, String clotheName) {
+        updateTimer();
+        if (isAlive()) {
+            batch.draw(clothes.get(clotheName).findRegion(direction), (x + ((nextX - x) * timer)) * tileDims, (y + ((nextY - y) * timer)) * tileDims, tileDims, tileDims);
+        }
+        else {
+            batch.draw(clothes.get(clotheName).findRegion(direction), (x + ((nextX - x) * timer)) * tileDims, (y + ((nextY - y) * timer)) * tileDims,
+                    tileDims / 2f, tileDims / 2f, tileDims, tileDims, 1, 1, 90);
+        }
+    }
 
     public void drawMini(SpriteBatch batch, int x, int y, int dims, HashMap<String, TextureAtlas> clothes) {
-        batch.draw(clothes.get(entityType).findRegion("front"), x, y, dims, dims);
+        drawMini(batch, x, y, dims, clothes, entityType);
+    }
+
+    public void drawMini(SpriteBatch batch, int x, int y, int dims, HashMap<String, TextureAtlas> clothes, String clotheName) {
+        batch.draw(clothes.get(clotheName).findRegion("front"), x, y, dims, dims);
     }
 
     public void move(int x, int y) {

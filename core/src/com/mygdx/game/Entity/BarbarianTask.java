@@ -17,7 +17,7 @@ public class BarbarianTask extends Task {
         this.type = type;
     }
 
-    public void completeTask(Map map, Socket socket, boolean isHost){
+    public void completeTask(Map map, Socket socket){
         switch (type) {
             case "Demolish" -> {
                 map.changeThingType(x, y, "", (int) GameScreen.TILE_DIMS, false);

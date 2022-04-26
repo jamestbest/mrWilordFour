@@ -14,7 +14,7 @@ import io.socket.client.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class Barbarian extends Entity {
+public class Barbarian extends Colonist {
     private BarbarianTask currentTask;
 
     public Barbarian(int x, int y, String entityType, int width, int height) {
@@ -25,45 +25,13 @@ public class Barbarian extends Entity {
 
     }
 
-    boolean stealingFromZone;
-
-    public void moveBarbarian(int x, int y) {
-        move(x, y);
-    }
-
-    public void moveTo(int x, int y, Map map, ArrayList<Entity> entities) {
-        if (map.isWithinBounds(x, y)) {
-            setMoveToPos(x, y, map, entities);
-        }
-    }
-
-    public void draw(SpriteBatch batch, float tileDims, HashMap<String, TextureAtlas> clothes) {
-        updateTimer();
-        if (isAlive()) {
-            batch.draw(clothes.get(clotheName).findRegion(direction), (x + ((nextX - x) * timer)) * tileDims, (y + ((nextY - y) * timer)) * tileDims, tileDims, tileDims);
-        }
-        else {
-            batch.draw(clothes.get(clotheName).findRegion(direction), (x + ((nextX - x) * timer)) * tileDims, (y + ((nextY - y) * timer)) * tileDims,
-                    tileDims / 2f, tileDims / 2f, tileDims, tileDims, 1, 1, 90);
-        }
-    }
-
     public void drawMini(SpriteBatch batch, int x, int y, int dims, HashMap<String, TextureAtlas> clothes) {
-        batch.draw(clothes.get(clotheName).findRegion("front"), x, y, dims, dims);
+        super.drawMini(batch, x, y, dims, clothes, clotheName);
     }
 
     public void updateMovement(EntityGroup eg, Map map, ArrayList<Entity> entities, Socket socket, boolean isHost) {
         if (isAlive()) {
-            if (isAttacking && defender == null) {
-                defender = findClosestAttacker();
-            }
-            if (isAttacking && isNeighbouringNotDefender() && !isInRange()) {
-                for (Vector2 v : getNeighbours(defender.x, defender.y, map, entities)) {
-                    if (setMoveToPos((int) v.x, (int) v.y, map, entities)){
-                        break;
-                    }
-                }
-            }
+            checkIfCanFindAttacker(map, entities);
             if (isAttacking && isInRange() && Entity.haveLineOfSight(this, defender, map)) {
                 attack(socket, isHost);
             }
@@ -104,7 +72,7 @@ public class Barbarian extends Entity {
         }
         else {
             doingTaskAnimation = false;
-            currentTask.completeTask(map, socket, isHost);
+            currentTask.completeTask(map, socket);
             currentTask = null;
         }
         completingTask = doingTaskAnimation;

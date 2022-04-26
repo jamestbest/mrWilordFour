@@ -18,6 +18,8 @@ public class SoundManager {
         com.badlogic.gdx.audio.Sound s = soundMap.get(soundName);
         if (s != null) {
             long id = s.play();
+            System.out.println("Playing sound: " + soundName + " id: " + id);
+            System.out.println("this is radii" + radii.toString());
             Sound s2 = new Sound(id, soundName, x, y, radii.get(soundName));
             soundEffects.add(s2);
             if (socket != null && isHost) {
@@ -53,9 +55,11 @@ public class SoundManager {
         Json json = new Json();
         ArrayList<Sound> soundTemplates;
         soundTemplates = json.fromJson(ArrayList.class, com.mygdx.game.Sound.Sound.class, Gdx.files.internal("core/assets/info/soundInfo/SoundInfo"));
+        System.out.println("sound templates: " + soundTemplates.toString());
         for (Sound s : soundTemplates) {
-            radii.put(s.getSoundName(), s.getRadius());
+            radii.put(s.getName(), s.getRadius());
         }
+        System.out.println("radii: " + radii.toString());
     }
 
     public void updateSounds(float camX, float camY) {

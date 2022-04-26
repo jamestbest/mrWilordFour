@@ -2,54 +2,54 @@
     {
         class:com.mygdx.game.Sound.Sound,
             radius:50,
-            soundName:sniper
+            name:sniper
     },
 
     {
         class:com.mygdx.game.Sound.Sound,
             radius:5,
-            soundName:punch
+            name:punch
     },
 
     {
         class:com.mygdx.game.Sound.Sound,
             radius:50,
-            soundName:rifle
+            name:rifle
     },
 
     {
         class:com.mygdx.game.Sound.Sound,
             radius:30,
-            soundName:pistol
+            name:pistol
     },
 
     {
         class:com.mygdx.game.Sound.Sound,
             radius:100,
-            soundName:oof
+            name:oof
     },
 
     {
         class:com.mygdx.game.Sound.Sound,
             radius:20,
-            soundName:Build
+            name:Build
     },
 
     {
         class:com.mygdx.game.Sound.Sound,
             radius:20,
-            soundName:CutDown
+            name:CutDown
     },
 
     {
         class:com.mygdx.game.Sound.Sound,
         radius:100000,
-        soundName:ping
+        name:ping
     },
 
     {
         class:com.mygdx.game.Sound.Sound,
         radius:15,
-        soundName:Mine
+        name:Mine
     }
 ]

@@ -7,37 +7,29 @@ public class Sound {
     private int y;
 
     private float radius;
-    private float volume;
 
-    private boolean isPlaying;
-    private int soundID;
-    private String soundName;
     private float count;
 
     long id;
     String name;
 
-    public Sound(int x, int y, float radius, float volume, int soundID, String soundName) {
+    public Sound(int x, int y, float radius, String soundName) {
         this.x = x;
         this.y = y;
         this.radius = radius;
-        this.volume = volume;
-        this.soundID = soundID;
-        this.soundName = soundName;
+        this.name = soundName;
     }
 
     public Sound(float radius, String soundName) {
         this.radius = radius;
-        this.soundName = soundName;
+        this.name = soundName;
     }
 
-    public Sound(int x, int y, int id, Sound s) {
-        this.soundID = id;
-        this.soundName = s.soundName;
+    public Sound(int x, int y, Sound s) {
+        this.name = s.name;
         this.x = x;
         this.y = y;
         this.radius = s.radius;
-        this.volume = s.volume;
     }
 
     public Sound(long id, String name, int x, int y, float radius){
@@ -96,39 +88,7 @@ public class Sound {
         this.radius = radius;
     }
 
-    public float getVolume() {
-        return volume;
-    }
-
-    public void setVolume(float volume) {
-        this.volume = volume;
-    }
-
-    public boolean isPlaying() {
-        return isPlaying;
-    }
-
-    public void setPlaying(boolean playing) {
-        isPlaying = playing;
-    }
-
-    public int getSoundID() {
-        return soundID;
-    }
-
-    public void setSoundID(int soundID) {
-        this.soundID = soundID;
-    }
-
-    public String getSoundName() {
-        return soundName;
-    }
-
     public String getName(){
         return name;
-    }
-
-    public void setSoundName(String soundName) {
-        this.soundName = soundName;
     }
 }

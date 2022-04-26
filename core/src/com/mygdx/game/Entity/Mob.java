@@ -18,18 +18,11 @@ public class Mob extends Entity {
     public boolean hasDroppedFood = false;
 
     public void draw(SpriteBatch batch, float tileDims, HashMap<String, TextureAtlas> clothes) {
-        if (isAlive()) {
-            batch.draw(clothes.get(entityType).findRegion(direction), (x + ((nextX - x) * timer)) * tileDims, (y + ((nextY - y) * timer)) * tileDims, tileDims, tileDims);
-        }
-        else {
-            batch.draw(clothes.get(entityType).findRegion(direction), (x + ((nextX - x) * timer)) * tileDims, (y + ((nextY - y) * timer)) * tileDims,
-                    tileDims / 2f, tileDims / 2f, tileDims, tileDims, 1, 1, 90);
-        }
-        updateTimer();
+        super.draw(batch, tileDims, clothes, entityType);
     }
 
     public void drawMini(SpriteBatch batch, int x, int y, int dims, HashMap<String, TextureAtlas> clothes) {
-        batch.draw(clothes.get(entityType).findRegion("front"), x, y, dims, dims);
+        super.drawMini(batch, x, y, dims, clothes, entityType);
     }
 
     public void died(){
