@@ -21,31 +21,23 @@ public class ConnectedThings extends Thing{
     int neighborCount = 0;
     public int rotation;
 
+    int[][] neighbours = {
+            {-1,+0},
+            {+0,+1},
+            {+1,+0},
+            {+0,-1}
+    };
+
     public int[] setNeighbourCount(ArrayList<ArrayList<Thing>> thingsArray) {
         int[] n = new int[4];
 
-        if (isInBounds(x + 1, y)){
-            if (thingsArray.get(x + 1).get(y).canConnect) {
-                neighborCount++;
-                n[2] = 1;
-            }
-        }
-        if (isInBounds(x - 1, y)) {
-            if (thingsArray.get(x - 1).get(y).canConnect) {
-                neighborCount++;
-                n[0] = 1;
-            }
-        }
-        if (isInBounds(x, y + 1)) {
-            if (thingsArray.get(x).get(y + 1).canConnect) {
-                neighborCount++;
-                n[1] = 1;
-            }
-        }
-        if (isInBounds(x, y - 1)) {
-            if (thingsArray.get(x).get(y - 1).canConnect) {
-                neighborCount++;
-                n[3] = 1;
+        for (int i = 0; i < neighbours.length; i++) {
+            int[] neighbour = neighbours[i];
+            if (isInBounds(x + neighbour[0], y + neighbour[1])) {
+                if (thingsArray.get(x + neighbour[0]).get(y + neighbour[1]).canConnect) {
+                    neighborCount++;
+                    n[i] = 1;
+                }
             }
         }
         return n;
@@ -53,16 +45,12 @@ public class ConnectedThings extends Thing{
 
     public boolean getIfConnectedNeighbour(int[] n)
     {
-        if (n[0] == 1 && n[1] == 1){
-            return true;
+        for (int i = 0; i < n.length; i++) {
+            if (n[i] == 1 && n[(i + 1) % n.length] == 1) {
+                return true;
+            }
         }
-        if (n[0] == 1 && n[3] == 1){
-            return true;
-        }
-        if (n[2] == 1 && n[1] == 1){
-            return true;
-        }
-        return n[2] == 1 && n[3] == 1;
+        return false;
     }
 
     public boolean isInBounds(int x, int y){
@@ -107,6 +95,7 @@ public class ConnectedThings extends Thing{
                     if (neighbors[i] == 0) {
                         if (neighbors[(i + 1) % neighbors.length] == 0) {
                             rotation = 360 - (i * 90);
+                            break;
                         }
                     }
                 }
@@ -115,6 +104,7 @@ public class ConnectedThings extends Thing{
                 for (int i = 0; i < neighbors.length / 2; i++) {
                     if (neighbors[i] == 1) {
                         rotation = 90 - (i * 90);
+                        break;
                     }
                 }
                 break;
@@ -122,6 +112,7 @@ public class ConnectedThings extends Thing{
                 for (int i = 0; i < neighbors.length; i++) {
                     if (neighbors[i] == 1) {
                         rotation =  360 - (i * 90) - 90;
+                        break;
                     }
                 }
                 break;

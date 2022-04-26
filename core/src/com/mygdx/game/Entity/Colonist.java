@@ -470,6 +470,11 @@ public class Colonist extends Entity {
         if (pathFindToTask(task, map.tiles, entities, map)){
             movingAcrossPath = true;
         }
+        else {
+            currentTask = null;
+            completingTask = false;
+            doingTaskAnimation = false;
+        }
     }
 
     public void updateLevel(){
@@ -485,5 +490,11 @@ public class Colonist extends Entity {
 
     public int getPriorityValue(String priority){
         return priorityFromType.get(priority);
+    }
+
+    public void died(){
+        if (currentTask != null){
+            removeCurrentTask();
+        }
     }
 }

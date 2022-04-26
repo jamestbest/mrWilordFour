@@ -261,7 +261,11 @@ public class Zone {
     public void decrementResource(String resource, int amount){
         for (FloorDrop f : drops) {
             if (f.getType().equals(resource)){
-                f.decrementStackSize(amount);
+                int removedAmount = f.decrementStackSize(amount);
+                amount -= removedAmount;
+                if (amount <= 0){
+                    return;
+                }
             }
         }
     }

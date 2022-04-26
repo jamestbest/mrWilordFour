@@ -29,7 +29,6 @@ public class Task {
     public boolean isIndependent;
 
     protected float percentageComplete;
-    protected float percentageIncrement = 5;
 
     protected static final Random random = new Random();
 
@@ -330,14 +329,6 @@ public class Task {
 
     public void setPercentageComplete(float percentageComplete) {
         this.percentageComplete = percentageComplete;
-    }
-
-    public float getPercentageIncrement() {
-        return percentageIncrement;
-    }
-
-    public void setPercentageIncrement(float percentageIncrement) {
-        this.percentageIncrement = percentageIncrement;
     }
 
     public void incrementPercentage(Colonist c){

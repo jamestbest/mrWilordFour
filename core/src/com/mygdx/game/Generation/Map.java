@@ -587,6 +587,15 @@ public class Map {
         return null;
     }
 
+    public Task getTaskAt(int x, int y){
+        for (Task t : tasks) {
+            if (t.getX() == x && t.getY() == y){
+                return t;
+            }
+        }
+        return null;
+    }
+
     public Color getNextZoneColor(){
         if (zoneColor == zoneColors.length - 1) {
             zoneColor = 0;

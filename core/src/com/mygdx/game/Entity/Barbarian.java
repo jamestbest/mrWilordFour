@@ -140,5 +140,11 @@ public class Barbarian extends Colonist {
     public void setCurrentTask(BarbarianTask currentTask) {
         this.currentTask = currentTask;
     }
+
+    public void died(){
+        if (currentTask != null){
+            currentTask = null;
+        }
+    }
 }
 

@@ -99,12 +99,12 @@ public class CameraTwo {
     }
 
     public void updatePosition(){
-        float temp = GameScreen.TILE_DIMS / 2;
+        float movement = GameScreen.TILE_DIMS / 2;
         if (Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT)) {
-            temp = GameScreen.TILE_DIMS;
+            movement *= 2;
         }
-        temp *= zoom;
-        temp /= 5;
+        movement *= zoom;
+        movement /= 5;
 
         if (GameScreen.followingSelected){
             if (GameScreen.selectedColonist != null) {
@@ -116,19 +116,19 @@ public class CameraTwo {
         boolean hasMoved = false;
 
         if ((Gdx.input.isKeyPressed(Input.Keys.W) || Gdx.input.isKeyPressed(Input.Keys.UP)) && position.y < maxPoint.y) {
-            position.y += temp;
+            position.y += movement;
             hasMoved = true;
         }
         if ((Gdx.input.isKeyPressed(Input.Keys.S) || Gdx.input.isKeyPressed(Input.Keys.DOWN)) && position.y > minPoint.y) {
-            position.y -= temp;
+            position.y -= movement;
             hasMoved = true;
         }
         if ((Gdx.input.isKeyPressed(Input.Keys.A) || Gdx.input.isKeyPressed(Input.Keys.LEFT)) && position.x > minPoint.x) {
-            position.x -= temp;
+            position.x -= movement;
             hasMoved = true;
         }
         if ((Gdx.input.isKeyPressed(Input.Keys.D) || Gdx.input.isKeyPressed(Input.Keys.RIGHT)) && position.x < maxPoint.x) {
-            position.x += temp;
+            position.x += movement;
             hasMoved = true;
         }
 

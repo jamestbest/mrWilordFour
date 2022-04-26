@@ -108,11 +108,13 @@ public class FloorDrop {
         decrementStackSize(1);
     }
 
-    public void decrementStackSize(int amount){
-        stackSize -= amount;
+    public int decrementStackSize(int amount){
+        int maxToRemove = Math.min(amount, stackSize);
+        stackSize -= maxToRemove;
         if (stackSize <= 0){
             shouldBeRemoved = true;
         }
+        return maxToRemove;
     }
 
     public static boolean getConsumabilityFromType(String type){

@@ -170,6 +170,7 @@ public class GameScreen implements Screen {
     public boolean showSelectedSkills;
     public boolean attackSelection;
     public boolean healSelection;
+    public boolean taskSelection;
     BitmapFont font;
     GlyphLayout glyphLayout;
 
@@ -215,17 +216,16 @@ public class GameScreen implements Screen {
                 minSelecting = camera.unproject(new Vector2(screenX, screenY));
                 maxSelecting = minSelecting;
             }
+
             lastMouseType = (Gdx.input.isButtonPressed(0) ? "left" : "right");
 
             if (lastMouseType.equals("right")){
-                if (attackSelection) {
-                    attackSelection = false;
+                if (attackSelection || healSelection || taskSelection){
                     setCursorDefault();
                 }
-                if (healSelection) {
-                    healSelection = false;
-                    setCursorDefault();
-                }
+                attackSelection = false;
+                healSelection = false;
+                taskSelection = false;
             }
             return false;
         }
@@ -471,6 +471,7 @@ public class GameScreen implements Screen {
 
         updateAttackSelection();
         updateHealSelection();
+        updateTaskSelection(isLeftJustClicked);
 
         calculateResources();
         updateResourceButtons();
@@ -515,6 +516,9 @@ public class GameScreen implements Screen {
         }
         else if (healSelection){
             highLightHealAble(shapeRenderer);
+        }
+        else if (taskSelection){
+            highlightAllTasks();
         }
         shapeRenderer.end();
 
@@ -584,9 +588,9 @@ public class GameScreen implements Screen {
         lightManager.updateLights(ec, GameScreen.TILE_DIMS);
         lightManager.drawLights(batch);
 
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
-        ec.drawEdges(shapeRenderer, GameScreen.TILE_DIMS);
-        shapeRenderer.end();
+//        shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+//        ec.drawEdges(shapeRenderer, GameScreen.TILE_DIMS);
+//        shapeRenderer.end();
 
         batchWithNoProj.begin();
         optionsButtons.drawButtons(batchWithNoProj);
@@ -657,6 +661,8 @@ public class GameScreen implements Screen {
         if (isLeftJustClicked){
             if (!paused) {
                 if (bottomBarButtons.updateButtons(camera, true)) {
+                    showSelectedSkills = false;
+                    shouldShowSelectedColonistInfo = false;
                     switch (bottomBarButtons.pressedButtonName) {
                         case "OrdersButton" -> {
                             selectionMode = "Orders";
@@ -2220,13 +2226,14 @@ public class GameScreen implements Screen {
         String[] mobNames = {"sheep", "poong"};
         int chance = random.nextInt(300);
         if (chance == 0){
+            int numberToSpawn = random.nextInt(6) + 1;
             String type = mobNames[random.nextInt(mobNames.length)];
             ArrayList<Vector2> spawnLocs = map.canSpawnHere(random.nextInt(TILES_ON_X), random.nextInt(TILES_ON_X), 10, 10);
-            if (spawnLocs.size() <= 0){
+            if (spawnLocs.size() < numberToSpawn){
                 return;
             }
             EntityGroup eg = new EntityGroup(type, (int) spawnLocs.get(0).x, (int) spawnLocs.get(0).y, 10, getNextEntityGroupID());
-            for (int i = 0; i < random.nextInt(6) + 1; i++) {
+            for (int i = 0; i < numberToSpawn; i++) {
                 Mob m = new Mob((int) spawnLocs.get(i).x, (int) spawnLocs.get(i).y, type, (int) GameScreen.TILE_DIMS, (int) GameScreen.TILE_DIMS);
                 m.copyWeapon(weaponPresets.get("punch"));
                 m.setEntityID(getNextEntityID());
@@ -2799,6 +2806,15 @@ public class GameScreen implements Screen {
                 setCursorDefault();
             }
         });
+        ImgButton setTaskButton = new ImgButton("setTaskButton", "setTask", () -> {
+            taskSelection = !taskSelection;
+            if (taskSelection){
+                setCustomCursor("setTask");
+            }
+            else {
+                setCursorDefault();
+            }
+        });
 
         followButton.setPos(10 + (MyGdxGame.initialRes.x / 3f) - (MyGdxGame.initialRes.y / 4f / 8f),
                 ((MyGdxGame.initialRes.y / 12f) * 1.1f) + (MyGdxGame.initialRes.y / 4f) - (MyGdxGame.initialRes.y / 4f / 8f));
@@ -2813,14 +2829,17 @@ public class GameScreen implements Screen {
         healButton.setPos(attackButton.x - attackButton.width - 2, attackButton.y);
         healButton.setSize(attackButton.width, attackButton.height);
 
+        setTaskButton.setPos(healButton.x - healButton.width - 2, healButton.y);
+        setTaskButton.setSize(healButton.width, healButton.height);
+
         int widtht = (int) (MyGdxGame.initialRes.x / 10f);
-        skillsButton.setPos(healButton.x - widtht, healButton.y);
-        skillsButton.setSize(widtht, healButton.height);
+        skillsButton.setPos(setTaskButton.x - widtht, setTaskButton.y);
+        skillsButton.setSize(widtht, setTaskButton.height);
 
         closeButton.setPos(10, followButton.y);
         closeButton.setSize(followButton.width, followButton.height);
 
-        selectedColonistButtons.add(followButton, skillsButton, closeButton, pathButton, attackButton, healButton);
+        selectedColonistButtons.add(followButton, skillsButton, closeButton, pathButton, attackButton, healButton, setTaskButton);
 
         selectedColonistSkills = new ButtonCollection();
         selectedColonistSkills.useWorldCoords = false;
@@ -2837,6 +2856,42 @@ public class GameScreen implements Screen {
             temp.setPos(x, y + (height * i));
             temp.setSize(width, height);
             selectedColonistSkills.add(temp);
+        }
+    }
+
+    public Vector2 getMousePos(){
+        return camera.unproject(new Vector2(Gdx.input.getX(), Gdx.input.getY()));
+    }
+
+    public Vector2 getTilePos(){
+        Vector2 mousePos = getMousePos();
+        return new Vector2((int) (mousePos.x / GameScreen.TILE_DIMS), (int) (mousePos.y / GameScreen.TILE_DIMS));
+    }
+
+    public void setSelectedColonistsTaskFromMouse(){
+        if (selectedColonist != null) {
+            if (selectedColonist instanceof Colonist) {
+                Colonist c = (Colonist) selectedColonist;
+                Vector2 pos = getTilePos();
+                Task t = map.getTaskAt((int) pos.x, (int) pos.y);
+                if (t != null) {
+                    System.out.println("Setting task" + pos);
+                    c.stopWhatYoureDoing(map);
+                    if (c.getCurrentTask() != null) {
+                        c.removeCurrentTask();
+                    }
+                    c.setTask(t, map, allEntities);
+                }
+                else {
+                    System.out.println("No task at" + pos);
+                }
+            }
+            else {
+                System.out.println("Not a colonist");
+            }
+        }
+        else {
+            System.out.println("No colonist selected");
         }
     }
 
@@ -2858,7 +2913,7 @@ public class GameScreen implements Screen {
         int width = (int) (MyGdxGame.initialRes.x / 3f);
         int height = (int) (MyGdxGame.initialRes.y / 4f);
 
-        if (!(mX > x && mX < x + width && mY > y && mY < y + height) && !attackSelection && !healSelection) {
+        if (!(mX > x && mX < x + width && mY > y && mY < y + height) && !attackSelection && !healSelection && !taskSelection) {
             shouldShowSelectedColonistInfo = false;
             showSelectedSkills = false;
         }
@@ -2899,6 +2954,17 @@ public class GameScreen implements Screen {
         for (FloorDrop fd : map.floorDrops) {
             if (fd.isConsumable){
                 shapeRenderer.circle((fd.getX() + 0.5f) * GameScreen.TILE_DIMS, (fd.getY() + 0.5f) * GameScreen.TILE_DIMS, GameScreen.TILE_DIMS / 2f);
+            }
+        }
+    }
+
+    public void highlightAllTasks(){
+        shapeRenderer.setColor(Color.GREEN);
+        for (Task t : map.tasks) {
+            if (!t.reserved) {
+                float o = 0.5f;
+                float td = GameScreen.TILE_DIMS;
+                shapeRenderer.circle((t.getX() + o) * td, (t.getY() + o) * td, GameScreen.TILE_DIMS / 2f);
             }
         }
     }
@@ -3094,6 +3160,12 @@ public class GameScreen implements Screen {
                     }
                 }
             }
+        }
+    }
+
+    public void updateTaskSelection(boolean left){
+        if (taskSelection && selectedColonist != null && left){
+            setSelectedColonistsTaskFromMouse();
         }
     }
 

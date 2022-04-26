@@ -308,6 +308,7 @@ public class Entity {
         this.health = health;
         if (this.health < 0) {
             this.health = 0;
+            died();
         }
         if (this.health > getMaxHealth()) {
             this.health = getMaxHealth();
@@ -609,5 +610,9 @@ public class Entity {
 
     public void setXp(int xp) {
         this.xp = xp;
+    }
+
+    public void died(){
+
     }
 }

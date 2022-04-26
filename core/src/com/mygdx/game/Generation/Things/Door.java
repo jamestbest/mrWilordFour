@@ -25,6 +25,8 @@ public class Door extends ConnectedThings{
     float tpf = 1f / fps;
     float timeCounter = 0;
 
+    int maxFrame = 17;
+
     int drawLayer = 2;
 
     public void draw(SpriteBatch batch, TextureAtlas atlas, int drawLayer){
@@ -73,7 +75,7 @@ public class Door extends ConnectedThings{
                 if (isClosing) {
                     state--;
                 }
-                if (state == 17 && isOpening) {
+                if (state == maxFrame && isOpening) {
                     isOpening = false;
                     isOpen = true;
                     triggerClose();
@@ -97,7 +99,7 @@ public class Door extends ConnectedThings{
         if (!isClosing && isOpen) {
             isClosing = true;
             isOpen = false;
-            state = 16;
+            state = maxFrame - 1;
         }
     }
 
@@ -105,20 +107,15 @@ public class Door extends ConnectedThings{
         neighborCount = 0;
         int[] n = setNeighbourCount(things);
         boolean isConnected = getIfConnectedNeighbour(n);
-        setVertHoriz(n, isConnected);
+        setVertHoriz(n, isConnected, neighborCount);
     }
 
-    public void setVertHoriz(int[] n, boolean isConnected){
-        int nCount = 0;
-        for (int j : n) {
-            if (j == 1) {
-                nCount++;
-            }
-        }
+    public void setVertHoriz(int[] n, boolean isConnected, int nCount){
         if(nCount == 1){
             for (int i = 0; i < n.length; i++) {
                 if(n[i] == 1){
                     isHorizontal = i % 2 == 0;
+                    return;
                 }
             }
         }
@@ -126,6 +123,7 @@ public class Door extends ConnectedThings{
             for (int i = 0; i < n.length; i++) {
                 if(n[i] == 1){
                     isHorizontal = i % 2 == 0;
+                    return;
                 }
             }
         }
