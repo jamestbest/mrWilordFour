@@ -35,12 +35,6 @@ io.on('connection', function(socket){
     socket.to(id).emit("newPlayer")
   }
 
-  socket.on("updateColonists", function(data){
-    players[0].broadcast.emit("updateColonists", data)
-    // console.log("updateColonists")
-    // console.log(data)
-  })
-
   socket.on("getUpdatedEntities", function(data){
     socket.broadcast.emit("getUpdatedEntities", data)
     // console.log("getUpdated Entities")
@@ -70,10 +64,6 @@ io.on('connection', function(socket){
     players[players.length - 1].emit("loadWorldClient", data)
   })
 
-  socket.on("loadColonists", function(data){
-    players[players.length - 1].emit("loadColonists", data)
-  })
-
   socket.on("joinRoom", function(data){
     socket.join(data)
     console.log(io.sockets.adapter.rooms)
@@ -93,17 +83,17 @@ io.on('connection', function(socket){
     socket.broadcast.emit("endGame", data)
   });
 
-  socket.on("updateGameSpeed", function(data){
-    socket.broadcast.emit("updateGameSpeed", data)
+  socket.on("updateGameSpeed", function(speed){
+    socket.broadcast.emit("updateGameSpeed", speed)
   });
 
-  socket.on("entityAttacking", function(data, data2){
-    socket.broadcast.emit("entityAttacking", data, data2)
+  socket.on("entityAttacking", function(attackerId, defenderId){
+    socket.broadcast.emit("entityAttacking", attackerId, defenderId)
     console.log("entityAttacking")
   });
 
-  socket.on("taskReservation", function(data, data2, data3){
-    socket.broadcast.emit("taskReservation", data, data2, data3)
+  socket.on("taskReservation", function(x, y, type){ //not used yet, also need one for when task is unreserved
+    socket.broadcast.emit("taskReservation", x, y, type)
     console.log("taskReservation")
   });
 
@@ -150,11 +140,6 @@ io.on('connection', function(socket){
   socket.on("colonistTask", function(data){
     socket.broadcast.emit("colonistTask", data)
     console.log("colonistTask")
-  });
-
-  socket.on("getTime", function(data){
-    socket.broadcast.emit("getTime", data)
-    console.log("getTime" + data)
   });
 
   socket.on("addFloorDrop", function(x, y, type, amount){

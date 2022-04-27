@@ -29,7 +29,6 @@ import com.mygdx.game.floorDrops.Zone;
 import com.mygdx.game.ui.elements.*;
 import com.mygdx.game.ui.extensions.ButtonCollection;
 import com.mygdx.game.ui.extensions.NotificationCollection;
-import com.mygdx.game.ui.extensions.TutorialTracker;
 import com.mygdx.game.ui.items.Clock;
 import io.socket.client.IO;
 import io.socket.client.Socket;
@@ -731,140 +730,141 @@ public class GameScreen implements Screen {
             System.out.println(optionsButtons.showButtons);
         }
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
-            if (gameSpeed == 0){
-                gameSpeed = lastGameSpeed;
-                gameSpeedLabel.setText(gameSpeed + "x");
-            }
-            else {
-                lastGameSpeed = gameSpeed;
-                gameSpeed = 0;
-                gameSpeedLabel.setText(gameSpeed + "x");
-            }
-            if (isMultiplayer) {
-                socket.emit("updateGameSpeed", GameScreen.gameSpeed);
-            }
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
-            int x = (int) (unprojectedMousePos.x / TILE_DIMS);
-            int y = (int) (unprojectedMousePos.y / TILE_DIMS);
-            if (map.isWithinBounds(x, y)) {
-                colonists.get(0).setMoveToPos(x,y, map, allEntities);
-            }
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.O)) {
-            drawColonistPath = !drawColonistPath;
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
-            spawnRaid(5);
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.G)){
-            deanNorrisMode = !deanNorrisMode;
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.F)){
-            int x = (int) (unprojectedMousePos.x / TILE_DIMS);
-            int y = (int) (unprojectedMousePos.y / TILE_DIMS);
-
-            if (map.isWithinBounds(x, y)) {
-                Door door = new Door(x, y, (int) TILE_DIMS, (int) TILE_DIMS, "stoneDoor", (int) TILE_DIMS);
-                map.addThing(door, x, y, false, socket, isHost);
-                door.triggerOpen();
-            }
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)){
-            if (isHost) {
-                spawnMobs("poong", 10, 50, 50);
-            }
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)){
-            if (isHost) {
-                spawnRaid(3);
-                notifications.add(socket, isHost, new Notification(notifications.getNextId(), "Raid", "raid"));
-//                spawnBarbarians("barbarian", 4, 20, 50);
-            }
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_5)){
-            for (EntityGroup eg : barbarians) {
-                for (Entity b : eg.entities) {
-                    if (b.isAlive()) {
-                        b.setDefender(colonists.get(count));
-                    }
+        if (!optionsButtons.showButtons) {
+            if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+                if (gameSpeed == 0) {
+                    gameSpeed = lastGameSpeed;
+                    gameSpeedLabel.setText(gameSpeed + "x");
+                } else {
+                    lastGameSpeed = gameSpeed;
+                    gameSpeed = 0;
+                    gameSpeedLabel.setText(gameSpeed + "x");
+                }
+                if (isMultiplayer) {
+                    socket.emit("updateGameSpeed", GameScreen.gameSpeed);
                 }
             }
-            count++;
-        }
+
+            if (Gdx.input.isKeyJustPressed(Input.Keys.P)) {
+                int x = (int) (unprojectedMousePos.x / TILE_DIMS);
+                int y = (int) (unprojectedMousePos.y / TILE_DIMS);
+                if (map.isWithinBounds(x, y)) {
+                    colonists.get(0).setMoveToPos(x, y, map, allEntities);
+                }
+            }
+
+            if (Gdx.input.isKeyJustPressed(Input.Keys.O)) {
+                drawColonistPath = !drawColonistPath;
+            }
+
+            if (Gdx.input.isKeyJustPressed(Input.Keys.R)) {
+                spawnRaid(5);
+            }
+
+            if (Gdx.input.isKeyJustPressed(Input.Keys.G)) {
+                deanNorrisMode = !deanNorrisMode;
+            }
+
+            if (Gdx.input.isKeyJustPressed(Input.Keys.F)) {
+                int x = (int) (unprojectedMousePos.x / TILE_DIMS);
+                int y = (int) (unprojectedMousePos.y / TILE_DIMS);
+
+                if (map.isWithinBounds(x, y)) {
+                    Door door = new Door(x, y, (int) TILE_DIMS, (int) TILE_DIMS, "stoneDoor", (int) TILE_DIMS);
+                    map.addThing(door, x, y, false, socket, isHost);
+                    door.triggerOpen();
+                }
+            }
+
+            if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_1)) {
+                if (isHost) {
+                    spawnMobs("poong", 10, 50, 50);
+                }
+            }
+
+            if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_2)) {
+                if (isHost) {
+                    spawnRaid(3);
+                    notifications.add(socket, isHost, new Notification(notifications.getNextId(), "Raid", "raid"));
+//                spawnBarbarians("barbarian", 4, 20, 50);
+                }
+            }
+
+            if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_5)) {
+                for (EntityGroup eg : barbarians) {
+                    for (Entity b : eg.entities) {
+                        if (b.isAlive()) {
+                            b.setDefender(colonists.get(count));
+                        }
+                    }
+                }
+                count++;
+            }
 
 //        System.out.println(colonists.get(0).getHealth());
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_6)){
-            drawBarbarianPath = !drawBarbarianPath;
-            drawMobPath = !drawMobPath;
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_7)){
-            showReservedOverlay = !showReservedOverlay;
-            System.out.println("showReservedOverlay: " + showReservedOverlay);
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_8)) {
-            showCanSpawnOverlay = !showCanSpawnOverlay;
-            System.out.println("showCanSpawnOverlay: " + showCanSpawnOverlay);
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_9)) {
-            showCanWalkOverlay = !showCanWalkOverlay;
-            System.out.println("showCanWalkOverlay: " + showCanWalkOverlay);
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_0)) {
-            showTaskOverlay = !showTaskOverlay;
-            System.out.println("showTaskOverlay: " + showTaskOverlay);
-        }
-
-        if (Gdx.input.isKeyJustPressed(Input.Keys.M) || totalTime % 5 == 0 && isHost && isMultiplayer) {
-            Json json = new Json();
-            String colonistsJson = json.toJson(colonists);
-            socket.emit("checkMovementSync", colonistsJson);
-        }
-
-        if (Gdx.input.isKeyPressed(Input.Keys.E)) {
-            shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-            shapeRenderer.setColor(Color.RED);
-            for (Sound s : soundManager.soundEffects) {
-                shapeRenderer.circle(s.getX() * GameScreen.TILE_DIMS, s.getY() * GameScreen.TILE_DIMS, s.getRadius() * GameScreen.TILE_DIMS);
+            if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_6)) {
+                drawBarbarianPath = !drawBarbarianPath;
+                drawMobPath = !drawMobPath;
             }
-            shapeRenderer.end();
-        }
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.T)) {
-            int x = (int) (unprojectedMousePos.x / GameScreen.TILE_DIMS);
-            int y = (int) (unprojectedMousePos.y / GameScreen.TILE_DIMS);
-            map.addFloorDrop(x,y, "stone", socket, isHost);
-        }
+            if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_7)) {
+                showReservedOverlay = !showReservedOverlay;
+                System.out.println("showReservedOverlay: " + showReservedOverlay);
+            }
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.U)){
-            addNotification("Fire", "fire");
-        }
+            if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_8)) {
+                showCanSpawnOverlay = !showCanSpawnOverlay;
+                System.out.println("showCanSpawnOverlay: " + showCanSpawnOverlay);
+            }
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.I)){
-            addNotification("Raid", "raid");
-        }
+            if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_9)) {
+                showCanWalkOverlay = !showCanWalkOverlay;
+                System.out.println("showCanWalkOverlay: " + showCanWalkOverlay);
+            }
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.Y)){
-            System.out.println("endiong game");
-            game.setScreen(new EndScreen(game, this));
-        }
+            if (Gdx.input.isKeyJustPressed(Input.Keys.NUM_0)) {
+                showTaskOverlay = !showTaskOverlay;
+                System.out.println("showTaskOverlay: " + showTaskOverlay);
+            }
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.J)){
-            game.setScreen(new SaveScreen(game, map, colonists, this));
+            if (Gdx.input.isKeyJustPressed(Input.Keys.M) || totalTime % 5 == 0 && isHost && isMultiplayer) {
+                Json json = new Json();
+                String colonistsJson = json.toJson(colonists);
+                socket.emit("checkMovementSync", colonistsJson);
+            }
+
+            if (Gdx.input.isKeyPressed(Input.Keys.E)) {
+                shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+                shapeRenderer.setColor(Color.RED);
+                for (Sound s : soundManager.soundEffects) {
+                    shapeRenderer.circle(s.getX() * GameScreen.TILE_DIMS, s.getY() * GameScreen.TILE_DIMS, s.getRadius() * GameScreen.TILE_DIMS);
+                }
+                shapeRenderer.end();
+            }
+
+            if (Gdx.input.isKeyJustPressed(Input.Keys.T)) {
+                int x = (int) (unprojectedMousePos.x / GameScreen.TILE_DIMS);
+                int y = (int) (unprojectedMousePos.y / GameScreen.TILE_DIMS);
+                map.addFloorDrop(x, y, "stone", socket, isHost);
+            }
+
+            if (Gdx.input.isKeyJustPressed(Input.Keys.U)) {
+                addNotification("Fire", "fire");
+            }
+
+            if (Gdx.input.isKeyJustPressed(Input.Keys.I)) {
+                addNotification("Raid", "raid");
+            }
+
+            if (Gdx.input.isKeyJustPressed(Input.Keys.Y)) {
+                System.out.println("endiong game");
+                game.setScreen(new EndScreen(game, this));
+            }
+
+            if (Gdx.input.isKeyJustPressed(Input.Keys.J)) {
+                game.setScreen(new SaveScreen(game, map, colonists, this));
+            }
         }
 
         if (Gdx.input.isKeyJustPressed(Input.Keys.K)){
@@ -902,7 +902,7 @@ public class GameScreen implements Screen {
         if (isHost && isMultiplayer){
             try {
                 sendColonistMovement();
-                // TODO: 13/04/2022 send mob movement
+                // FIXED: 13/04/2022 send mob movement
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -1675,7 +1675,13 @@ public class GameScreen implements Screen {
         TextButton resumeButton = new TextButton("Resume", "ResumeButton", () -> startMultiplayerButtons.showButtons = false);
         TextButton optionsButton = new TextButton("Options", "OptionsButton");
         TextButton multiplayerButton = new TextButton("Start Multiplayer", "MultiplayerButton", () -> {
-            if (socket == null) startMultiplayerButtons.showButtons = true;
+            if (socket == null) {
+                startMultiplayerButtons.showButtons = true;
+            } else {
+                if (!socket.connected()){
+                    startMultiplayerButtons.showButtons = true;
+                }
+            }
         });
         TextButton saveButton = new TextButton("Save", "SaveButton");
         TextButton loadButton = new TextButton("Load", "LoadButton");
@@ -1862,6 +1868,7 @@ public class GameScreen implements Screen {
 
         setTasksFromInput(taskType, taskSubType, minXCoord, minYCoord, maxXCoord, maxYCoord);
     }
+
     public void setTasksFromInput(String taskType, String taskSubType, int minXCoord, int minYCoord, int maxXCoord, int maxYCoord){
         ArrayList<Task> toAdd = new ArrayList<>();
         ArrayList<Task> toRemove = new ArrayList<>();
@@ -1872,22 +1879,13 @@ public class GameScreen implements Screen {
                     if (taskType.equals("PickUp")){
                         if (map.tiles.get(i).get(j).hasFloorDropOn){
                             Task t = new Task(taskType, taskSubType, i,j);
-                            ArrayList<Task> copy = new ArrayList<>(map.tasks);
                             boolean shouldAdd = true;
-                            for (Task t2 : copy) {
+                            for (Task t2 : map.tasks) {
                                 if (t2.getX() == t.getX() && t2.getY() == t.getY()) {
                                     if (!t2.isIndependent) {
                                         boolean shouldRemove = true;
-                                        for (Colonist c : colonists) {
-                                            Task t3 = c.getCurrentTask();
-                                            if (t3 != null) {
-                                                if (t3.getX() == t2.getX() && t3.getY() == t2.getY()) {
-                                                    if (t3.type.equals(t2.type)) {
-                                                        shouldRemove = false;
-                                                        shouldAdd = false;
-                                                    }
-                                                }
-                                            }
+                                        if (t2.reserved){
+                                            shouldRemove = shouldAdd = false;
                                         }
                                         if (shouldRemove) {
                                             toRemove.add(t2);
@@ -1927,8 +1925,8 @@ public class GameScreen implements Screen {
                                     }
                                 }
                                 Task t = new Task(taskType, taskSubType, i, j);
-                                ArrayList<Task> copy = new ArrayList<>(map.tasks);
-                                for (Task t2 : copy) {
+
+                                for (Task t2 : map.tasks) {
                                     if (t2.getX() == t.getX() && t2.getY() == t.getY()) {
                                         if (!t2.isIndependent) {
                                             toRemove.add(t2);
@@ -1943,28 +1941,19 @@ public class GameScreen implements Screen {
             }
         }
         if (inCancelTaskMode){
-            ArrayList<Task> copy = new ArrayList<>(map.tasks);
-            for (Task t : copy) {
+            for (Task t : map.tasks) {
                 if (t.getX() >= minXCoord && t.getX() < maxXCoord && t.getY() >= minYCoord && t.getY() < maxYCoord) {
                     if (t.reserved) {
                         for (Colonist c : colonists) {
                             if (c.getCurrentTask() == t) {
                                 if (!t.type.equals("FireFight")) {
                                     c.removeCurrentTask();
-                                    if (isMultiplayer) {
-                                        JSONObject json = new JSONObject();
-                                        try {
-                                            json.put("colonistID", c.colonistID);
-                                        } catch (JSONException e) {
-                                            e.printStackTrace();
-                                        }
-                                    }
                                 }
                             }
                         }
                     }
                     if (!t.type.equals("FireFight")) {
-                        if (t.type.equals("Build")) {
+                        if (t.type.equals("Build") || t.type.equals("Plant")) {
                             String resource = getResourceFromBuilding(t.subType);
                             if (!resource.equals("")) {
                                 map.addFloorDrop(t.getX(), t.getY(), resource, 1, socket, isHost);
@@ -1980,13 +1969,11 @@ public class GameScreen implements Screen {
     }
 
     public static String getResourceFromBuilding(String subType){
-        switch (subType){
-            case "lamp", "stoneWall", "stoneDoor", "stoneFloor":
-                return "stone";
-            case "woodWall", "torch", "woodFloor":
-                return "wood";
-        }
-        return "";
+        return switch (subType) {
+            case "lamp", "stoneWall", "stoneDoor", "stoneFloor" -> "stone";
+            case "woodWall", "torch", "woodFloor" -> "wood";
+            default -> "wood";
+        };
     }
 
     public void drawTaskType(SpriteBatch batch) {

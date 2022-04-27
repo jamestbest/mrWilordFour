@@ -4,6 +4,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.mygdx.game.Entity.Entity;
 import com.mygdx.game.Generation.Noise2D;
 import com.mygdx.game.Generation.Tile;
+import com.mygdx.game.Math.sortingAlgorithms.QuickSort;
 import com.mygdx.game.Screens.GameScreen;
 
 import java.util.ArrayList;
@@ -80,7 +81,7 @@ public class AStar {
                     nodesToCheck.add(n);
                     counter++;
                     n.visited = true;
-                    float temp = 10;
+                    float temp = 10f;
                     if (currentNode.x != n.x && currentNode.y != n.y) {
                         temp = 14f;
                     }
@@ -93,16 +94,14 @@ public class AStar {
             }
         }
         ArrayList<Vector2> pathRev = new ArrayList<>();
-        ArrayList<Vector2> path = new ArrayList<>();
+        ArrayList<Vector2> path;
         currentNode = grid.get((int) end.x).get((int) end.y);
         while (currentNode != null){
             pathRev.add(new Vector2(currentNode.x, currentNode.y));
             currentNode = currentNode.parent;
         }
 
-        for (int i = 0; i < pathRev.size(); i++) {
-            path.add(pathRev.get(pathRev.size() - i - 1));
-        }
+        path = QuickSort.reverse(pathRev);
 
         if (path.size() == 1) { //this prevents colonists from completing tasks that they can't reach
             if (path.get(0).x == end.x && path.get(0).y == end.y) {
