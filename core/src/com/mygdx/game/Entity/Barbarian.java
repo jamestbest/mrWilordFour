@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Barbarian extends Colonist {
-    private BarbarianTask currentTask;
+    transient private BarbarianTask currentTask;
 
     public Barbarian(int x, int y, String entityType, int width, int height) {
         super(x, y, entityType, width, height);
