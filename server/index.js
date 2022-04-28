@@ -10,7 +10,7 @@ const port = process.env.PORT || 8080;
 
 players = [];
 
-server.listen(port, () => {
+server.listen(8080 ,() => {
   console.log('Server listening at port %d', port);
 });
 

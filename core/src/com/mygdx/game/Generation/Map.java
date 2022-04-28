@@ -798,7 +798,7 @@ public class Map {
         for (int i = z.getX(); i < z.getX() + z.getWidth(); i++) {
             for (int j = z.getY(); j < z.getY() + z.getHeight(); j++) {
                 if (isWithinBounds(i, j) && things.get(i).get(j).type.equals("")) {
-                    tiles.get(i).get(j).canSpawnOn = true;
+                    tiles.get(i).get(j).updateWalkAndSpawn(tileInformationHashMap, things.get(i).get(j).type);
                 }
             }
         }

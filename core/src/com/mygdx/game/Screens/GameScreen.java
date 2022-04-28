@@ -420,7 +420,7 @@ public class GameScreen implements Screen {
         gameSpeed = 2;
         paused = false;
         optionsButtons.showButtons = false;
-        gameSpeedLabel.setText(gameSpeed + "x");
+//        gameSpeedLabel.setText(gameSpeed + "x");
     }
 
     @Override
@@ -2285,19 +2285,6 @@ public class GameScreen implements Screen {
         }
     }
 
-    public void spawnBarbarians(String type, int amount, int x, int y){
-        EntityGroup group = new EntityGroup(type, x, y, 10, getNextEntityGroupID());
-        for (int i = 0; i < amount; i++) {
-            Barbarian b = createBarbarian(x + random.nextInt(10) - 5, y + random.nextInt(10) - 5, type);
-            group.add(b);
-            allEntities.add(b);
-        }
-        barbarians.add(group);
-        if (isHost && socket != null){
-            socket.emit("spawnBarbarians", json.toJson(group));
-        }
-    }
-
     public void spawnBarbarians(String type, ArrayList<Vector2> locs, int amount){
         Colonist target = colonists.get(random.nextInt(colonists.size()));
         EntityGroup group = new EntityGroup(type, target.getX(), target.getY(), 10, getNextEntityGroupID());
@@ -2730,7 +2717,7 @@ public class GameScreen implements Screen {
             }
             selectedColonist.drawMini(batch, x, y + height - width / 3, width / 4, temp);
 
-            if (selectedColonist instanceof Colonist) {
+            if (selectedColonist instanceof Colonist && !(selectedColonist instanceof Barbarian)) {
                 Colonist c = (Colonist) selectedColonist;
                 glyphLayout.setText(font, "Name: " + c.firstName + " " + c.lastName);
                 font.draw(batch, glyphLayout, x + width / 4f, y + (height * 0.85f) - (glyphLayout.height));
