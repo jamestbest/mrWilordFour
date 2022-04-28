@@ -71,27 +71,7 @@ public class InputButtonTwo extends TextButton{
                             cursorPos--;
                             endDrawPos--;
                             glyphLayout.setText(font, text.substring(startDrawPos, endDrawPos));
-                            while (glyphLayout.width < width * textAllowance) {
-                                if (startDrawPos == 0){
-                                    if (endDrawPos < text.length()) {
-                                        endDrawPos++;
-                                    }
-                                    else {
-                                        break;
-                                    }
-                                }
-                                if (startDrawPos > 0){
-                                    startDrawPos--;
-                                }
-                                else {
-                                    break;
-                                }
-                                if (glyphLayout.width > width * textAllowance) {
-                                    glyphLayout.setText(font, text.substring(startDrawPos, endDrawPos));
-                                    startDrawPos++;
-                                }
-                                glyphLayout.setText(font, text.substring(startDrawPos, endDrawPos));
-                            }
+                            resizeForReduction();
                         }
                     }
                     else if (character == '\r' || character == '\t' || character == '\0' || character == '\f' || character == '\n') {
@@ -103,17 +83,11 @@ public class InputButtonTwo extends TextButton{
                         cursorPos++;
                         endDrawPos++;
                         glyphLayout.setText(font, text.substring(startDrawPos, endDrawPos));
-                        while (glyphLayout.width > width * textAllowance) {
-                            startDrawPos++;
-                            glyphLayout.setText(font, text.substring(startDrawPos, endDrawPos));
-                        }
+                        resizeForIncrease(true);
                         if (cursorPos - 1 == 0 && startDrawPos > 0){
                             startDrawPos--;
                             glyphLayout.setText(font, text.substring(startDrawPos, endDrawPos));
-                            while (glyphLayout.width > width * textAllowance) {
-                                endDrawPos--;
-                                glyphLayout.setText(font, text.substring(startDrawPos, endDrawPos));
-                            }
+                            resizeForIncrease(false);
                         }
                     }
                 }
@@ -122,6 +96,41 @@ public class InputButtonTwo extends TextButton{
         };
 
         inputMultiplexer.addProcessor(inputProcessor);
+    }
+
+    public void resizeForReduction(){
+        while (glyphLayout.width < width * textAllowance) {
+            if (startDrawPos == 0){
+                if (endDrawPos < text.length()) {
+                    endDrawPos++;
+                }
+                else {
+                    break;
+                }
+            }
+            if (startDrawPos > 0){
+                startDrawPos--;
+            }
+            else {
+                break;
+            }
+            if (glyphLayout.width > width * textAllowance) {
+                glyphLayout.setText(font, text.substring(startDrawPos, endDrawPos));
+                startDrawPos++;
+            }
+            glyphLayout.setText(font, text.substring(startDrawPos, endDrawPos));
+        }
+    }
+
+    public void resizeForIncrease(boolean affectStart){
+        while (glyphLayout.width > width * textAllowance) {
+            if (affectStart) {
+                startDrawPos++;
+            }else{
+                endDrawPos--;
+            }
+            glyphLayout.setText(font, text.substring(startDrawPos, endDrawPos));
+        }
     }
 
     public void draw(SpriteBatch batch, int drawLayer){
@@ -199,7 +208,7 @@ public class InputButtonTwo extends TextButton{
 
     public boolean checkIfPressed(int x, int y, boolean firstCheck){
         if(visible){
-            System.out.println(" i have been pressed ");
+            System.out.println(" i have been pressed and i am an input button");
             if (x > this.x && x < this.x + width && y > this.y && y < this.y + height) {
                 pressed = true;
                 typing = true;

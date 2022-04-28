@@ -7,8 +7,10 @@ import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.math.Vector2;
 import com.mygdx.game.DataStructures.Stack;
 import com.mygdx.game.Entity.Colonist;
+import com.mygdx.game.Entity.Entity;
 import com.mygdx.game.Generation.Map;
 import com.mygdx.game.Screens.*;
+import com.mygdx.game.floorDrops.Zone;
 
 import java.util.ArrayList;
 
