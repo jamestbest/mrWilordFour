@@ -13,11 +13,6 @@ import com.mygdx.game.Screens.*;
 import java.util.ArrayList;
 
 public class MyGdxGame extends Game {
-	//need to add a goal to the game, giving it an end game and goal
-	//need to add enemies that will spawn semi-randomly they will attack the player
-	//they can also destroy crops and buildings
-	//their spawning and power are determined by how far out the player has expanded
-	//
 	public static Vector2 initialRes;
 
 	public static String fontName = "Fortnite";
