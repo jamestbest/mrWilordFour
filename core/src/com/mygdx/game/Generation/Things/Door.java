@@ -55,9 +55,9 @@ public class Door extends ConnectedThings{
     public void drawMini(SpriteBatch batch, TextureAtlas textureAtlas, float x, float y, float width, float height, int drawLayer) {
         if (drawLayer == this.drawLayer) {
             if (isHorizontal) {
-                batch.draw(textureAtlas.findRegion("Horizontal_1"), x, y, width, height);
+                batch.draw(textureAtlas.findRegion("Horizontal", 1), x, y, width, height);
             } else {
-                batch.draw(textureAtlas.findRegion("Vertical_1"), x, y, width, height);
+                batch.draw(textureAtlas.findRegion("Vertical", 1), x, y, width, height);
             }
         }
     }

@@ -165,18 +165,31 @@ public class Colonist extends Entity {
 
     public void moveColonist(Map map, Socket socket, ArrayList<Entity> entities, boolean isHost) {
         if (isAlive()) {
+            boolean isHitting = false;
             checkIfCanFindAttacker(map, entities);
             if (isAttacking && isInRange() && Entity.haveLineOfSight(this, defender, map)) {
+                System.out.println("in range and attacking" + " " + entityID + " ");
                 attack(socket, isHost);
+                isHitting = true;
+            }
+            else {
+                System.out.println("not in range or no line of sight or not attacking" + " " + entityID + " ");
             }
             if (isAttacking){
                 if (currentTask != null) {
                     removeCurrentTask();
+                    System.out.println("removing tasks because of attack" + " " + entityID + " ");
                 }
+                System.out.println("is attacking is true" + " " + entityID + " ");
+
+                System.out.println("id : " + entityID + " this is my path " + pathToComplete);
+            }
+            if (isHitting) {
+
             }
             else if (doingTaskAnimation) {
                 doTaskAnimation(map, socket, isHost);
-            } else if (movingAcrossPath) {
+            }else if (movingAcrossPath) {
                 moveAlongPath(map);
             }
             else if (currentTask != null) {
@@ -224,13 +237,17 @@ public class Colonist extends Entity {
     public void checkIfCanFindAttacker(Map map, ArrayList<Entity> entities) {
         if (isAttacking && defender == null) {
             defender = findClosestAttacker();
+            System.out.println("defender is null but i am attacking so i found a new defender" + " " + entityID + " ");
         }
         if (isAttacking && isNeighbouringNotDefender() && !isInRange()) {
+            System.out.println("i am attacking and i am not in range so i am moving to the defender" + " " + entityID + " ");
             for (Vector2 v : getNeighbours(defender.x, defender.y, map, entities)) {
                 if (setMoveToPos((int) v.x, (int) v.y, map, entities)){
+                    System.out.println("i was successful in moving to the defender" + " " + entityID + " ");
                     break;
                 }
             }
+
         }
     }
 

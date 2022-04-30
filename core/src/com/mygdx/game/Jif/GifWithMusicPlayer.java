@@ -73,16 +73,7 @@ public class GifWithMusicPlayer {
             deltaTime += Gdx.graphics.getDeltaTime();
             if (deltaTime > (1f / fps)) {
                 deltaTime = 0;
-                String tempStr = "";
-                if (pointer < 10) {
-                    tempStr += "00";
-                    tempStr += pointer;
-                } else if (pointer < 100) {
-                    tempStr += "0";
-                    tempStr += pointer;
-                } else {
-                    tempStr += pointer;
-                }
+                String tempStr =  String.format("%03d", pointer);
 
                 drawing = new Texture(Gdx.files.internal("core/assets/GifResources/" + gDA + "/" + gDA + "_" + tempStr + ".jpg"));
                 if (pointer < numberOfImages - 1) {

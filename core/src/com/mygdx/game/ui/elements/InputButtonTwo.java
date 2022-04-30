@@ -31,7 +31,7 @@ public class InputButtonTwo extends TextButton{
 
     int cursorPos;
 
-    float textAllowance = 0.8f;
+    final float textAllowance = 0.8f;
 
     InputProcessor inputProcessor;
 
@@ -166,42 +166,46 @@ public class InputButtonTwo extends TextButton{
                 typing = false;
             }
 
-            waitTimer += Gdx.graphics.getDeltaTime();
-            if ((waitTimer > totalWaitTime || Gdx.input.isKeyJustPressed(Input.Keys.ANY_KEY)) && typing) {
-                if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
-                    lineWaitTimer = (float) (0.5 * lineTotalWaitTime);
-                    if (cursorPos > 0) {
-                        cursorPos--;
-                    }
-                    if (cursorPos - 1 < startDrawPos) {
-                        if (startDrawPos > 0) {
-                            startDrawPos--;
+            handleArrowKeys();
+        }
+    }
+
+    public void handleArrowKeys(){
+        waitTimer += Gdx.graphics.getDeltaTime();
+        if ((waitTimer > totalWaitTime || Gdx.input.isKeyJustPressed(Input.Keys.ANY_KEY)) && typing) {
+            if (Gdx.input.isKeyPressed(Input.Keys.LEFT)) {
+                lineWaitTimer = (float) (0.5 * lineTotalWaitTime);
+                if (cursorPos > 0) {
+                    cursorPos--;
+                }
+                if (cursorPos - 1 < startDrawPos) {
+                    if (startDrawPos > 0) {
+                        startDrawPos--;
+                        glyphLayout.setText(font, text.substring(startDrawPos, endDrawPos));
+                        while (glyphLayout.width > width * textAllowance) {
+                            endDrawPos--;
                             glyphLayout.setText(font, text.substring(startDrawPos, endDrawPos));
-                            while (glyphLayout.width > width * textAllowance) {
-                                endDrawPos--;
-                                glyphLayout.setText(font, text.substring(startDrawPos, endDrawPos));
-                            }
                         }
                     }
-                    waitTimer = 0;
                 }
-                if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
-                    lineWaitTimer = (float) (0.5 * lineTotalWaitTime);
-                    if (cursorPos < text.length()) {
-                        cursorPos++;
-                    }
-                    if (cursorPos > endDrawPos) {
-                        if (endDrawPos < text.length()) {
-                            endDrawPos++;
+                waitTimer = 0;
+            }
+            if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
+                lineWaitTimer = (float) (0.5 * lineTotalWaitTime);
+                if (cursorPos < text.length()) {
+                    cursorPos++;
+                }
+                if (cursorPos > endDrawPos) {
+                    if (endDrawPos < text.length()) {
+                        endDrawPos++;
+                        glyphLayout.setText(font, text.substring(startDrawPos, endDrawPos));
+                        while (glyphLayout.width > width * textAllowance) {
+                            startDrawPos++;
                             glyphLayout.setText(font, text.substring(startDrawPos, endDrawPos));
-                            while (glyphLayout.width > width * textAllowance) {
-                                startDrawPos++;
-                                glyphLayout.setText(font, text.substring(startDrawPos, endDrawPos));
-                            }
                         }
                     }
-                    waitTimer = 0;
                 }
+                waitTimer = 0;
             }
         }
     }

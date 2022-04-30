@@ -1,3 +1,6 @@
+{score:238,name:James C,date:1651279662544}
+{score:238,name:james C,date:1651279616251}
+{score:238,name:Test12,date:1651279678405}
 {score:151,name:James,date:1650301340256}
 {score:90,name:test,date:1649966676402}
 {score:89,name:test,date:1649966680036}
@@ -19,6 +22,7 @@
 {score:49,name:test,date:1649966669545}
 {score:46,name:test,date:1649966679036}
 {score:43,name:test,date:1649966668105}
+{score:40,name:James Coward,date:1651263033343}
 {score:37,name:test,date:1649966662999}
 {score:35,name:test,date:1649966677968}
 {score:33,name:test,date:1649966680826}

@@ -53,6 +53,7 @@ public class Noise2D {
             case 3 -> new Vector2(-1, -1);
             default -> new Vector2();
         };
+
         return ((temp.x * x) + (temp.y * y));
     }
 

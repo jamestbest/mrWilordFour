@@ -718,6 +718,7 @@ public class Map {
     }
 
     public void removeFloorDrop(FloorDrop f){
+        tiles.get(f.getX()).get(f.getY()).hasFloorDropOn = false;
         floorDrops.remove(f);
     }
 

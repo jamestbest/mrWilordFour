@@ -68,9 +68,6 @@ public class DropdownButton extends TextButton{
     public void draw(SpriteBatch batch, int drawLayer){
         newItemSelected = false;
         if (drawLayer == this.drawLayer){
-            if (isToggled){
-
-            }
             setHoverPos();
             if (isToggled){
                 for (int i = startPos; i < endPos; i++){
@@ -120,7 +117,6 @@ public class DropdownButton extends TextButton{
             font.dispose();
             font = new BitmapFont(Gdx.files.internal("Fonts/" + text + ".fnt"));
         }
-
         glyphLayout.setText(font, dropDowns.get(i));
     }
 

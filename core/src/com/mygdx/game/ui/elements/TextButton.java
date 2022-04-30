@@ -13,12 +13,8 @@ public class TextButton extends Button {
     BitmapFont font;
     GlyphLayout glyphLayout;
 
-    String fontGda;
-
     Color fontColor = Color.WHITE;
     float fontScale = 1f;
-
-    Runnable r;
 
     public TextButton(int x, int y, int width, int height, String text, String TextureGda, String name) {
         super(x, y, width, height, TextureGda);

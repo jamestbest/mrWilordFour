@@ -62,6 +62,8 @@ public class Entity {
     public boolean doingTaskAnimation = false;
     protected Task currentTask;
 
+    protected final int findEnemyRange = 20;
+
     public Entity(int x, int y, String entityType, int width, int height) {
         this.x = x;
         this.y = y;
@@ -497,7 +499,7 @@ public class Entity {
         Entity closest = null;
         for (Entity e : attackers){
             float dist = Math.abs(e.x - x) + Math.abs(e.y - y);
-            if (dist < minDist){
+            if (dist < minDist && dist <= findEnemyRange){
                 minDist = dist;
                 closest = e;
             }
@@ -515,7 +517,7 @@ public class Entity {
             }
             if (e.isAlive()){
                 float dist = (float) java.lang.Math.sqrt(java.lang.Math.pow(e.x - x, 2) + java.lang.Math.pow(e.y - y, 2));
-                if (dist < minDist){
+                if (dist < minDist && dist <= findEnemyRange){
                     minDist = dist;
                     closest = e;
                 }

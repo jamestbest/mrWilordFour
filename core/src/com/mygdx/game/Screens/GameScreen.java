@@ -1044,7 +1044,7 @@ public class GameScreen implements Screen {
                 data.put("time", (clock.getTime()));
                 data.put("mapFloorDrops", json.toJson(map.floorDrops));
                 data.put("zones", json.toJson(map.zones));
-                data.put("nextZoneID", map.getZoneID());
+                data.put("nextZoneID", map.getZoneID() + 1);
                 data.put("mobs", json.toJson(mobs));
                 data.put("barbarians", json.toJson(barbarians));
                 data.put("nextEntityGroupID", nextEntityGroupID);
@@ -1295,7 +1295,7 @@ public class GameScreen implements Screen {
 
                 game.currentGameScreen = this;
                 gameSpeed = data.getInt("gameSpeed");
-                gameSpeedLabel.setText(gameSpeed + "x");
+//                gameSpeedLabel.setText(gameSpeed + "x");
 
                 System.out.println("Loaded world" + colonists.size());
             } catch (JSONException e) {
@@ -2206,12 +2206,13 @@ public class GameScreen implements Screen {
     public void giveAllConsistsRandomWeapons(){
         for (Colonist c: colonists) {
             c.copyWeapon(getRandomWeapon());
+            c.copyWeapon(weaponPresets.get("punch"));
         }
     }
 
     public void randomlySpawnMobs(){
         String[] mobNames = {"sheep", "poong"};
-        int chance = random.nextInt(300);
+        int chance = random.nextInt(700);
         if (chance == 0){
             int numberToSpawn = random.nextInt(6) + 1;
             String type = mobNames[random.nextInt(mobNames.length)];
@@ -2752,7 +2753,11 @@ public class GameScreen implements Screen {
         selectedColonistButtons.useWorldCoords = false;
         selectedColonistButtons.firstCheck = true;
         ImgButton followButton = new ImgButton("followButton", "follow", () -> GameScreen.followingSelected = !GameScreen.followingSelected);
-        TextButton skillsButton = new TextButton("Show Skills", "skillsButton", () -> showSelectedSkills = !showSelectedSkills);
+        TextButton skillsButton = new TextButton("Show Skills", "skillsButton", () -> {
+            if (shouldShowSelectedColonistInfo) {
+                showSelectedSkills = !showSelectedSkills;
+            }
+        });
         ImgButton closeButton = new ImgButton("closeButton", "close", () -> {
             shouldShowSelectedColonistInfo = false;
             showSelectedSkills = false;

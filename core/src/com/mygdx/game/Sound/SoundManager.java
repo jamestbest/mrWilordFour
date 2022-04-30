@@ -74,7 +74,6 @@ public class SoundManager {
             String name = s.name;
             com.badlogic.gdx.audio.Sound sound = soundMap.get(name);
             if (sound != null) {
-                System.out.println(id + " new vol: " + volume);
                 sound.setVolume(id, volume);
             }
         }

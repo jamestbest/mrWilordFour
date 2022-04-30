@@ -55,19 +55,17 @@ public class LoadSaveScreen2 implements Screen {
         public boolean scrolled(float amountX, float amountY) {
             System.out.println(amountY);
             System.out.println(saveNames);
+            buttonCollectionForSaves.setAllToUnSelected();
+            System.out.println("scrolled");
             if(amountY > 0){
-                System.out.println("attempting to increase start index");
                 if (startIndex + numberShown < saveNames.size()){
-                    System.out.println("increasing start index");
                     startIndex++;
                     updateSaveButtons();
 //                    updateSelected(true);
                 }
             }
             else if(amountY < 0){
-                System.out.println("attempting to decrease start index");
                 if (startIndex > 0){
-                    System.out.println("decreasing start index");
                     startIndex--;
                     updateSaveButtons();
 //                    updateSelected(false);
@@ -107,6 +105,9 @@ public class LoadSaveScreen2 implements Screen {
     public void render(float delta) {
         Gdx.gl.glClearColor(49/255f, 53/255f, 61/255f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        System.out.println(selectedIndex);
+        System.out.println(getSaveSelected());
 
         camera.update();
 
@@ -224,7 +225,7 @@ public class LoadSaveScreen2 implements Screen {
         Button b = getSelectedButton();
         if (b != null){
             if (selectedIndex < saveNames.size()) {
-                ArrayList<String> saves = saveNames2.get(selectedIndex);
+                ArrayList<String> saves = saveNames2.get(selectedIndex + startIndex);
                 for (int i = 0; i < 4; i++) {
                     BoxedTextButton b3 = (BoxedTextButton) buttonCollectionForSelected.buttons.get(i);
                     if (i > saves.size() - 1){
@@ -257,6 +258,7 @@ public class LoadSaveScreen2 implements Screen {
             for (File file : Objects.requireNonNull(files)) {
                 String[] fileSaves = file.list();
                 if (fileSaves != null){
+                    System.out.println(Arrays.toString(fileSaves) + " " + file.getName());
                     saveNames2.add(new ArrayList<>(Arrays.asList(fileSaves)));
                 }
             }

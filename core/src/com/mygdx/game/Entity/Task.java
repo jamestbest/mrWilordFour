@@ -196,6 +196,9 @@ public class Task {
 
     public void increaseSkillLevel(Colonist c, String taskType){
         String partialType = getPriorityNameFromType(taskType);
+        if (partialType.equals("")) {
+            return;
+        }
         c.skillsPartial.put(partialType, c.skillsPartial.get(partialType) + 0.1f);
         c.xp += random.nextInt(getTotalFromTaskType(taskType)) + 1;
     }
