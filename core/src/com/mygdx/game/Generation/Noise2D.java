@@ -4,7 +4,6 @@ import com.badlogic.gdx.math.Vector2;
 import com.mygdx.game.Math.Math;
 
 public class Noise2D {
-
     public static float noise(float x, float y, int lSquare){
         int largeSquareX = (int) Math.ffloor(x) % lSquare;
         int largeSquareY = (int) Math.ffloor(y) % lSquare;
